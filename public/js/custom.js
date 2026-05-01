@@ -10,9 +10,6 @@ $(document).ready(function() {
 	var url = $(location).attr("href");
 	var segments = url.split("/");
 
-	//console.log(base_url);
-	//console.log(site_url);
-
 	$("#tanggal").datepicker({
 		maxDate: "0",
 		changeMonth: true,
@@ -196,12 +193,13 @@ $(document).ready(function() {
 			}
 		});
 	});
+
 	//////////////////////
 	/////////////////////kode
 	function reloadkode() {
 		$.ajax({
-			type: "POST",
-			url: site_url + "/admin/reloadkode/",
+			type: "GET",
+			url: site_url + "/master/klas/reload",
 			cache: false,
 			success: function(html) {
 				$("#divtabelkode").html(html);
@@ -250,7 +248,7 @@ $(document).ready(function() {
 		var d = $(this).attr("id");
 		$.ajax({
 			type: "POST",
-			url: site_url + "/admin/akode/",
+			url: site_url + "/master/klas/get",
 			data: "id=" + d,
 			cache: false,
 			success: function(ahtml) {
@@ -266,8 +264,8 @@ $(document).ready(function() {
 	/** Fungsi-fungsi terkait dengan data master pencipta arsip */
 	function reloadpenc() {
 		$.ajax({
-			type: "POST",
-			url: site_url + "/admin/reloadpenc",
+			type: "GET",
+			url: site_url + "/master/penc/reload",
 			cache: false,
 			success: function(html) {
 				$("#divtabelpenc").html(html);
@@ -304,7 +302,6 @@ $(document).ready(function() {
 
 	// AJAX untuk tambah data pencipta
 	$("#addpencgo").on("click", function() {
-		// alert($('#faddpenc').serialize());
 		var form = $("#faddpenc");
 		$.post(form.attr("action"), form.serialize()).done(addpenc);
 	});
@@ -319,7 +316,7 @@ $(document).ready(function() {
 		var d = $(this).attr("id");
 		$.ajax({
 			type: "POST",
-			url: site_url + "/admin/apenc/",
+			url: site_url + "/master/penc/get",
 			data: "id=" + d,
 			cache: false,
 			success: function(ahtml) {
@@ -333,8 +330,8 @@ $(document).ready(function() {
 	/** Fungsi-fungsi terkait dengan data master unit pengolah arsip */
 	function reloadpeng() {
 		$.ajax({
-			type: "POST",
-			url: site_url + "/admin/reloadpeng",
+			type: "GET",
+			url: site_url + "/master/pengolah/reload",
 			cache: false,
 			success: function(html) {
 				$("#divtabelpeng").html(html);
@@ -380,7 +377,7 @@ $(document).ready(function() {
 		var d = $(this).attr("id");
 		$.ajax({
 			type: "POST",
-			url: site_url + "/admin/apeng/",
+			url: site_url + "/master/pengolah/get",
 			data: "id=" + d,
 			cache: false,
 			success: function(ahtml) {
@@ -394,8 +391,8 @@ $(document).ready(function() {
 	/** Fungsi-fungsi terkait dengan data master lokasi arsip */
 	function reloadlok() {
 		$.ajax({
-			type: "POST",
-			url: site_url + "/admin/reloadlok",
+			type: "GET",
+			url: site_url + "/master/lokasi/reload",
 			cache: false,
 			success: function(html) {
 				$("#divtabellok").html(html);
@@ -441,7 +438,7 @@ $(document).ready(function() {
 		var d = $(this).attr("id");
 		$.ajax({
 			type: "POST",
-			url: site_url + "/admin/alok/",
+			url: site_url + "/master/lokasi/get",
 			data: "id=" + d,
 			cache: false,
 			success: function(ahtml) {
@@ -455,8 +452,8 @@ $(document).ready(function() {
 	/** Fungsi-fungsi terkait dengan data master media arsip */
 	function reloadmed() {
 		$.ajax({
-			type: "POST",
-			url: site_url + "/admin/reloadmed",
+			type: "GET",
+			url: site_url + "/master/media/reload",
 			cache: false,
 			success: function(html) {
 				$("#divtabelmed").html(html);
@@ -498,59 +495,15 @@ $(document).ready(function() {
 		$("#faddmed")[0].reset();
 		reloadmed();
 	}
-	$("#divtabelmed").on("click", ".edmed", function() {
-		var d = $(this).attr("id");
-		$.ajax({
-			type: "POST",
-			url: site_url + "/admin/amed/",
-			data: "id=" + d,
-			cache: false,
-			success: function(ahtml) {
-				html = jQuery.parseJSON(ahtml);
-				$("#enama").val(html.nama_media);
-				$("#edidmed").val(html.id);
-			}
-		});
-	});
 
-	/** Init plugins dropdown chosen */
-	$(".chosen").chosen();
-
-	function formatnumber(x) {
-		return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-	}
-
-	$(".trigger-submit").on("click", function(e) {
-		$("#singlebutton").trigger("click");
-	});
-
-	var xhr;
-	$("input.xhr").each(function() {
-		var obj = $(this);
-		obj.autoComplete({
-			minChars: 3,
+	/** XHR/Autocomplete untuk sirkulasi */
+	$(".xhr").each(function() {
+		var $this = $(this);
+		$this.autoComplete({
 			source: function(term, response) {
-				// try { xhr.abort(); } catch(e){}
-				xhr = $.getJSON(
-					obj.attr("data-xhr") + "/" + term,
-					{ q: term },
-					function(data) {
-						response(data);
-					}
-				);
-			},
-			renderItem: function(item, search) {
-				// convert ke array
-				var arr = Object.keys(item).map(function(k) {
-					return item[k];
+				$.getJSON($this.data("xhr") + "/" + term, function(data) {
+					response(data);
 				});
-				return (
-					'<div class="autocomplete-suggestion" data-val="' +
-					arr[0] +
-					'">' +
-					arr[0] +
-					"</div>"
-				);
 			}
 		});
 	});
