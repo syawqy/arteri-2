@@ -74,8 +74,11 @@ $routes->group('master', function ($routes) {
 // User
 $routes->get('user', 'User::index');
 $routes->post('user', 'User::create');
-$routes->post('user/(:num)', 'User::update/$1');
-$routes->delete('user/(:num)', 'User::delete/$1');
+$routes->post('user/update', 'User::update');
+$routes->post('user/delete', 'User::delete');
+$routes->post('user/get', 'User::get');
+$routes->post('user/cekUsername', 'User::cekUsername');
+$routes->get('user/reload', 'User::reload');
 
 // Sirkulasi
 $routes->get('sirkulasi', 'Sirkulasi::index');
@@ -84,11 +87,15 @@ $routes->post('sirkulasi', 'Sirkulasi::create');
 $routes->get('sirkulasi/edit/(:num)', 'Sirkulasi::edit/$1');
 $routes->post('sirkulasi/update/(:num)', 'Sirkulasi::update/$1');
 $routes->post('sirkulasi/delete/(:num)', 'Sirkulasi::delete/$1');
+$routes->post('sirkulasi/delete', 'Sirkulasi::delete');
 $routes->post('sirkulasi/kembali/(:num)', 'Sirkulasi::kembali/$1');
+$routes->post('sirkulasi/kembali', 'Sirkulasi::kembali');
 
 // AJAX
-$routes->get('ajax/arsip', 'Ajax::arsip');
-$routes->get('ajax/user', 'Ajax::user');
+$routes->get('ajax/arsip/(:any)', 'Sirkulasi::xhrArsip/$1');
+$routes->get('ajax/arsip', 'Sirkulasi::xhrArsip');
+$routes->get('ajax/user/(:any)', 'Sirkulasi::xhrUser/$1');
+$routes->get('ajax/user', 'Sirkulasi::xhrUser');
 $routes->get('ajax/master/(:segment)/reload', 'Ajax::masterReload/$1');
 
 // Import/Export

@@ -90,7 +90,7 @@
                                     <li><a href="<?= site_url('master/media') ?>"><i class="glyphicon glyphicon-film"></i> Media</a></li>
                                 <?php endif; ?>
                                 <?php if (hasModuleAccess('user')): ?>
-                                    <li><a href="<?= site_url('admin/vuser') ?>"><i class="glyphicon glyphicon-user"></i> User</a></li>
+                                    <li><a href="<?= site_url('user') ?>"><i class="glyphicon glyphicon-user"></i> User</a></li>
                                 <?php endif; ?>
                                 <?php if (hasModuleAccess('import')): ?>
                                     <li><a href="<?= site_url('admin/import') ?>"><i class="glyphicon glyphicon-tasks"></i> Import data</a></li>

@@ -91,9 +91,8 @@ $(document).ready(function() {
 	/** Fungsi-fungsi terkait dengan data master user aplikasi arsip */
 	function reloaduser() {
 		$.ajax({
-			type: "POST",
-			url: site_url + "/admin/reloaduser/",
-			cache: false,
+			type: "GET",
+			url: site_url + "/user/reload",
 			success: function(html) {
 				$("#divtabeluser").html(html);
 			}
@@ -131,7 +130,7 @@ $(document).ready(function() {
 		var d = $("#username").val();
 		$.ajax({
 			type: "POST",
-			url: site_url + "/admin/cekuser/",
+			url: site_url + "/user/cekUsername",
 			data: "username=" + d,
 			cache: false,
 			success: function(ahtml) {
@@ -165,7 +164,7 @@ $(document).ready(function() {
 		var d = $(this).attr("id");
 		$.ajax({
 			type: "POST",
-			url: site_url + "/admin/auser/",
+			url: site_url + "/user/get",
 			data: "id=" + d,
 			cache: false,
 			success: function(ahtml) {
