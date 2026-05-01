@@ -48,7 +48,7 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a style="padding-top: 13px;" class="navbar-brand" href="<?= site_url('/home') ?>"><img src="<?= base_url('/public/images/logo-horizontal.png') ?>" alt="ARTERI" height="35"></a>
+                <a style="padding-top: 13px;" class="navbar-brand" href="<?= site_url('/') ?>"><img src="<?= base_url('/images/logo-horizontal.png') ?>" alt="ARTERI" height="35"></a>
             </div>
             <!-- Collect the nav links, forms, and other content for toggling -->
             <div class="collapse navbar-collapse" id="arteri-main-menu">
@@ -93,7 +93,7 @@
                                     <li><a href="<?= site_url('user') ?>"><i class="glyphicon glyphicon-user"></i> User</a></li>
                                 <?php endif; ?>
                                 <?php if (hasModuleAccess('import')): ?>
-                                    <li><a href="<?= site_url('admin/import') ?>"><i class="glyphicon glyphicon-tasks"></i> Import data</a></li>
+                                    <li><a href="<?= site_url('import') ?>"><i class="glyphicon glyphicon-tasks"></i> Import data</a></li>
                                 <?php endif; ?>
                             </ul>
                         </li>
