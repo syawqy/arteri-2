@@ -54,7 +54,7 @@
             <div class="collapse navbar-collapse" id="arteri-main-menu">
                 <ul class="nav navbar-nav">
                     <?php if (hasModuleAccess('entridata')): ?>
-                        <li><a href="<?= site_url('/admin/entr') ?>"><i class="glyphicon glyphicon-plus"></i> Entri Data Baru</a></li>
+                        <li><a href="<?= site_url('/arsip/new') ?>"><i class="glyphicon glyphicon-plus"></i> Entri Data Baru</a></li>
                     <?php endif; ?>
                     <?php if (hasModuleAccess('sirkulasi')): ?>
                         <li><a href="<?= site_url('/sirkulasi') ?>"><i class="glyphicon glyphicon-refresh"></i> Sirkulasi</a></li>
@@ -75,19 +75,19 @@
                             </a>
                             <ul class="dropdown-menu">
                                 <?php if (hasModuleAccess('klasifikasi')): ?>
-                                    <li><a href="<?= site_url('admin/klas') ?>"><i class="glyphicon glyphicon-tag"></i> Klasifikasi</a></li>
+                                    <li><a href="<?= site_url('master/klas') ?>"><i class="glyphicon glyphicon-tag"></i> Klasifikasi</a></li>
                                 <?php endif; ?>
                                 <?php if (hasModuleAccess('pencipta')): ?>
-                                    <li><a href="<?= site_url('admin/penc') ?>"><i class="glyphicon glyphicon-home"></i> Pencipta arsip</a></li>
+                                    <li><a href="<?= site_url('master/penc') ?>"><i class="glyphicon glyphicon-home"></i> Pencipta arsip</a></li>
                                 <?php endif; ?>
                                 <?php if (hasModuleAccess('pengolah')): ?>
-                                    <li><a href="<?= site_url('admin/pengolah') ?>"><i class="glyphicon glyphicon-home"></i> Unit Pengolah</a></li>
+                                    <li><a href="<?= site_url('master/pengolah') ?>"><i class="glyphicon glyphicon-home"></i> Unit Pengolah</a></li>
                                 <?php endif; ?>
                                 <?php if (hasModuleAccess('lokasi')): ?>
-                                    <li><a href="<?= site_url('admin/lokasi') ?>"><i class="glyphicon glyphicon-map-marker"></i> Lokasi</a></li>
+                                    <li><a href="<?= site_url('master/lokasi') ?>"><i class="glyphicon glyphicon-map-marker"></i> Lokasi</a></li>
                                 <?php endif; ?>
                                 <?php if (hasModuleAccess('media')): ?>
-                                    <li><a href="<?= site_url('admin/media') ?>"><i class="glyphicon glyphicon-film"></i> Media</a></li>
+                                    <li><a href="<?= site_url('master/media') ?>"><i class="glyphicon glyphicon-film"></i> Media</a></li>
                                 <?php endif; ?>
                                 <?php if (hasModuleAccess('user')): ?>
                                     <li><a href="<?= site_url('admin/vuser') ?>"><i class="glyphicon glyphicon-user"></i> User</a></li>

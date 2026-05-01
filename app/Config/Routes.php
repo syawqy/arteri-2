@@ -28,11 +28,47 @@ $routes->post('arsip/delfile/(:num)', 'Arsip::deleteFile/$1');
 
 // Master Data
 $routes->group('master', function ($routes) {
-    $routes->resource('kode', ['controller' => 'MasterData::kode']);
-    $routes->resource('pencipta', ['controller' => 'MasterData::pencipta']);
-    $routes->resource('pengolah', ['controller' => 'MasterData::pengolah']);
-    $routes->resource('lokasi', ['controller' => 'MasterData::lokasi']);
-    $routes->resource('media', ['controller' => 'MasterData::media']);
+    // List pages
+    $routes->get('klas', 'MasterData::klas');
+    $routes->get('penc', 'MasterData::penc');
+    $routes->get('pengolah', 'MasterData::pengolah');
+    $routes->get('lokasi', 'MasterData::lokasi');
+    $routes->get('media', 'MasterData::media');
+
+    // AJAX: Create
+    $routes->post('klas/create', 'MasterData::createKode');
+    $routes->post('penc/create', 'MasterData::createPenc');
+    $routes->post('pengolah/create', 'MasterData::createPengolah');
+    $routes->post('lokasi/create', 'MasterData::createLokasi');
+    $routes->post('media/create', 'MasterData::createMedia');
+
+    // AJAX: Update
+    $routes->post('klas/update', 'MasterData::updateKode');
+    $routes->post('penc/update', 'MasterData::updatePenc');
+    $routes->post('pengolah/update', 'MasterData::updatePengolah');
+    $routes->post('lokasi/update', 'MasterData::updateLokasi');
+    $routes->post('media/update', 'MasterData::updateMedia');
+
+    // AJAX: Delete
+    $routes->post('klas/delete', 'MasterData::deleteKode');
+    $routes->post('penc/delete', 'MasterData::deletePenc');
+    $routes->post('pengolah/delete', 'MasterData::deletePengolah');
+    $routes->post('lokasi/delete', 'MasterData::deleteLokasi');
+    $routes->post('media/delete', 'MasterData::deleteMedia');
+
+    // AJAX: Get single record
+    $routes->post('klas/get', 'MasterData::getKode');
+    $routes->post('penc/get', 'MasterData::getPenc');
+    $routes->post('pengolah/get', 'MasterData::getPengolah');
+    $routes->post('lokasi/get', 'MasterData::getLokasi');
+    $routes->post('media/get', 'MasterData::getMedia');
+
+    // AJAX: Reload table HTML
+    $routes->get('klas/reload', 'MasterData::reloadKode');
+    $routes->get('penc/reload', 'MasterData::reloadPenc');
+    $routes->get('pengolah/reload', 'MasterData::reloadPengolah');
+    $routes->get('lokasi/reload', 'MasterData::reloadLokasi');
+    $routes->get('media/reload', 'MasterData::reloadMedia');
 });
 
 // User
