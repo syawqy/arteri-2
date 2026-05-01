@@ -1,0 +1,37 @@
+Arsip Controller (Tests\App\Controllers\ArsipController)
+ [x] Get arsip new requires auth
+ [x] Post arsip create requires auth
+
+Arsip Model (Tests\App\Models\ArsipModel)
+ [ ] Search with empty keyword returns results
+ [ ] Search count returns int
+ [ ] Get detail returns null for nonexistent id
+
+Auth Controller (Tests\App\Controllers\AuthController)
+ [x] Get login returns 200
+ [x] Post login with wrong credentials redirects to login
+ [x] Get logout redirects
+
+Example Database
+ [x] Model find all
+ [x] Soft delete leaves row
+
+Example Session
+ [x] Session simple
+
+Health
+ [x] Is defined app path
+ [x] Base url has been set
+
+Home Controller (Tests\App\Controllers\HomeController)
+ [ ] Get search returns 200 when logged in
+ [x] Get view redirects to login when not logged in
+
+Sirkulasi Controller (Tests\App\Controllers\SirkulasiController)
+ [x] Get sirkulasi requires auth
+
+User Model (Tests\App\Models\UserModel)
+ [x] Attempt login with valid credentials
+ [x] Attempt login with invalid password
+ [x] Attempt login with nonexistent username
+

@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8"/>
+        <title>Test Documentation</title>
+        <style>
+            body {
+                text-rendering: optimizeLegibility;
+                font-family: Source SansSerif Pro, Arial, sans-serif;
+                font-variant-ligatures: common-ligatures;
+                font-kerning: normal;
+                margin-left: 2rem;
+                background-color: #fff;
+                color: #000;
+            }
+
+            body > ul > li {
+                font-size: larger;
+            }
+
+            h2 {
+                font-size: larger;
+                text-decoration-line: underline;
+                text-decoration-thickness: 2px;
+                margin: 0;
+                padding: 0.5rem 0;
+            }
+
+            ul {
+                list-style: none;
+                margin: 0 0 2rem;
+                padding: 0 0 0 1rem;
+                text-indent: -1rem;
+            }
+
+            .success:before {
+                color: #4e9a06;
+                content: '✓';
+                padding-right: 0.5rem;
+            }
+
+            .defect {
+                color: #a40000;
+            }
+
+            .defect:before {
+                color: #a40000;
+                content: '✗';
+                padding-right: 0.5rem;
+            }
+        </style>
+    </head>
+    <body>
+        <h2>Arsip Controller (Tests\App\Controllers\ArsipController)</h2>
+        <ul>
+            <li class="success">Get arsip new requires auth</li>
+            <li class="success">Post arsip create requires auth</li>
+        </ul>
+        <h2>Arsip Model (Tests\App\Models\ArsipModel)</h2>
+        <ul>
+            <li class="defect">Search with empty keyword returns results</li>
+            <li class="defect">Search count returns int</li>
+            <li class="defect">Get detail returns null for nonexistent id</li>
+        </ul>
+        <h2>Auth Controller (Tests\App\Controllers\AuthController)</h2>
+        <ul>
+            <li class="success">Get login returns 200</li>
+            <li class="success">Post login with wrong credentials redirects to login</li>
+            <li class="success">Get logout redirects</li>
+        </ul>
+        <h2>Example Database</h2>
+        <ul>
+            <li class="success">Model find all</li>
+            <li class="success">Soft delete leaves row</li>
+        </ul>
+        <h2>Example Session</h2>
+        <ul>
+            <li class="success">Session simple</li>
+        </ul>
+        <h2>Health</h2>
+        <ul>
+            <li class="success">Is defined app path</li>
+            <li class="success">Base url has been set</li>
+        </ul>
+        <h2>Home Controller (Tests\App\Controllers\HomeController)</h2>
+        <ul>
+            <li class="defect">Get search returns 200 when logged in</li>
+            <li class="success">Get view redirects to login when not logged in</li>
+        </ul>
+        <h2>Sirkulasi Controller (Tests\App\Controllers\SirkulasiController)</h2>
+        <ul>
+            <li class="success">Get sirkulasi requires auth</li>
+        </ul>
+        <h2>User Model (Tests\App\Models\UserModel)</h2>
+        <ul>
+            <li class="success">Attempt login with valid credentials</li>
+            <li class="success">Attempt login with invalid password</li>
+            <li class="success">Attempt login with nonexistent username</li>
+        </ul>
+    </body>
+</html>

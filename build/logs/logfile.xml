@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="CLI Arguments" tests="19" assertions="23" errors="0" failures="0" skipped="4" time="8.454318">
+    <testsuite name="Tests\App\Controllers\ArsipControllerTest" file="D:\codes\php\arteri-migrasi\ci4\tests\app\Controllers\ArsipControllerTest.php" tests="2" assertions="4" errors="0" failures="0" skipped="0" time="0.074805">
+      <testcase name="testGetArsipNewRequiresAuth" file="D:\codes\php\arteri-migrasi\ci4\tests\app\Controllers\ArsipControllerTest.php" line="15" class="Tests\App\Controllers\ArsipControllerTest" classname="Tests.App.Controllers.ArsipControllerTest" assertions="2" time="0.069867"/>
+      <testcase name="testPostArsipCreateRequiresAuth" file="D:\codes\php\arteri-migrasi\ci4\tests\app\Controllers\ArsipControllerTest.php" line="20" class="Tests\App\Controllers\ArsipControllerTest" classname="Tests.App.Controllers.ArsipControllerTest" assertions="2" time="0.004939"/>
+    </testsuite>
+    <testsuite name="Tests\App\Controllers\AuthControllerTest" file="D:\codes\php\arteri-migrasi\ci4\tests\app\Controllers\AuthControllerTest.php" tests="3" assertions="4" errors="0" failures="0" skipped="0" time="2.322662">
+      <testcase name="testGetLoginReturns200" file="D:\codes\php\arteri-migrasi\ci4\tests\app\Controllers\AuthControllerTest.php" line="22" class="Tests\App\Controllers\AuthControllerTest" classname="Tests.App.Controllers.AuthControllerTest" assertions="1" time="0.683825"/>
+      <testcase name="testPostLoginWithWrongCredentialsRedirectsToLogin" file="D:\codes\php\arteri-migrasi\ci4\tests\app\Controllers\AuthControllerTest.php" line="27" class="Tests\App\Controllers\AuthControllerTest" classname="Tests.App.Controllers.AuthControllerTest" assertions="2" time="0.976155"/>
+      <testcase name="testGetLogoutRedirects" file="D:\codes\php\arteri-migrasi\ci4\tests\app\Controllers\AuthControllerTest.php" line="35" class="Tests\App\Controllers\AuthControllerTest" classname="Tests.App.Controllers.AuthControllerTest" assertions="1" time="0.662682"/>
+    </testsuite>
+    <testsuite name="Tests\App\Controllers\HomeControllerTest" file="D:\codes\php\arteri-migrasi\ci4\tests\app\Controllers\HomeControllerTest.php" tests="2" assertions="2" errors="0" failures="0" skipped="1" time="1.326323">
+      <testcase name="testGetSearchReturns200WhenLoggedIn" file="D:\codes\php\arteri-migrasi\ci4\tests\app\Controllers\HomeControllerTest.php" line="22" class="Tests\App\Controllers\HomeControllerTest" classname="Tests.App.Controllers.HomeControllerTest" assertions="0" time="0.662818">
+        <skipped/>
+      </testcase>
+      <testcase name="testGetViewRedirectsToLoginWhenNotLoggedIn" file="D:\codes\php\arteri-migrasi\ci4\tests\app\Controllers\HomeControllerTest.php" line="40" class="Tests\App\Controllers\HomeControllerTest" classname="Tests.App.Controllers.HomeControllerTest" assertions="2" time="0.663505"/>
+    </testsuite>
+    <testsuite name="Tests\App\Controllers\SirkulasiControllerTest" file="D:\codes\php\arteri-migrasi\ci4\tests\app\Controllers\SirkulasiControllerTest.php" tests="1" assertions="2" errors="0" failures="0" skipped="0" time="0.009039">
+      <testcase name="testGetSirkulasiRequiresAuth" file="D:\codes\php\arteri-migrasi\ci4\tests\app\Controllers\SirkulasiControllerTest.php" line="15" class="Tests\App\Controllers\SirkulasiControllerTest" classname="Tests.App.Controllers.SirkulasiControllerTest" assertions="2" time="0.009039"/>
+    </testsuite>
+    <testsuite name="Tests\App\Models\ArsipModelTest" file="D:\codes\php\arteri-migrasi\ci4\tests\app\Models\ArsipModelTest.php" tests="3" assertions="0" errors="0" failures="0" skipped="3" time="1.989525">
+      <testcase name="testSearchWithEmptyKeywordReturnsResults" file="D:\codes\php\arteri-migrasi\ci4\tests\app\Models\ArsipModelTest.php" line="29" class="Tests\App\Models\ArsipModelTest" classname="Tests.App.Models.ArsipModelTest" assertions="0" time="0.671579">
+        <skipped/>
+      </testcase>
+      <testcase name="testSearchCountReturnsInt" file="D:\codes\php\arteri-migrasi\ci4\tests\app\Models\ArsipModelTest.php" line="40" class="Tests\App\Models\ArsipModelTest" classname="Tests.App.Models.ArsipModelTest" assertions="0" time="0.657493">
+        <skipped/>
+      </testcase>
+      <testcase name="testGetDetailReturnsNullForNonexistentId" file="D:\codes\php\arteri-migrasi\ci4\tests\app\Models\ArsipModelTest.php" line="49" class="Tests\App\Models\ArsipModelTest" classname="Tests.App.Models.ArsipModelTest" assertions="0" time="0.660452">
+        <skipped/>
+      </testcase>
+    </testsuite>
+    <testsuite name="Tests\App\Models\UserModelTest" file="D:\codes\php\arteri-migrasi\ci4\tests\app\Models\UserModelTest.php" tests="3" assertions="5" errors="0" failures="0" skipped="0" time="2.592791">
+      <testcase name="testAttemptLoginWithValidCredentials" file="D:\codes\php\arteri-migrasi\ci4\tests\app\Models\UserModelTest.php" line="29" class="Tests\App\Models\UserModelTest" classname="Tests.App.Models.UserModelTest" assertions="3" time="0.980851"/>
+      <testcase name="testAttemptLoginWithInvalidPassword" file="D:\codes\php\arteri-migrasi\ci4\tests\app\Models\UserModelTest.php" line="38" class="Tests\App\Models\UserModelTest" classname="Tests.App.Models.UserModelTest" assertions="1" time="0.993559"/>
+      <testcase name="testAttemptLoginWithNonexistentUsername" file="D:\codes\php\arteri-migrasi\ci4\tests\app\Models\UserModelTest.php" line="45" class="Tests\App\Models\UserModelTest" classname="Tests.App.Models.UserModelTest" assertions="1" time="0.618381"/>
+    </testsuite>
+    <testsuite name="ExampleDatabaseTest" file="D:\codes\php\arteri-migrasi\ci4\tests\database\ExampleDatabaseTest.php" tests="2" assertions="3" errors="0" failures="0" skipped="0" time="0.069280">
+      <testcase name="testModelFindAll" file="D:\codes\php\arteri-migrasi\ci4\tests\database\ExampleDatabaseTest.php" line="17" class="ExampleDatabaseTest" classname="ExampleDatabaseTest" assertions="1" time="0.058482"/>
+      <testcase name="testSoftDeleteLeavesRow" file="D:\codes\php\arteri-migrasi\ci4\tests\database\ExampleDatabaseTest.php" line="28" class="ExampleDatabaseTest" classname="ExampleDatabaseTest" assertions="2" time="0.010798"/>
+    </testsuite>
+    <testsuite name="ExampleSessionTest" file="D:\codes\php\arteri-migrasi\ci4\tests\session\ExampleSessionTest.php" tests="1" assertions="1" errors="0" failures="0" skipped="0" time="0.001317">
+      <testcase name="testSessionSimple" file="D:\codes\php\arteri-migrasi\ci4\tests\session\ExampleSessionTest.php" line="10" class="ExampleSessionTest" classname="ExampleSessionTest" assertions="1" time="0.001317"/>
+    </testsuite>
+    <testsuite name="HealthTest" file="D:\codes\php\arteri-migrasi\ci4\tests\unit\HealthTest.php" tests="2" assertions="2" errors="0" failures="0" skipped="0" time="0.068576">
+      <testcase name="testIsDefinedAppPath" file="D:\codes\php\arteri-migrasi\ci4\tests\unit\HealthTest.php" line="12" class="HealthTest" classname="HealthTest" assertions="1" time="0.000826"/>
+      <testcase name="testBaseUrlHasBeenSet" file="D:\codes\php\arteri-migrasi\ci4\tests\unit\HealthTest.php" line="17" class="HealthTest" classname="HealthTest" assertions="1" time="0.067750"/>
+    </testsuite>
+  </testsuite>
+</testsuites>
