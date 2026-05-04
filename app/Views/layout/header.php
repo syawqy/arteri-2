@@ -12,14 +12,14 @@
     <title>ARTERI<?php if (isset($title)): ?> - <?= esc($title) ?><?php endif; ?></title>
 
     <!-- Bootstrap Core CSS -->
-    <link type="text/css" rel="stylesheet" href="<?= base_url('/public/css/flatly.bootstrap.min.css') ?>" />
-    <link type="text/css" rel="stylesheet" href="<?= base_url('/public/css/heroic-features.css') ?>" />
-    <link type="text/css" rel="stylesheet" href="<?= base_url('/public/css/jquery-ui.min.css') ?>" />
-    <link type="text/css" rel="stylesheet" href="<?= base_url('/public/css/jquery-ui.structure.min.css') ?>" />
-    <link type="text/css" rel="stylesheet" href="<?= base_url('/public/css/jquery-ui.theme.min.css') ?>" />
-    <link type="text/css" rel="stylesheet" href="<?= base_url('/public/css/chosen.css') ?>" />
-    <link type="text/css" rel="stylesheet" href="<?= base_url('/public/css/jquery.auto-complete.css') ?>" />
-    <link type="text/css" rel="stylesheet" href="<?= base_url('/public/css/custom.css') ?>" />
+    <link type="text/css" rel="stylesheet" href="<?= base_url('/css/flatly.bootstrap.min.css') ?>" />
+    <link type="text/css" rel="stylesheet" href="<?= base_url('/css/heroic-features.css') ?>" />
+    <link type="text/css" rel="stylesheet" href="<?= base_url('/css/jquery-ui.min.css') ?>" />
+    <link type="text/css" rel="stylesheet" href="<?= base_url('/css/jquery-ui.structure.min.css') ?>" />
+    <link type="text/css" rel="stylesheet" href="<?= base_url('/css/jquery-ui.theme.min.css') ?>" />
+    <link type="text/css" rel="stylesheet" href="<?= base_url('/css/chosen.css') ?>" />
+    <link type="text/css" rel="stylesheet" href="<?= base_url('/css/jquery.auto-complete.css') ?>" />
+    <link type="text/css" rel="stylesheet" href="<?= base_url('/css/custom.css') ?>" />
     <script>
         var base_url = '<?= base_url() ?>';
         var site_url = '<?= site_url() ?>';
@@ -30,7 +30,7 @@
         <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
         <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
-    <link href="<?= base_url('/public/logo.png') ?>" rel="icon" />
+    <link href="<?= base_url('/logo.png') ?>" rel="icon" />
 
 </head>
 
@@ -102,9 +102,9 @@
                 <ul class="nav navbar-nav navbar-right">
                     <?php if (session('username')): ?>
                         <li><a href="#"><span class="glyphicon glyphicon-user"></span> <?= esc(session('username')) ?></a></li>
-                        <li><a href="<?= site_url('home/logout') ?>"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
+                        <li><a href="<?= site_url('logout') ?>"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
                     <?php else: ?>
-                        <li><a href="<?= site_url('home/login') ?>"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
+                        <li><a href="<?= site_url('login') ?>"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
                     <?php endif; ?>
                 </ul>
             </div>

@@ -86,7 +86,7 @@ class CreateArteriTables extends Migration
             'lokasi'        => ['type' => 'VARCHAR', 'constraint' => 255, 'null' => false],
             'media'         => ['type' => 'VARCHAR', 'constraint' => 255, 'null' => false],
             'file'          => ['type' => 'TEXT', 'null' => true],
-            'tgl_input'     => ['type' => 'DATETIME', 'null' => false, 'default' => 'CURRENT_TIMESTAMP'],
+            'tgl_input'     => ['type' => 'DATETIME', 'null' => true],
             'tgl_update'    => ['type' => 'DATETIME', 'null' => true],
             'username'      => ['type' => 'VARCHAR', 'constraint' => 255, 'null' => false],
         ]);

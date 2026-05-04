@@ -9,13 +9,13 @@
 <!-- /.Footer -->
 
 <!-- jQuery -->
-<script src="<?= base_url('/public/js/jquery-2.2.2.min.js') ?>"></script>
-<script src="<?= base_url('/public/js/bootstrap.min.js') ?>"></script>
-<script src="<?= base_url('/public/js/jquery-ui.min.js') ?>"></script>
-<script src="<?= base_url('/public/js/jquery.form.min.js') ?>"></script>
-<script src="<?= base_url('/public/js/chosen.jquery.min.js') ?>"></script>
-<script src="<?= base_url('/public/js/jquery.auto-complete.min.js') ?>"></script>
-<script src="<?= base_url('/public/js/custom.js') ?>"></script>
+<script src="<?= base_url('/js/jquery-2.2.2.min.js') ?>"></script>
+<script src="<?= base_url('/js/bootstrap.min.js') ?>"></script>
+<script src="<?= base_url('/js/jquery-ui.min.js') ?>"></script>
+<script src="<?= base_url('/js/jquery.form.min.js') ?>"></script>
+<script src="<?= base_url('/js/chosen.jquery.min.js') ?>"></script>
+<script src="<?= base_url('/js/jquery.auto-complete.min.js') ?>"></script>
+<script src="<?= base_url('/js/custom.js') ?>"></script>
 
 </body>
 </html>
