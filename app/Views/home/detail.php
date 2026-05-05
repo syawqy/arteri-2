@@ -88,7 +88,7 @@
 
 <div class="view-group row">
   <label class="col-md-6 control-label" for="nobox">File</label>
-  <label class="col-md-6 isi"><?= (empty($file) ? '' : '<a href="' . base_url('files/' . $file) . '" target="_blank">' . esc($file) . '</a>') ?></label>
+  <label class="col-md-6 isi"><?= (empty($file) ? '' : '<a href="' . site_url('file/' . $file) . '" target="_blank">' . esc($file) . '</a>') ?></label>
 </div>
 
 <div class="view-group row">

@@ -38,6 +38,15 @@ if (! function_exists('hasClassificationAccess')) {
             return true;
         }
 
-        return str_contains($aksesKlas, $kode);
+        // Check if the kode starts with any of the comma-separated prefixes
+        $prefixes = explode(',', $aksesKlas);
+        foreach ($prefixes as $prefix) {
+            $prefix = trim($prefix);
+            if ($prefix !== '' && str_starts_with(strtolower($kode), strtolower($prefix))) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

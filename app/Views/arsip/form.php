@@ -3,30 +3,34 @@
 /**
  * Helper: convert shorthand size (e.g. 2M, 1G) to bytes.
  */
-function _return_bytes(string $val): int
-{
-    $val  = trim($val);
-    $last = strtolower($val[-1] ?? '');
-    $num  = (int) $val;
+if (! function_exists('_return_bytes')) {
+    function _return_bytes(string $val): int
+    {
+        $val  = trim($val);
+        $last = strtolower($val[-1] ?? '');
+        $num  = (int) $val;
 
-    return match ($last) {
-        'g' => $num * 1024 * 1024 * 1024,
-        'm' => $num * 1024 * 1024,
-        'k' => $num * 1024,
-        default => $num,
-    };
+        return match ($last) {
+            'g' => $num * 1024 * 1024 * 1024,
+            'm' => $num * 1024 * 1024,
+            'k' => $num * 1024,
+            default => $num,
+        };
+    }
 }
 
 /**
  * Return the effective max upload size in bytes.
  */
-function _max_file_upload_in_bytes(): int
-{
-    $maxUpload = _return_bytes(ini_get('upload_max_filesize'));
-    $maxPost   = _return_bytes(ini_get('post_max_size'));
-    $memoryLimit = _return_bytes(ini_get('memory_limit'));
+if (! function_exists('_max_file_upload_in_bytes')) {
+    function _max_file_upload_in_bytes(): int
+    {
+        $maxUpload = _return_bytes(ini_get('upload_max_filesize'));
+        $maxPost   = _return_bytes(ini_get('post_max_size'));
+        $memoryLimit = _return_bytes(ini_get('memory_limit'));
 
-    return min($maxUpload, $maxPost, $memoryLimit);
+        return min($maxUpload, $maxPost, $memoryLimit);
+    }
 }
 
 $actionUrl   = $isEdit
@@ -221,7 +225,7 @@ $fileVal     = $isEdit ? ($file ?? '') : '';
     <div class="col-md-8">
     <?php if ($isEdit && $fileVal !== ''): ?>
         <span style="text-overflow:ellipsis;overflow:hidden;" id="linkfile" class="form-control">
-            <a href="<?= base_url('files/' . esc($fileVal)) ?>"><?= esc($fileVal) ?></a>
+            <a href="<?= site_url('file/' . esc($fileVal)) ?>"><?= esc($fileVal) ?></a>
         </span>
         <span class="pull-right">
             <a href="#" data-toggle="modal" data-target="#delfile">

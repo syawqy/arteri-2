@@ -4,12 +4,12 @@ namespace App\Controllers;
 
 use App\Models\UserModel;
 use CodeIgniter\Controller;
+use CodeIgniter\Throttle\Throttler;
 
 class Auth extends Controller
 {
     public function login()
     {
-        // If already logged in, redirect to dashboard
         if (session('username')) {
             return redirect()->to('/');
         }
@@ -30,11 +30,39 @@ class Auth extends Controller
         $password = $this->request->getPost('password');
         $previous = $this->request->getPost('previous');
 
+        if (! $this->validate('login')) {
+            session()->setFlashdata('error_login', 'Username dan password harus diisi.');
+            return redirect()->to('/login')->withInput();
+        }
+
+        $ip = $this->request->getIPAddress();
+
+        $db = \Config\Database::connect();
+        $fifteenMinutesAgo = date('Y-m-d H:i:s', strtotime('-15 minutes'));
+        $recentAttempts = $db->table('login_attempts')
+            ->where('username', $username)
+            ->where('attempted_at >=', $fifteenMinutesAgo)
+            ->countAllResults();
+
+        if ($recentAttempts >= 5) {
+            session()->setFlashdata('error_login', 'Terlalu banyak percobaan login. Silakan coba lagi dalam 15 menit.');
+            return redirect()->to('/login')->withInput();
+        }
+
+        $db->table('login_attempts')->insert([
+            'username'     => $username,
+            'ip_address'   => $ip,
+            'attempted_at' => date('Y-m-d H:i:s'),
+        ]);
+
         $userModel = new UserModel();
         $user = $userModel->attemptLogin($username, $password);
 
         if ($user !== null) {
-            // Set session variables
+            $this->logLoginAttempt($username, true);
+
+            session()->regenerate(true);
+
             session()->set('username', $user['username']);
             session()->set('id_user', $user['id']);
             session()->set('tipe', $user['tipe']);
@@ -43,46 +71,58 @@ class Auth extends Controller
             $aksesModul = json_decode($user['akses_modul'], true);
             session()->set('akses_modul', $aksesModul);
 
-            // Compute menu_master: true if user has access to any master module
             $menuMaster = false;
             if (is_array($aksesModul) && count($aksesModul) > 0) {
-                $no = 0;
-                foreach ($aksesModul as $key => $val) {
-                    if ($key === 'klasifikasi') $no++;
-                    if ($key === 'pencipta') $no++;
-                    if ($key === 'pengolah') $no++;
-                    if ($key === 'lokasi') $no++;
-                    if ($key === 'media') $no++;
-                    if ($key === 'user') $no++;
-                    if ($key === 'import') $no++;
-                }
-                if ($no > 0) {
-                    $menuMaster = true;
+                $masterModules = ['klasifikasi', 'pencipta', 'pengolah', 'lokasi', 'media', 'user', 'import'];
+                foreach ($masterModules as $mod) {
+                    if (array_key_exists($mod, $aksesModul)) {
+                        $menuMaster = true;
+                        break;
+                    }
                 }
             }
             session()->set('menu_master', $menuMaster);
 
-            // Redirect to previous page or dashboard
             if ($previous && $previous !== '') {
                 return redirect()->to($previous);
             }
             return redirect()->to('/');
         }
 
-        // Login failed
-        session()->setFlashdata('erorlogin', 'Username atau password yang ada masukkan salah');
-        return redirect()->to('/login');
+        $this->logLoginAttempt($username, false);
+
+        session()->setFlashdata('error_login', 'Username atau password yang Anda masukkan salah.');
+        return redirect()->to('/login')->withInput();
     }
 
     public function logout()
     {
-        session()->remove('username');
-        session()->remove('id_user');
-        session()->remove('tipe');
-        session()->remove('akses_klas');
-        session()->remove('akses_modul');
-        session()->remove('menu_master');
+        $this->logLoginAttempt(session('username') ?? 'unknown', true, 'LOGOUT');
+
+        session()->destroy();
+        session()->regenerate(true);
 
         return redirect()->to('/login');
+    }
+
+    private function logLoginAttempt(string $username, bool $success, string $overrideAksi = ''): void
+    {
+        $log = new \App\Models\SystemLogModel();
+        $aksi = $overrideAksi ?: ($success ? 'LOGIN_SUCCESS' : 'LOGIN_FAILED');
+        $detail = null;
+        if (! $success && ! $overrideAksi) {
+            $detail = ['reason' => 'invalid_credentials'];
+        }
+
+        $log->insert([
+            'kode_transaksi'     => $aksi,
+            'username_transaksi' => $username,
+            'tgl_transaksi'      => date('Y-m-d H:i:s'),
+            'aksi'               => $aksi,
+            'tabel'              => 'master_user',
+            'record_id'          => null,
+            'detail'             => $detail ? json_encode($detail) : null,
+            'ip_address'         => $this->request->getIPAddress(),
+        ]);
     }
 }

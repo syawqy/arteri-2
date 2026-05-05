@@ -19,29 +19,51 @@ final class HomeControllerTest extends CIUnitTestCase
     protected $basePath  = APPPATH . 'Database';
     protected $namespace = 'App';
 
-    public function testGetSearchReturns200WhenLoggedIn(): void
+    private function getAdminSession(): array
     {
-        // Home::search() calls ArsipModel::search() which uses MySQL-specific
-        // SQL (DATE_ADD, CURDATE, REGEXP). Skip on SQLite.
-        $this->skipIfNotMysql();
-
-        $this->withSession([
+        return [
             'username'    => 'admin',
             'id_user'     => 1,
             'tipe'        => 'admin',
             'akses_klas'  => '',
             'akses_modul' => ['entridata' => 'on'],
             'menu_master' => true,
-        ]);
+        ];
+    }
 
+    public function testIndexRedirectsToSearch(): void
+    {
+        $this->withSession($this->getAdminSession());
+        $this->get('/')->assertRedirectTo('search');
+    }
+
+    public function testGetSearchReturns200WhenLoggedIn(): void
+    {
+        $this->skipIfNotMysql();
+
+        $this->withSession($this->getAdminSession());
         $this->get('search')->assertStatus(200);
+    }
+
+    public function testGetSearchWithAdvancedFilter(): void
+    {
+        $this->skipIfNotMysql();
+
+        $this->withSession($this->getAdminSession());
+        $this->get('search?ket=asli')->assertStatus(200);
     }
 
     public function testGetViewRedirectsToLoginWhenNotLoggedIn(): void
     {
         $this->get('view/1')->assertRedirectTo('/login');
     }
+    public function testDetailThrows404ForNonexistentArsip(): void
+    {
+        $this->withSession($this->getAdminSession());
 
+        $this->expectException(\CodeIgniter\Exceptions\PageNotFoundException::class);
+        $this->get('view/99999');
+    }
     private function skipIfNotMysql(): void
     {
         $db = \Config\Database::connect();

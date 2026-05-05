@@ -98,6 +98,13 @@ $routes->get('ajax/user/(:any)', 'Sirkulasi::xhrUser/$1');
 $routes->get('ajax/user', 'Sirkulasi::xhrUser');
 $routes->get('ajax/master/(:segment)/reload', 'Ajax::masterReload/$1');
 
+// File access (served through controller with ACL check)
+$routes->get('file/(:segment)', 'FileController::serve/$1');
+
+// Audit Log (admin only)
+$routes->get('audit', 'AuditLog::index');
+$routes->get('audit/detail/(:num)', 'AuditLog::detail/$1');
+
 // Import/Export
 $routes->get('import', 'Import::index');
 $routes->post('import', 'Import::doImport');

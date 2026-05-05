@@ -15,6 +15,6 @@ class Export extends BaseController
     public function index(): void
     {
         // Redirect to Home::download() for the user-friendly download
-        redirect()->to('/dl');
+        return redirect()->to('/dl');
     }
 }

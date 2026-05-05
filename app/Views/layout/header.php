@@ -20,6 +20,7 @@
     <link type="text/css" rel="stylesheet" href="<?= base_url('/css/chosen.css') ?>" />
     <link type="text/css" rel="stylesheet" href="<?= base_url('/css/jquery.auto-complete.css') ?>" />
     <link type="text/css" rel="stylesheet" href="<?= base_url('/css/custom.css') ?>" />
+    <meta name="<?= csrf_token() ?>" data-name="<?= csrf_token() ?>" data-value="<?= csrf_hash() ?>" content="<?= csrf_hash() ?>">
     <script>
         var base_url = '<?= base_url() ?>';
         var site_url = '<?= site_url() ?>';
@@ -101,6 +102,9 @@
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
                     <?php if (session('username')): ?>
+                        <?php if (isAdmin()): ?>
+                            <li><a href="<?= site_url('audit') ?>"><span class="glyphicon glyphicon-list-alt"></span> Audit Log</a></li>
+                        <?php endif; ?>
                         <li><a href="#"><span class="glyphicon glyphicon-user"></span> <?= esc(session('username')) ?></a></li>
                         <li><a href="<?= site_url('logout') ?>"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
                     <?php else: ?>

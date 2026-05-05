@@ -1,0 +1,27 @@
+<?php
+
+return [
+    'required'      => '{field} harus diisi.',
+    'min_length'    => '{field} minimal {param} karakter.',
+    'max_length'    => '{field} maksimal {param} karakter.',
+    'exact_length'  => '{field} harus tepat {param} karakter.',
+    'is_unique'     => '{field} sudah terpakai.',
+    'integer'       => '{field} harus berupa angka.',
+    'in_list'       => '{field} tidak valid.',
+    'valid_date'    => '{field} format tanggal tidak valid (YYYY-MM-DD).',
+    'matches'       => '{field} tidak cocok dengan {param}.',
+    'greater_than'  => '{field} harus lebih besar dari {param}.',
+    'greater_than_equal_to' => '{field} harus lebih besar atau sama dengan {param}.',
+    'less_than'     => '{field} harus kurang dari {param}.',
+    'less_than_equal_to' => '{field} harus kurang atau sama dengan {param}.',
+    'ext_in'        => '{field} harus berekstensi: {param}.',
+    'max_size'      => '{field} maksimal {param} KB.',
+    'uploaded'      => '{field} gagal diunggah.',
+    'numeric'       => '{field} harus berupa angka.',
+    'alpha_numeric' => '{field} hanya boleh huruf dan angka.',
+    'valid_fk'      => '{field} tidak ditemukan di database.',
+    'valid_date_range' => '{field} harus setelah atau sama dengan {param}.',
+    'valid_password_strength' => '{field} minimal 8 karakter, mengandung huruf dan angka.',
+    'is_natural'    => '{field} harus berupa angka positif.',
+    'is_natural_no_zero' => '{field} harus berupa angka lebih dari nol.',
+];

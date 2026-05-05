@@ -15,11 +15,12 @@
     	<div class="container" id="formContainer">
 
           <form class="form-signin" id="login" role="form" method="post" action="<?= site_url('/login') ?>">
+            <?= csrf_field() ?>
 		  <p align="center"><img src="<?= base_url('/logo-full.png') ?>" class="img-responsive"></p>
             <h5 class="form-signin-heading"><p align="center">Masukkan username dan password anda</p></h5>
 			<?php
-			if (session()->getFlashdata('erorlogin')) {
-				echo '<div style="color:red; text-align:center;">' . esc(session()->getFlashdata('erorlogin')) . '</div>';
+			if (session()->getFlashdata('error_login')) {
+				echo '<div style="color:red; text-align:center;">' . esc(session()->getFlashdata('error_login')) . '</div>';
 			}
 			?>
             <input type="hidden" name="previous" value="<?= isset($previous) ? esc($previous) : '' ?>">

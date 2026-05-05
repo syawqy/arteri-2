@@ -10,16 +10,12 @@ class Sirkulasi extends BaseController
 {
     private int $perPage = 20;
 
-    /**
-     * List circulation data with search and pagination.
-     */
     public function index()
     {
         $katakunci = $this->request->getGet('katakunci') ?? '';
 
         $sirkulasiModel = new SirkulasiModel();
 
-        // Pagination using CI4 pager
         $pager = service('pager');
         $pager->setPath('sirkulasi');
         $total = $sirkulasiModel->searchCount($katakunci);
@@ -41,9 +37,6 @@ class Sirkulasi extends BaseController
             . view('layout/footer');
     }
 
-    /**
-     * Show form for a new circulation loan.
-     */
     public function new()
     {
         $data = [
@@ -57,9 +50,6 @@ class Sirkulasi extends BaseController
             . view('layout/footer');
     }
 
-    /**
-     * Handle POST for creating a new circulation record.
-     */
     public function create()
     {
         $rules = [
@@ -74,6 +64,18 @@ class Sirkulasi extends BaseController
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
+        $arsipModel = new ArsipModel();
+        $arsip = $arsipModel->where('noarsip', $this->request->getPost('noarsip'))->first();
+        if ($arsip === null) {
+            return redirect()->back()->withInput()->with('error', 'Arsip dengan nomor tersebut tidak ditemukan.');
+        }
+
+        $userModel = new UserModel();
+        $user = $userModel->where('username', $this->request->getPost('username_peminjam'))->first();
+        if ($user === null) {
+            return redirect()->back()->withInput()->with('error', 'Pengguna tidak ditemukan.');
+        }
+
         $sirkulasiModel = new SirkulasiModel();
 
         $sirkulasiModel->insert([
@@ -85,14 +87,9 @@ class Sirkulasi extends BaseController
             'tgl_transaksi'     => date('Y-m-d H:i:s'),
         ]);
 
-        return redirect()->to('/sirkulasi');
+        return redirect()->to('/sirkulasi')->with('message', 'Peminjaman berhasil dicatat.');
     }
 
-    /**
-     * Show pre-populated edit form.
-     *
-     * @param int|string $id
-     */
     public function edit($id)
     {
         $sirkulasiModel = new SirkulasiModel();
@@ -117,11 +114,6 @@ class Sirkulasi extends BaseController
             . view('layout/footer');
     }
 
-    /**
-     * Handle POST for updating a circulation record.
-     *
-     * @param int|string $id
-     */
     public function update($id)
     {
         $rules = [
@@ -143,6 +135,18 @@ class Sirkulasi extends BaseController
             return redirect()->to('/sirkulasi');
         }
 
+        $arsipModel = new ArsipModel();
+        $arsip = $arsipModel->where('noarsip', $this->request->getPost('noarsip'))->first();
+        if ($arsip === null) {
+            return redirect()->back()->withInput()->with('error', 'Arsip dengan nomor tersebut tidak ditemukan.');
+        }
+
+        $userModel = new UserModel();
+        $user = $userModel->where('username', $this->request->getPost('username_peminjam'))->first();
+        if ($user === null) {
+            return redirect()->back()->withInput()->with('error', 'Pengguna tidak ditemukan.');
+        }
+
         $sirkulasiModel->update($id, [
             'noarsip'           => $this->request->getPost('noarsip'),
             'username_peminjam' => $this->request->getPost('username_peminjam'),
@@ -151,59 +155,50 @@ class Sirkulasi extends BaseController
             'tgl_haruskembali'  => $this->request->getPost('tgl_haruskembali'),
         ]);
 
-        return redirect()->to('/sirkulasi');
+        return redirect()->to('/sirkulasi')->with('message', 'Peminjaman berhasil diperbarui.');
     }
 
-    /**
-     * Handle POST for deleting a circulation record.
-     * Supports ID from URL segment or POST body (for modal form submission).
-     *
-     * @param int|string|null $id
-     */
     public function delete($id = null)
     {
         if ($id === null) {
             $id = $this->request->getPost('id');
         }
 
+        if (! $this->validate(['id' => 'required|integer'])) {
+            return $this->response->setJSON($this->formatValidationErrors($this->validator->getErrors()));
+        }
+
         $sirkulasiModel = new SirkulasiModel();
         $sirkulasiModel->delete($id);
 
-        return $this->response->setJSON(['status' => 'success']);
+        return $this->response->setJSON(['status' => 'success', 'message' => 'Sirkulasi berhasil dihapus.']);
     }
 
-    /**
-     * Handle POST for returning an archive.
-     * Supports ID from URL segment or POST body (for modal form submission).
-     *
-     * @param int|string|null $id
-     */
     public function kembali($id = null)
     {
         if ($id === null) {
             $id = $this->request->getPost('id');
         }
 
+        if (! $this->validate(['id' => 'required|integer'])) {
+            return $this->response->setJSON($this->formatValidationErrors($this->validator->getErrors()));
+        }
+
         $sirkulasiModel = new SirkulasiModel();
         $existing = $sirkulasiModel->find($id);
 
         if ($existing === null) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Data tidak ditemukan']);
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Data tidak ditemukan.']);
         }
 
         $sirkulasiModel->returnArchive($id);
 
-        return $this->response->setJSON(['status' => 'success']);
+        return $this->response->setJSON(['status' => 'success', 'message' => 'Arsip berhasil dikembalikan.']);
     }
 
-    /**
-     * AJAX: Return JSON of archives matching keyword (limit 10).
-     *
-     * @param string $keywords
-     */
     public function xhrArsip($keywords = '')
     {
-        if ($keywords === '') {
+        if (empty($keywords)) {
             return $this->response->setJSON([]);
         }
 
@@ -221,14 +216,9 @@ class Sirkulasi extends BaseController
         return $this->response->setJSON($results);
     }
 
-    /**
-     * AJAX: Return JSON of users matching keyword (limit 10).
-     *
-     * @param string $keywords
-     */
     public function xhrUser($keywords = '')
     {
-        if ($keywords === '') {
+        if (empty($keywords)) {
             return $this->response->setJSON([]);
         }
 

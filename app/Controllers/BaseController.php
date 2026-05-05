@@ -20,25 +20,30 @@ use Psr\Log\LoggerInterface;
  */
 abstract class BaseController extends Controller
 {
-    /**
-     * Be sure to declare properties for any property fetch you initialized.
-     * The creation of dynamic property is deprecated in PHP 8.2.
-     */
-
-    // protected $session;
+    use \App\Traits\AuditableTrait;
+    use \App\Traits\JsonResponseTrait;
 
     /**
      * @return void
      */
     public function initController(RequestInterface $request, ResponseInterface $response, LoggerInterface $logger)
     {
-        // Load helpers available in all controllers and views.
         $this->helpers = ['form', 'url', 'acl'];
 
-        // Caution: Do not edit this line.
         parent::initController($request, $response, $logger);
+    }
 
-        // Preload any models, libraries, etc, here.
-        // $this->session = service('session');
+    protected function redirectWithErrors(array $errors): \CodeIgniter\HTTP\RedirectResponse
+    {
+        return redirect()->back()->withInput()->with('errors', $errors);
+    }
+
+    protected function formatValidationErrors(array $errors): array
+    {
+        return [
+            'status' => 'error',
+            'errors' => $errors,
+            'message' => implode(' ', array_values($errors)),
+        ];
     }
 }

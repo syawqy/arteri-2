@@ -2,7 +2,9 @@
 
 namespace Tests\App\Controllers;
 
+use CodeIgniter\Exceptions\PageNotFoundException;
 use CodeIgniter\Test\CIUnitTestCase;
+use CodeIgniter\Test\DatabaseTestTrait;
 use CodeIgniter\Test\FeatureTestTrait;
 
 /**
@@ -10,7 +12,82 @@ use CodeIgniter\Test\FeatureTestTrait;
  */
 final class ArsipControllerTest extends CIUnitTestCase
 {
+    use DatabaseTestTrait;
     use FeatureTestTrait;
+
+    protected $migrate   = true;
+    protected $seed      = \App\Database\Seeds\ArteriSeeder::class;
+    protected $basePath  = APPPATH . 'Database';
+    protected $namespace = 'App';
+
+    private array $masterIds = [];
+
+    private function getAdminSession(): array
+    {
+        return [
+            'username'    => 'admin',
+            'id_user'     => 1,
+            'tipe'        => 'admin',
+            'akses_klas'  => '',
+            'akses_modul' => ['entridata' => 'on'],
+            'menu_master' => true,
+        ];
+    }
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $db = \Config\Database::connect();
+
+        $this->masterIds = [
+            'kode'     => $db->table('master_kode')->get(1)->getRowArray()['id'],
+            'pencipta' => $db->table('master_pencipta')->get(1)->getRowArray()['id'],
+            'pengolah' => $db->table('master_pengolah')->get(1)->getRowArray()['id'],
+            'lokasi'   => $db->table('master_lokasi')->get(1)->getRowArray()['id'],
+            'media'    => $db->table('master_media')->get(1)->getRowArray()['id'],
+        ];
+    }
+
+    private function validArsipData(): array
+    {
+        return [
+            'noarsip'      => 'CRT-001',
+            'tanggal'      => '2025-06-01',
+            'pencipta'     => (string) $this->masterIds['pencipta'],
+            'unitpengolah' => (string) $this->masterIds['pengolah'],
+            'kode'         => (string) $this->masterIds['kode'],
+            'uraian'       => 'Test create arsip',
+            'lokasi'       => (string) $this->masterIds['lokasi'],
+            'media'        => (string) $this->masterIds['media'],
+            'ket'          => 'asli',
+            'jumlah'       => '1',
+            'nobox'        => 'B-01',
+        ];
+    }
+
+    private function insertArsipInDb(array $overrides = []): int
+    {
+        $db = \Config\Database::connect();
+        $db->table('data_arsip')->insert(array_merge([
+            'noarsip'       => 'DB-001',
+            'pencipta'      => $this->masterIds['pencipta'],
+            'unit_pengolah' => $this->masterIds['pengolah'],
+            'tanggal'       => '2025-06-01',
+            'uraian'        => 'Direct DB insert',
+            'ket'           => 'asli',
+            'kode'          => $this->masterIds['kode'],
+            'jumlah'        => 1,
+            'nobox'         => 'B-01',
+            'lokasi'        => $this->masterIds['lokasi'],
+            'media'         => $this->masterIds['media'],
+            'username'      => 'admin',
+        ], $overrides));
+
+        return (int) $db->insertID();
+    }
+
+    // ── Auth gate ──
 
     public function testGetArsipNewRequiresAuth(): void
     {
@@ -19,9 +96,118 @@ final class ArsipControllerTest extends CIUnitTestCase
 
     public function testPostArsipCreateRequiresAuth(): void
     {
-        $this->post('arsip', [
-            'noarsip' => 'TEST-001',
-            'tanggal' => '2025-01-01',
-        ])->assertRedirectTo('/login');
+        $this->csrfPost('arsip', $this->validArsipData())
+            ->assertRedirectTo('/login');
+    }
+
+    public function testGetArsipEditRequiresAuth(): void
+    {
+        $this->get('arsip/edit/1')->assertRedirectTo('/login');
+    }
+
+    public function testPostArsipUpdateRequiresAuth(): void
+    {
+        $this->csrfPost('arsip/update/1', $this->validArsipData())
+            ->assertRedirectTo('/login');
+    }
+
+    // ── Create ──
+
+    public function testGetNewReturns200WhenLoggedIn(): void
+    {
+        $this->withSession($this->getAdminSession());
+        $this->get('arsip/new')->assertStatus(200);
+    }
+
+    public function testCreateWithValidDataRedirects(): void
+    {
+        $this->withSession($this->getAdminSession());
+
+        $response = $this->csrfPost('arsip', $this->validArsipData());
+        $response->assertRedirect();
+    }
+
+    public function testCreateWithInvalidDataRedirectsBack(): void
+    {
+        $this->withSession($this->getAdminSession());
+
+        $response = $this->csrfPost('arsip', [
+            'noarsip' => '',
+            'tanggal' => 'invalid-date',
+        ]);
+        $response->assertRedirect();
+    }
+
+    // ── Edit ──
+
+    public function testGetEditReturns200ForExisting(): void
+    {
+        $id = $this->insertArsipInDb(['noarsip' => 'EDIT-001']);
+
+        $this->withSession($this->getAdminSession());
+        $this->get('arsip/edit/' . $id)->assertStatus(200);
+    }
+
+    public function testGetEditRedirectsForNonexistent(): void
+    {
+        $this->withSession($this->getAdminSession());
+        $this->get('arsip/edit/99999')->assertRedirectTo('/');
+    }
+
+    public function testUpdateWithValidDataRedirects(): void
+    {
+        $id = $this->insertArsipInDb(['noarsip' => 'UPD-001']);
+
+        $this->withSession($this->getAdminSession());
+        $response = $this->csrfPost('arsip/update/' . $id, $this->validArsipData());
+        $response->assertRedirect();
+    }
+
+    public function testUpdateForNonexistentRedirects(): void
+    {
+        $this->withSession($this->getAdminSession());
+        $this->csrfPost('arsip/update/99999', $this->validArsipData())
+            ->assertRedirectTo('/');
+    }
+
+    // ── Delete ──
+
+    public function testDeleteReturnsJsonSuccess(): void
+    {
+        $id = $this->insertArsipInDb(['noarsip' => 'DEL-001']);
+
+        $this->withSession($this->getAdminSession());
+        $response = $this->csrfPost('arsip/delete/' . $id);
+        $response->assertOK();
+        $this->assertStringContainsString('success', (string) $response->getBody());
+    }
+
+    // ── FK Validation ──
+
+    public function testCreateFailsWhenKodeNotFound(): void
+    {
+        $this->withSession($this->getAdminSession());
+        $response = $this->csrfPost('arsip', [
+            'noarsip'      => 'FK-001',
+            'tanggal'      => '2025-01-01',
+            'pencipta'     => '99999',
+            'unitpengolah' => (string) $this->masterIds['pengolah'],
+            'kode'         => (string) $this->masterIds['kode'],
+            'uraian'       => 'Test FK',
+            'lokasi'       => (string) $this->masterIds['lokasi'],
+            'media'        => (string) $this->masterIds['media'],
+            'ket'          => 'asli',
+            'jumlah'       => '1',
+        ]);
+        $response->assertRedirect();
+    }
+
+    public function testDeleteWithInvalidIdReturnsError(): void
+    {
+        $this->withSession($this->getAdminSession());
+        $response = $this->csrfPost('arsip/delete', ['id' => 'invalid']);
+        $this->assertStringContainsString('error', (string) $response->getBody());
     }
 }
+
+

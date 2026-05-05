@@ -11,9 +11,6 @@ use App\Models\MasterMediaModel;
 
 class Arsip extends BaseController
 {
-    /**
-     * Show archive entry form.
-     */
     public function new()
     {
         $data['title']    = 'Tambah Arsip';
@@ -29,9 +26,6 @@ class Arsip extends BaseController
              . view('layout/footer');
     }
 
-    /**
-     * Process archive entry form.
-     */
     public function create()
     {
         $rules = [
@@ -44,7 +38,7 @@ class Arsip extends BaseController
             'lokasi'       => 'required|integer',
             'media'        => 'required|integer',
             'ket'          => 'required|in_list[asli,copy]',
-            'jumlah'       => 'required|integer',
+            'jumlah'       => 'required|integer|greater_than[0]',
             'nobox'        => 'permit_empty|max_length[255]',
         ];
 
@@ -52,27 +46,36 @@ class Arsip extends BaseController
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
+        $post = $this->request->getPost();
+
+        if (! $this->validateForeignKey((int) $post['kode'], new MasterKodeModel(), 'kode')
+            || ! $this->validateForeignKey((int) $post['pencipta'], new MasterPenciptaModel(), 'pencipta')
+            || ! $this->validateForeignKey((int) $post['unitpengolah'], new MasterPengolahModel(), 'unit pengolah')
+            || ! $this->validateForeignKey((int) $post['lokasi'], new MasterLokasiModel(), 'lokasi')
+            || ! $this->validateForeignKey((int) $post['media'], new MasterMediaModel(), 'media')) {
+            return redirect()->back()->withInput()->with('error', 'Data master terkait tidak ditemukan. Silakan coba lagi.');
+        }
+
         $arsipModel = new ArsipModel();
 
         $insertData = [
-            'noarsip'       => $this->request->getPost('noarsip'),
-            'tanggal'       => $this->request->getPost('tanggal'),
-            'pencipta'      => (int) $this->request->getPost('pencipta'),
-            'unit_pengolah' => (int) $this->request->getPost('unitpengolah'),
-            'kode'          => (int) $this->request->getPost('kode'),
-            'uraian'        => $this->request->getPost('uraian'),
-            'lokasi'        => (int) $this->request->getPost('lokasi'),
-            'media'         => (int) $this->request->getPost('media'),
-            'ket'           => $this->request->getPost('ket'),
-            'jumlah'        => (int) $this->request->getPost('jumlah'),
-            'nobox'         => $this->request->getPost('nobox') ?? '',
+            'noarsip'       => $post['noarsip'],
+            'tanggal'       => $post['tanggal'],
+            'pencipta'      => (int) $post['pencipta'],
+            'unit_pengolah' => (int) $post['unitpengolah'],
+            'kode'          => (int) $post['kode'],
+            'uraian'        => $post['uraian'],
+            'lokasi'        => (int) $post['lokasi'],
+            'media'         => (int) $post['media'],
+            'ket'           => $post['ket'],
+            'jumlah'        => (int) $post['jumlah'],
+            'nobox'         => $post['nobox'] ?? '',
             'username'      => session('username') ?? '',
         ];
 
-        // File upload
         $file = $this->request->getFile('file');
         if ($file !== null && $file->isValid() && ! $file->hasMoved()) {
-            $uploadPath = FCPATH . 'uploads' . DIRECTORY_SEPARATOR . 'arsip' . DIRECTORY_SEPARATOR;
+            $uploadPath = WRITEPATH . 'uploads' . DIRECTORY_SEPARATOR . 'arsip' . DIRECTORY_SEPARATOR;
             if (! is_dir($uploadPath)) {
                 mkdir($uploadPath, 0755, true);
             }
@@ -87,14 +90,9 @@ class Arsip extends BaseController
 
         $insertId = $arsipModel->insert($insertData, true);
 
-        return redirect()->to('/view/' . $insertId);
+        return redirect()->to('/view/' . $insertId)->with('message', 'Arsip berhasil ditambahkan.');
     }
 
-    /**
-     * Show archive edit form.
-     *
-     * @param int|string $id
-     */
     public function edit($id)
     {
         $arsipModel = new ArsipModel();
@@ -123,11 +121,6 @@ class Arsip extends BaseController
              . view('layout/footer');
     }
 
-    /**
-     * Process archive edit form.
-     *
-     * @param int|string $id
-     */
     public function update($id)
     {
         $rules = [
@@ -140,7 +133,7 @@ class Arsip extends BaseController
             'lokasi'       => 'required|integer',
             'media'        => 'required|integer',
             'ket'          => 'required|in_list[asli,copy]',
-            'jumlah'       => 'required|integer',
+            'jumlah'       => 'required|integer|greater_than[0]',
             'nobox'        => 'permit_empty|max_length[255]',
         ];
 
@@ -155,31 +148,39 @@ class Arsip extends BaseController
             return redirect()->to('/');
         }
 
+        $post = $this->request->getPost();
+
+        if (! $this->validateForeignKey((int) $post['kode'], new MasterKodeModel(), 'kode')
+            || ! $this->validateForeignKey((int) $post['pencipta'], new MasterPenciptaModel(), 'pencipta')
+            || ! $this->validateForeignKey((int) $post['unitpengolah'], new MasterPengolahModel(), 'unit pengolah')
+            || ! $this->validateForeignKey((int) $post['lokasi'], new MasterLokasiModel(), 'lokasi')
+            || ! $this->validateForeignKey((int) $post['media'], new MasterMediaModel(), 'media')) {
+            return redirect()->back()->withInput()->with('error', 'Data master terkait tidak ditemukan. Silakan coba lagi.');
+        }
+
         $updateData = [
-            'noarsip'       => $this->request->getPost('noarsip'),
-            'tanggal'       => $this->request->getPost('tanggal'),
-            'pencipta'      => (int) $this->request->getPost('pencipta'),
-            'unit_pengolah' => (int) $this->request->getPost('unitpengolah'),
-            'kode'          => (int) $this->request->getPost('kode'),
-            'uraian'        => $this->request->getPost('uraian'),
-            'lokasi'        => (int) $this->request->getPost('lokasi'),
-            'media'         => (int) $this->request->getPost('media'),
-            'ket'           => $this->request->getPost('ket'),
-            'jumlah'        => (int) $this->request->getPost('jumlah'),
-            'nobox'         => $this->request->getPost('nobox') ?? '',
+            'noarsip'       => $post['noarsip'],
+            'tanggal'       => $post['tanggal'],
+            'pencipta'      => (int) $post['pencipta'],
+            'unit_pengolah' => (int) $post['unitpengolah'],
+            'kode'          => (int) $post['kode'],
+            'uraian'        => $post['uraian'],
+            'lokasi'        => (int) $post['lokasi'],
+            'media'         => (int) $post['media'],
+            'ket'           => $post['ket'],
+            'jumlah'        => (int) $post['jumlah'],
+            'nobox'         => $post['nobox'] ?? '',
         ];
 
-        // File upload
         $file = $this->request->getFile('file');
         if ($file !== null && $file->isValid() && ! $file->hasMoved()) {
-            $uploadPath = FCPATH . 'uploads' . DIRECTORY_SEPARATOR . 'arsip' . DIRECTORY_SEPARATOR;
+            $uploadPath = WRITEPATH . 'uploads' . DIRECTORY_SEPARATOR . 'arsip' . DIRECTORY_SEPARATOR;
             if (! is_dir($uploadPath)) {
                 mkdir($uploadPath, 0755, true);
             }
 
             $ext = strtolower($file->getExtension());
             if (in_array($ext, ['pdf', 'doc', 'docx'], true)) {
-                // Delete old file if exists
                 if (! empty($existing['file'])) {
                     $oldPath = $uploadPath . $existing['file'];
                     if (is_file($oldPath)) {
@@ -195,21 +196,20 @@ class Arsip extends BaseController
 
         $arsipModel->update($id, $updateData);
 
-        return redirect()->to('/view/' . $id);
+        return redirect()->to('/view/' . $id)->with('message', 'Arsip berhasil diperbarui.');
     }
 
-    /**
-     * Delete an archive record and its file.
-     *
-     * @param int|string $id
-     */
     public function delete($id)
     {
+        if (! $this->validate(['id' => 'required|integer'])) {
+            return $this->response->setJSON($this->formatValidationErrors($this->validator->getErrors()));
+        }
+
         $arsipModel = new ArsipModel();
         $row = $arsipModel->find($id);
 
         if ($row !== null && ! empty($row['file'])) {
-            $filePath = FCPATH . 'uploads' . DIRECTORY_SEPARATOR . 'arsip' . DIRECTORY_SEPARATOR . $row['file'];
+            $filePath = WRITEPATH . 'uploads' . DIRECTORY_SEPARATOR . 'arsip' . DIRECTORY_SEPARATOR . $row['file'];
             if (is_file($filePath)) {
                 unlink($filePath);
             }
@@ -217,21 +217,20 @@ class Arsip extends BaseController
 
         $arsipModel->delete($id);
 
-        return $this->response->setJSON(['status' => 'success']);
+        return $this->response->setJSON(['status' => 'success', 'message' => 'Arsip berhasil dihapus.']);
     }
 
-    /**
-     * Delete only the attached file, keep the record.
-     *
-     * @param int|string $id
-     */
     public function deleteFile($id)
     {
+        if (! $this->validate(['id' => 'required|integer'])) {
+            return $this->response->setJSON($this->formatValidationErrors($this->validator->getErrors()));
+        }
+
         $arsipModel = new ArsipModel();
         $row = $arsipModel->find($id);
 
         if ($row !== null && ! empty($row['file'])) {
-            $filePath = FCPATH . 'uploads' . DIRECTORY_SEPARATOR . 'arsip' . DIRECTORY_SEPARATOR . $row['file'];
+            $filePath = WRITEPATH . 'uploads' . DIRECTORY_SEPARATOR . 'arsip' . DIRECTORY_SEPARATOR . $row['file'];
             if (is_file($filePath)) {
                 unlink($filePath);
             }
@@ -239,6 +238,11 @@ class Arsip extends BaseController
             $arsipModel->update($id, ['file' => null]);
         }
 
-        return $this->response->setJSON(['status' => 'success']);
+        return $this->response->setJSON(['status' => 'success', 'message' => 'File berhasil dihapus.']);
+    }
+
+    private function validateForeignKey(int $id, $model, string $label): bool
+    {
+        return $model->find($id) !== null;
     }
 }

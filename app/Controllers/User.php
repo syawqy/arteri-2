@@ -6,9 +6,6 @@ use App\Models\UserModel;
 
 class User extends BaseController
 {
-    /**
-     * List all users with optional search.
-     */
     public function index()
     {
         $katakunci = $this->request->getGet('katakunci') ?? '';
@@ -36,49 +33,62 @@ class User extends BaseController
             . view('layout/footer');
     }
 
-    /**
-     * Create a new user.
-     */
     public function create()
     {
-        $password     = $this->request->getPost('password');
-        $confPassword = $this->request->getPost('conf_password');
+        $rules = [
+            'username'      => 'required|max_length[255]|string',
+            'password'      => 'required|min_length[8]|regex_match[/[a-zA-Z]/]|regex_match[/[0-9]/]',
+            'conf_password' => 'required|matches[password]',
+            'tipe'          => 'required|in_list[admin,user]',
+        ];
 
-        if ($password !== $confPassword) {
-            return $this->response->setJSON([
-                'status' => 'error',
-                'pesan'  => 'PASSWORD_UNMATCH',
-            ]);
+        if (! $this->validate($rules)) {
+            return $this->response->setJSON($this->formatValidationErrors($this->validator->getErrors()));
         }
 
         $model = new UserModel();
 
-        // Check username uniqueness
         $existing = $model->where('username', $this->request->getPost('username'))->first();
         if ($existing) {
-            return $this->response->setJSON([
-                'status' => 'error',
-                'pesan'  => 'USERNAME_EXISTS',
-            ]);
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Username sudah digunakan.']);
         }
 
         $model->insert([
             'username'     => $this->request->getPost('username'),
-            'password'     => password_hash($password, PASSWORD_BCRYPT),
+            'password'     => password_hash($this->request->getPost('password'), PASSWORD_BCRYPT),
             'tipe'         => $this->request->getPost('tipe'),
             'akses_klas'   => $this->request->getPost('akses_klas') ?? '',
             'akses_modul'  => json_encode($this->request->getPost('modul') ?? []),
         ]);
 
-        return $this->response->setJSON(['status' => 'success']);
+        return $this->response->setJSON(['status' => 'success', 'message' => 'User berhasil dibuat.']);
     }
 
-    /**
-     * Update an existing user.
-     */
     public function update()
     {
+        $id = (int) $this->request->getPost('id');
+
+        $rules = [
+            'id'       => 'required|integer',
+            'username' => 'required|max_length[255]|string',
+            'tipe'     => 'required|in_list[admin,user]',
+        ];
+
+        $password = $this->request->getPost('password');
+        if (! empty($password)) {
+            $rules['password'] = 'min_length[8]|regex_match[/[a-zA-Z]/]|regex_match[/[0-9]/]';
+            $rules['conf_password'] = 'required_with[password]|matches[password]';
+        }
+
+        if (! $this->validate($rules)) {
+            return $this->response->setJSON($this->formatValidationErrors($this->validator->getErrors()));
+        }
+
         $model = new UserModel();
+        $existing = $model->find($id);
+        if ($existing === null) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'User tidak ditemukan.']);
+        }
 
         $data = [
             'username'    => $this->request->getPost('username'),
@@ -87,74 +97,73 @@ class User extends BaseController
             'akses_modul' => json_encode($this->request->getPost('modul') ?? []),
         ];
 
-        $password = $this->request->getPost('password');
-        if ($password !== '') {
+        if (! empty($password)) {
             $data['password'] = password_hash($password, PASSWORD_BCRYPT);
         }
 
-        $model->update((int) $this->request->getPost('id'), $data);
+        $model->update($id, $data);
 
-        return $this->response->setJSON(['status' => 'success']);
+        return $this->response->setJSON(['status' => 'success', 'message' => 'User berhasil diperbarui.']);
     }
 
-    /**
-     * Delete a user. Prevent deleting the last admin.
-     */
     public function delete()
     {
-        $model = new UserModel();
-        $user  = $model->find((int) $this->request->getPost('id'));
+        $id = (int) $this->request->getPost('id');
 
-        if (! $user) {
-            return $this->response->setJSON(['status' => 'error', 'pesan' => 'User not found']);
+        if (! $this->validate(['id' => 'required|integer'])) {
+            return $this->response->setJSON($this->formatValidationErrors($this->validator->getErrors()));
         }
 
-        // Prevent deleting the last admin
+        $model = new UserModel();
+        $user  = $model->find($id);
+
+        if (! $user) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'User tidak ditemukan.']);
+        }
+
         if ($user['tipe'] === 'admin') {
             $adminCount = $model->where('tipe', 'admin')->countAllResults();
             if ($adminCount <= 1) {
-                return $this->response->setJSON([
-                    'status' => 'error',
-                    'pesan'  => 'Tidak dapat menghapus admin terakhir',
-                ]);
+                return $this->response->setJSON(['status' => 'error', 'message' => 'Tidak dapat menghapus admin terakhir.']);
             }
         }
 
-        $model->delete((int) $this->request->getPost('id'));
+        $model->delete($id);
 
-        return $this->response->setJSON(['status' => 'success']);
+        return $this->response->setJSON(['status' => 'success', 'message' => 'User berhasil dihapus.']);
     }
 
-    /**
-     * Get a single user as JSON.
-     */
     public function get()
     {
+        $id = (int) $this->request->getPost('id');
+
+        if (! $this->validate(['id' => 'required|integer'])) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'ID tidak valid.']);
+        }
+
         $model = new UserModel();
-        $user  = $model->find((int) $this->request->getPost('id'));
+        $user  = $model->find($id);
 
         return $this->response->setJSON($user ?? []);
     }
 
-    /**
-     * Check if a username already exists.
-     */
     public function cekUsername()
     {
         $username = $this->request->getPost('username');
+        if (empty($username)) {
+            return $this->response->setJSON(['msg' => 'error', 'message' => 'Username tidak boleh kosong.']);
+        }
+
         $model    = new UserModel();
         $existing = $model->where('username', $username)->first();
 
         if ($existing) {
-            return $this->response->setJSON(['msg' => 'error']);
+            return $this->response->setJSON(['msg' => 'error', 'message' => 'Username sudah digunakan.']);
         }
 
         return $this->response->setJSON(['msg' => 'ok']);
     }
 
-    /**
-     * AJAX reload: return filtered HTML table.
-     */
     public function reload()
     {
         $katakunci = $this->request->getGet('katakunci') ?? '';
@@ -174,9 +183,6 @@ class User extends BaseController
         return $this->renderTable($users);
     }
 
-    /**
-     * Build HTML table string for AJAX reload.
-     */
     protected function renderTable(array $users): string
     {
         $html = '<table class="table table-bordered" name="vuser" id="vuser">';

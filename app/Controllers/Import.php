@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace App\Controllers;
 
 use App\Models\ArsipModel;
@@ -14,20 +12,26 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class Import extends BaseController
 {
-    public function index(): void
+    public function index()
     {
         helper('acl');
-        echo view('layout/header', ['title' => 'Import Data']);
-        echo view('import/index');
-        echo view('layout/footer');
+        return view('layout/header', ['title' => 'Import Data'])
+             . view('import/index')
+             . view('layout/footer');
     }
 
-    public function doImport(): void
+    public function doImport()
     {
         $file = $this->request->getFile('up_file');
         if (!$file || !$file->isValid()) {
-            session()->setFlashdata('zz', 'Tidak ada file yang diupload');
-            redirect()->to('/import');
+            session()->setFlashdata('error', 'Tidak ada file yang diupload.');
+            return redirect()->to('/import');
+        }
+
+        $ext = strtolower($file->getExtension());
+        if (!in_array($ext, ['xls', 'xlsx'], true)) {
+            session()->setFlashdata('error', 'Format file tidak didukung. Gunakan .xls atau .xlsx.');
+            return redirect()->to('/import');
         }
 
         try {
@@ -37,6 +41,8 @@ class Import extends BaseController
             $sheets = $spreadsheet->getSheetNames();
 
             $arsipModel = new ArsipModel();
+            $errors = [];
+            $insertedCount = 0;
 
             foreach ($sheets as $sheetName) {
                 $sheet = $spreadsheet->setActiveSheetIndexByName($sheetName);
@@ -44,33 +50,43 @@ class Import extends BaseController
                 $maxCol = $sheet->getHighestColumn();
                 $allCol = range('A', $maxCol);
 
-                // Row 2 = field names
                 $fields = [];
                 foreach ($allCol as $col) {
                     $val = $sheet->getCell($col . '2')->getCalculatedValue();
                     $fields[] = $val;
                 }
 
-                // Rows 3+ = data
                 for ($i = 3; $i <= $maxRow; $i++) {
                     $rowData = [];
                     foreach ($allCol as $k => $col) {
                         $rowData[$fields[$k]] = $sheet->getCell($col . $i)->getCalculatedValue();
                     }
 
-                    $noarsip   = $rowData['No.Arsip'] ?? '';
-                    $tanggal   = $rowData['Tanggal'] ?? '';
-                    $uraian    = $rowData['Uraian'] ?? '';
-                    $ket       = $rowData['Ket'] ?? '';
-                    $nobox     = $rowData['No.Box'] ?? '';
-                    $jumlah    = $rowData['Jumlah'] ?? 1;
+                    $noarsip   = trim($rowData['No.Arsip'] ?? '');
+                    $uraian    = trim($rowData['Uraian'] ?? '');
                     $username  = $rowData['username'] ?? session('username');
 
                     if (empty($noarsip) && empty($uraian)) {
                         continue;
                     }
 
-                    // Resolve master IDs from names
+                    if (empty($noarsip)) {
+                        $errors[] = "Baris {$i}: No. Arsip harus diisi.";
+                        continue;
+                    }
+
+                    $tanggal = $rowData['Tanggal'] ?? date('Y-m-d');
+                    if (! preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $tanggal)) {
+                        $errors[] = "Baris {$i}: Format tanggal tidak valid (gunakan YYYY-MM-DD).";
+                        continue;
+                    }
+
+                    $jumlah = (int) ($rowData['Jumlah'] ?? 1);
+                    if ($jumlah < 1) {
+                        $errors[] = "Baris {$i}: Jumlah harus lebih dari 0.";
+                        continue;
+                    }
+
                     $idKode = $this->resolveMasterId('kode', $rowData['Kode Klasifikasi'] ?? '');
                     $idPenc = $this->resolveMasterId('pencipta', $rowData['Pencipta'] ?? '');
                     $idPeng = $this->resolveMasterId('pengolah', $rowData['Pengolah'] ?? '');
@@ -82,25 +98,33 @@ class Import extends BaseController
                         'tanggal'       => $tanggal,
                         'uraian'        => $uraian,
                         'kode'          => $idKode,
-                        'ket'           => $ket,
-                        'nobox'         => $nobox,
+                        'ket'           => $rowData['Ket'] ?? '',
+                        'nobox'         => $rowData['No.Box'] ?? '',
                         'file'          => '',
-                        'jumlah'        => (int) $jumlah,
+                        'jumlah'        => $jumlah,
                         'pencipta'      => $idPenc,
                         'unit_pengolah' => $idPeng,
                         'lokasi'        => $idLok,
                         'media'         => $idMed,
                         'username'      => $username,
                     ]);
+
+                    $insertedCount++;
                 }
             }
 
-            session()->setFlashdata('zz', 'Data berhasil diimport');
+            $message = "{$insertedCount} data berhasil diimport.";
+            if (!empty($errors)) {
+                $message .= ' ' . count($errors) . ' baris error: ' . implode(' | ', array_slice($errors, 0, 5));
+                if (count($errors) > 5) {
+                    $message .= ' ...dan ' . (count($errors) - 5) . ' error lainnya.';
+                }
+            }
+            session()->setFlashdata('message', $message);
         } catch (\Exception $e) {
-            session()->setFlashdata('zz', 'Gagal import: ' . $e->getMessage());
+            session()->setFlashdata('error', 'Gagal import: ' . $e->getMessage());
         }
-
-        redirect()->to('/import');
+        return redirect()->to('/import');
     }
 
     private function resolveMasterId(string $type, string $name): string
@@ -122,7 +146,6 @@ class Import extends BaseController
             return '';
         }
 
-        // For kode, search by 'kode' field; for others search by name field
         if ($type === 'kode') {
             $existing = $model->where('kode', $name)->first();
             if ($existing) {
