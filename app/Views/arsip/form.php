@@ -73,6 +73,7 @@ $fileVal     = $isEdit ? ($file ?? '') : '';
 </nav>
 
 <form class="form-horizontal" data-toggle="validator" action="<?= $actionUrl ?>" method="post" enctype="multipart/form-data">
+<?= csrf_field() ?>
 <?php if ($isEdit): ?>
     <input type="hidden" name="id" value="<?= $archiveId ?>">
     <?php if (! empty($previous)): ?>
@@ -267,6 +268,7 @@ $fileVal     = $isEdit ? ($file ?? '') : '';
       </div>
       <div class="modal-body">
         <form id="fdelfile" class="form-horizontal" role="form" method="post" action="<?= site_url('/arsip/delfile/' . $archiveId) ?>">
+            <?= csrf_field() ?>
             <h4 class="modal-title">Yakin ingin Hapus File ini?</h4>
         </form>
       </div>

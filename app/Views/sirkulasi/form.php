@@ -32,6 +32,7 @@ $tglHarusKembaliVal   = $isEdit ? esc($tgl_haruskembali ?? '') : '';
 </nav>
 
 <form class="form-horizontal" data-toggle="validator" action="<?= $actionUrl ?>" method="post" enctype="multipart/form-data">
+<?= csrf_field() ?>
 
     <div class="row">
         <div class="col-md-12">

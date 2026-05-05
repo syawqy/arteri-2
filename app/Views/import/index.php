@@ -12,6 +12,7 @@
 		<div class="panel-heading">Import data <a href="<?= base_url('/template import arteri.xlsx') ?>" class="btn btn-success btn-sm" id="export">File template</a></div>
 		<div class="panel-body">
 			<form id="import_data" action="<?= site_url('/import') ?>" enctype="multipart/form-data" class="form-horizontal" method="post" role="form">
+				<?= csrf_field() ?>
 				<label class="control-label" for="up_file">Upload</label>
 				<input type="file" name="up_file" id="up_file" required/>
 				<input type="submit" value="Upload" class="submit" />
