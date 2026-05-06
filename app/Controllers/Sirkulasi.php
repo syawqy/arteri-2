@@ -9,9 +9,22 @@ use App\Models\UserModel;
 class Sirkulasi extends BaseController
 {
     private int $perPage = 20;
+    private const MODULE = 'sirkulasi';
+
+    private function requireAccess(): bool
+    {
+        if (! hasModuleAccess(self::MODULE)) {
+            return false;
+        }
+        return true;
+    }
 
     public function index()
     {
+        if (! $this->requireAccess()) {
+            return redirect()->to('/');
+        }
+
         $katakunci = $this->request->getGet('katakunci') ?? '';
 
         $sirkulasiModel = new SirkulasiModel();
@@ -39,6 +52,10 @@ class Sirkulasi extends BaseController
 
     public function new()
     {
+        if (! $this->requireAccess()) {
+            return redirect()->to('/');
+        }
+
         $data = [
             'title'  => 'Peminjaman Arsip',
             'isEdit' => false,
@@ -52,6 +69,10 @@ class Sirkulasi extends BaseController
 
     public function create()
     {
+        if (! $this->requireAccess()) {
+            return redirect()->to('/');
+        }
+
         $rules = [
             'noarsip'           => 'required|max_length[255]',
             'username_peminjam' => 'required|max_length[255]',
@@ -92,6 +113,10 @@ class Sirkulasi extends BaseController
 
     public function edit($id)
     {
+        if (! $this->requireAccess()) {
+            return redirect()->to('/');
+        }
+
         $sirkulasiModel = new SirkulasiModel();
         $row = $sirkulasiModel->find($id);
 
@@ -116,6 +141,10 @@ class Sirkulasi extends BaseController
 
     public function update($id)
     {
+        if (! $this->requireAccess()) {
+            return redirect()->to('/');
+        }
+
         $rules = [
             'noarsip'           => 'required|max_length[255]',
             'username_peminjam' => 'required|max_length[255]',
@@ -160,6 +189,8 @@ class Sirkulasi extends BaseController
 
     public function delete($id = null)
     {
+        if (! $this->requireAccess()) return;
+
         if ($id === null) {
             $id = $this->request->getPost('id');
         }
@@ -176,6 +207,8 @@ class Sirkulasi extends BaseController
 
     public function kembali($id = null)
     {
+        if (! $this->requireAccess()) return;
+
         if ($id === null) {
             $id = $this->request->getPost('id');
         }
@@ -198,6 +231,8 @@ class Sirkulasi extends BaseController
 
     public function xhrArsip($keywords = '')
     {
+        if (! $this->requireAccess()) return;
+
         if (empty($keywords)) {
             return $this->response->setJSON([]);
         }
@@ -218,6 +253,8 @@ class Sirkulasi extends BaseController
 
     public function xhrUser($keywords = '')
     {
+        if (! $this->requireAccess()) return;
+
         if (empty($keywords)) {
             return $this->response->setJSON([]);
         }

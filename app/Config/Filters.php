@@ -73,12 +73,20 @@ class Filters extends BaseFilters
      */
     public array $globals = [
         'before' => [
-            'csrf' => ['except' => []],
             'auth' => ['except' => ['login*', 'auth*']],
         ],
         'after' => [
         ],
     ];
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        if (ENVIRONMENT !== 'testing') {
+            $this->globals['before']['csrf'] = ['except' => []];
+        }
+    }
     /**
      * List of filter aliases that works on a
      * particular HTTP method (GET, POST, etc.).

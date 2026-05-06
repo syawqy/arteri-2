@@ -11,8 +11,23 @@ use App\Models\MasterMediaModel;
 
 class Arsip extends BaseController
 {
+    private const MODULE = 'entridata';
+
+    private function requireAccess(): bool
+    {
+        if (! hasModuleAccess(self::MODULE)) {
+            $this->response->setJSON(['status' => 'error', 'message' => 'Akses ditolak.'])->send();
+            return false;
+        }
+        return true;
+    }
+
     public function new()
     {
+        if (! hasModuleAccess(self::MODULE)) {
+            return redirect()->to('/');
+        }
+
         $data['title']    = 'Tambah Arsip';
         $data['isEdit']   = false;
         $data['kode2']    = (new MasterKodeModel())->orderBy('kode', 'ASC')->findAll();
@@ -28,6 +43,8 @@ class Arsip extends BaseController
 
     public function create()
     {
+        if (! $this->requireAccess()) return;
+
         $rules = [
             'noarsip'      => 'required|max_length[255]',
             'tanggal'      => 'required|valid_date[Y-m-d]',
@@ -95,6 +112,10 @@ class Arsip extends BaseController
 
     public function edit($id)
     {
+        if (! hasModuleAccess(self::MODULE)) {
+            return redirect()->to('/');
+        }
+
         $arsipModel = new ArsipModel();
         $row = $arsipModel->find($id);
 
@@ -123,6 +144,8 @@ class Arsip extends BaseController
 
     public function update($id)
     {
+        if (! $this->requireAccess()) return;
+
         $rules = [
             'noarsip'      => 'required|max_length[255]',
             'tanggal'      => 'required|valid_date[Y-m-d]',
@@ -201,6 +224,8 @@ class Arsip extends BaseController
 
     public function delete($id)
     {
+        if (! $this->requireAccess()) return;
+
         if (! $this->validate(['id' => 'required|integer'])) {
             return $this->response->setJSON($this->formatValidationErrors($this->validator->getErrors()));
         }
@@ -222,6 +247,8 @@ class Arsip extends BaseController
 
     public function deleteFile($id)
     {
+        if (! $this->requireAccess()) return;
+
         if (! $this->validate(['id' => 'required|integer'])) {
             return $this->response->setJSON($this->formatValidationErrors($this->validator->getErrors()));
         }

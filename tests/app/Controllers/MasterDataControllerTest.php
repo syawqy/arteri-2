@@ -5,6 +5,7 @@ namespace Tests\App\Controllers;
 use CodeIgniter\Test\CIUnitTestCase;
 use CodeIgniter\Test\DatabaseTestTrait;
 use CodeIgniter\Test\FeatureTestTrait;
+use App\TestTraits\CsrfTestTrait;
 
 /**
  * @internal
@@ -26,11 +27,18 @@ final class MasterDataControllerTest extends CIUnitTestCase
 {
     use DatabaseTestTrait;
     use FeatureTestTrait;
+    use CsrfTestTrait;
 
     protected $migrate   = true;
     protected $seed      = \App\Database\Seeds\ArteriSeeder::class;
     protected $basePath  = APPPATH . 'Database';
     protected $namespace = 'App';
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->setupCsrf();
+    }
 
     /**
      * Route key → table name mapping.
@@ -73,17 +81,17 @@ final class MasterDataControllerTest extends CIUnitTestCase
 
     public function testCreateRequiresAuth(): void
     {
-        $this->post('master/klas/create', ['kode' => 'TST'])->assertRedirectTo('/login');
+        $this->csrfPost('master/klas/create', ['kode' => 'TST'])->assertRedirectTo('/login');
     }
 
     public function testUpdateRequiresAuth(): void
     {
-        $this->post('master/klas/update', ['id' => '1'])->assertRedirectTo('/login');
+        $this->csrfPost('master/klas/update', ['id' => '1'])->assertRedirectTo('/login');
     }
 
     public function testDeleteRequiresAuth(): void
     {
-        $this->post('master/klas/delete', ['id' => '1'])->assertRedirectTo('/login');
+        $this->csrfPost('master/klas/delete', ['id' => '1'])->assertRedirectTo('/login');
     }
 
     // ====================================================================
@@ -292,7 +300,7 @@ final class MasterDataControllerTest extends CIUnitTestCase
         ]);
 
         $this->withSession($this->getAdminSession());
-        $response = $this->post('master/klas/delete', ['id' => (string) $kodeRow['id']]);
+        $response = $this->csrfPost('master/klas/delete', ['id' => (string) $kodeRow['id']]);
         $this->assertStringContainsString('error', (string) $response->getBody());
         $this->assertStringContainsString('sedang digunakan', (string) $response->getBody());
     }

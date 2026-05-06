@@ -12,6 +12,40 @@ use App\Models\MasterMediaModel;
 class MasterData extends BaseController
 {
     /**
+     * Maps entity to ACL module name.
+     */
+    private const ACL_MODULE_MAP = [
+        'kode'     => 'klasifikasi',
+        'pencipta' => 'pencipta',
+        'pengolah' => 'pengolah',
+        'lokasi'   => 'lokasi',
+        'media'    => 'media',
+    ];
+
+    /**
+     * Check module access, send JSON error if denied.
+     */
+    private function requireAccess(string $entity): bool
+    {
+        $module = self::ACL_MODULE_MAP[$entity] ?? $entity;
+        if (! hasModuleAccess($module)) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Check module access for view pages, redirect to / if denied.
+     */
+    private function requireViewAccess(string $entity): bool
+    {
+        if (! $this->requireAccess($entity)) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
      * Entity configuration map.
      */
     protected array $entities = [
@@ -157,6 +191,10 @@ class MasterData extends BaseController
 
     public function klas()
     {
+        if (! $this->requireViewAccess('kode')) {
+            return redirect()->to('/');
+        }
+
         $katakunci = $this->request->getGet('katakunci') ?? '';
         $data = [
             'items'     => $this->fetchList('kode', $katakunci),
@@ -170,6 +208,8 @@ class MasterData extends BaseController
 
     public function createKode()
     {
+        if (! $this->requireAccess('kode')) return;
+
         if (! $this->validate($this->getValidationRules('kode'))) {
             return $this->response->setJSON(['status' => 'error', 'errors' => $this->validator->getErrors()]);
         }
@@ -185,6 +225,8 @@ class MasterData extends BaseController
 
     public function updateKode()
     {
+        if (! $this->requireAccess('kode')) return;
+
         $id = (int) $this->request->getPost('id');
         if (! $this->validate($this->getValidationRules('kode'))) {
             return $this->response->setJSON(['status' => 'error', 'errors' => $this->validator->getErrors()]);
@@ -201,6 +243,8 @@ class MasterData extends BaseController
 
     public function deleteKode()
     {
+        if (! $this->requireAccess('kode')) return;
+
         $id = (int) $this->request->getPost('id');
         if ($this->countArsipUsage('kode', $id) > 0) {
             return $this->response->setJSON(['status' => 'error', 'message' => 'Kode sedang digunakan oleh data arsip.']);
@@ -211,6 +255,8 @@ class MasterData extends BaseController
 
     public function getKode()
     {
+        if (! $this->requireAccess('kode')) return;
+
         $id   = (int) $this->request->getPost('id');
         $row  = (new MasterKodeModel())->find($id);
         return $this->response->setJSON($row ?? []);
@@ -218,6 +264,8 @@ class MasterData extends BaseController
 
     public function reloadKode()
     {
+        if (! $this->requireAccess('kode')) return '';
+
         $katakunci = $this->request->getGet('katakunci') ?? '';
         $items     = $this->fetchList('kode', $katakunci);
         return $this->buildTableHtml('kode', $items);
@@ -229,6 +277,10 @@ class MasterData extends BaseController
 
     public function penc()
     {
+        if (! $this->requireViewAccess('pencipta')) {
+            return redirect()->to('/');
+        }
+
         $katakunci = $this->request->getGet('katakunci') ?? '';
         $data = [
             'items'     => $this->fetchList('pencipta', $katakunci),
@@ -242,6 +294,8 @@ class MasterData extends BaseController
 
     public function createPenc()
     {
+        if (! $this->requireAccess('pencipta')) return;
+
         if (! $this->validate($this->getValidationRules('pencipta'))) {
             return $this->response->setJSON(['status' => 'error', 'errors' => $this->validator->getErrors()]);
         }
@@ -255,6 +309,8 @@ class MasterData extends BaseController
 
     public function updatePenc()
     {
+        if (! $this->requireAccess('pencipta')) return;
+
         $id = (int) $this->request->getPost('id');
         if (! $this->validate($this->getValidationRules('pencipta'))) {
             return $this->response->setJSON(['status' => 'error', 'errors' => $this->validator->getErrors()]);
@@ -269,6 +325,8 @@ class MasterData extends BaseController
 
     public function deletePenc()
     {
+        if (! $this->requireAccess('pencipta')) return;
+
         $id = (int) $this->request->getPost('id');
         if ($this->countArsipUsage('pencipta', $id) > 0) {
             return $this->response->setJSON(['status' => 'error', 'message' => 'Pencipta sedang digunakan oleh data arsip.']);
@@ -279,6 +337,8 @@ class MasterData extends BaseController
 
     public function getPenc()
     {
+        if (! $this->requireAccess('pencipta')) return;
+
         $id  = (int) $this->request->getPost('id');
         $row = (new MasterPenciptaModel())->find($id);
         return $this->response->setJSON($row ?? []);
@@ -286,6 +346,8 @@ class MasterData extends BaseController
 
     public function reloadPenc()
     {
+        if (! $this->requireAccess('pencipta')) return '';
+
         $katakunci = $this->request->getGet('katakunci') ?? '';
         $items     = $this->fetchList('pencipta', $katakunci);
         return $this->buildTableHtml('pencipta', $items);
@@ -297,6 +359,10 @@ class MasterData extends BaseController
 
     public function pengolah()
     {
+        if (! $this->requireViewAccess('pengolah')) {
+            return redirect()->to('/');
+        }
+
         $katakunci = $this->request->getGet('katakunci') ?? '';
         $data = [
             'items'     => $this->fetchList('pengolah', $katakunci),
@@ -310,6 +376,8 @@ class MasterData extends BaseController
 
     public function createPengolah()
     {
+        if (! $this->requireAccess('pengolah')) return;
+
         if (! $this->validate($this->getValidationRules('pengolah'))) {
             return $this->response->setJSON(['status' => 'error', 'errors' => $this->validator->getErrors()]);
         }
@@ -323,6 +391,8 @@ class MasterData extends BaseController
 
     public function updatePengolah()
     {
+        if (! $this->requireAccess('pengolah')) return;
+
         $id = (int) $this->request->getPost('id');
         if (! $this->validate($this->getValidationRules('pengolah'))) {
             return $this->response->setJSON(['status' => 'error', 'errors' => $this->validator->getErrors()]);
@@ -337,6 +407,8 @@ class MasterData extends BaseController
 
     public function deletePengolah()
     {
+        if (! $this->requireAccess('pengolah')) return;
+
         $id = (int) $this->request->getPost('id');
         if ($this->countArsipUsage('pengolah', $id) > 0) {
             return $this->response->setJSON(['status' => 'error', 'message' => 'Unit pengolah sedang digunakan oleh data arsip.']);
@@ -347,6 +419,8 @@ class MasterData extends BaseController
 
     public function getPengolah()
     {
+        if (! $this->requireAccess('pengolah')) return;
+
         $id  = (int) $this->request->getPost('id');
         $row = (new MasterPengolahModel())->find($id);
         return $this->response->setJSON($row ?? []);
@@ -354,6 +428,8 @@ class MasterData extends BaseController
 
     public function reloadPengolah()
     {
+        if (! $this->requireAccess('pengolah')) return '';
+
         $katakunci = $this->request->getGet('katakunci') ?? '';
         $items     = $this->fetchList('pengolah', $katakunci);
         return $this->buildTableHtml('pengolah', $items);
@@ -365,6 +441,10 @@ class MasterData extends BaseController
 
     public function lokasi()
     {
+        if (! $this->requireViewAccess('lokasi')) {
+            return redirect()->to('/');
+        }
+
         $katakunci = $this->request->getGet('katakunci') ?? '';
         $data = [
             'items'     => $this->fetchList('lokasi', $katakunci),
@@ -378,6 +458,8 @@ class MasterData extends BaseController
 
     public function createLokasi()
     {
+        if (! $this->requireAccess('lokasi')) return;
+
         if (! $this->validate($this->getValidationRules('lokasi'))) {
             return $this->response->setJSON(['status' => 'error', 'errors' => $this->validator->getErrors()]);
         }
@@ -391,6 +473,8 @@ class MasterData extends BaseController
 
     public function updateLokasi()
     {
+        if (! $this->requireAccess('lokasi')) return;
+
         $id = (int) $this->request->getPost('id');
         if (! $this->validate($this->getValidationRules('lokasi'))) {
             return $this->response->setJSON(['status' => 'error', 'errors' => $this->validator->getErrors()]);
@@ -405,6 +489,8 @@ class MasterData extends BaseController
 
     public function deleteLokasi()
     {
+        if (! $this->requireAccess('lokasi')) return;
+
         $id = (int) $this->request->getPost('id');
         if ($this->countArsipUsage('lokasi', $id) > 0) {
             return $this->response->setJSON(['status' => 'error', 'message' => 'Lokasi sedang digunakan oleh data arsip.']);
@@ -415,6 +501,8 @@ class MasterData extends BaseController
 
     public function getLokasi()
     {
+        if (! $this->requireAccess('lokasi')) return;
+
         $id  = (int) $this->request->getPost('id');
         $row = (new MasterLokasiModel())->find($id);
         return $this->response->setJSON($row ?? []);
@@ -422,6 +510,8 @@ class MasterData extends BaseController
 
     public function reloadLokasi()
     {
+        if (! $this->requireAccess('lokasi')) return '';
+
         $katakunci = $this->request->getGet('katakunci') ?? '';
         $items     = $this->fetchList('lokasi', $katakunci);
         return $this->buildTableHtml('lokasi', $items);
@@ -433,6 +523,10 @@ class MasterData extends BaseController
 
     public function media()
     {
+        if (! $this->requireViewAccess('media')) {
+            return redirect()->to('/');
+        }
+
         $katakunci = $this->request->getGet('katakunci') ?? '';
         $data = [
             'items'     => $this->fetchList('media', $katakunci),
@@ -446,6 +540,8 @@ class MasterData extends BaseController
 
     public function createMedia()
     {
+        if (! $this->requireAccess('media')) return;
+
         if (! $this->validate($this->getValidationRules('media'))) {
             return $this->response->setJSON(['status' => 'error', 'errors' => $this->validator->getErrors()]);
         }
@@ -459,6 +555,8 @@ class MasterData extends BaseController
 
     public function updateMedia()
     {
+        if (! $this->requireAccess('media')) return;
+
         $id = (int) $this->request->getPost('id');
         if (! $this->validate($this->getValidationRules('media'))) {
             return $this->response->setJSON(['status' => 'error', 'errors' => $this->validator->getErrors()]);
@@ -473,6 +571,8 @@ class MasterData extends BaseController
 
     public function deleteMedia()
     {
+        if (! $this->requireAccess('media')) return;
+
         $id = (int) $this->request->getPost('id');
         if ($this->countArsipUsage('media', $id) > 0) {
             return $this->response->setJSON(['status' => 'error', 'message' => 'Media sedang digunakan oleh data arsip.']);
@@ -483,6 +583,8 @@ class MasterData extends BaseController
 
     public function getMedia()
     {
+        if (! $this->requireAccess('media')) return;
+
         $id  = (int) $this->request->getPost('id');
         $row = (new MasterMediaModel())->find($id);
         return $this->response->setJSON($row ?? []);
@@ -490,6 +592,8 @@ class MasterData extends BaseController
 
     public function reloadMedia()
     {
+        if (! $this->requireAccess('media')) return '';
+
         $katakunci = $this->request->getGet('katakunci') ?? '';
         $items     = $this->fetchList('media', $katakunci);
         return $this->buildTableHtml('media', $items);

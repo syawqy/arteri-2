@@ -12,8 +12,22 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class Import extends BaseController
 {
+    private const MODULE = 'import';
+
+    private function requireAccess(): bool
+    {
+        if (! hasModuleAccess(self::MODULE)) {
+            return false;
+        }
+        return true;
+    }
+
     public function index()
     {
+        if (! $this->requireAccess()) {
+            return redirect()->to('/');
+        }
+
         helper('acl');
         return view('layout/header', ['title' => 'Import Data'])
              . view('import/index')
@@ -22,6 +36,10 @@ class Import extends BaseController
 
     public function doImport()
     {
+        if (! $this->requireAccess()) {
+            return redirect()->to('/');
+        }
+
         $file = $this->request->getFile('up_file');
         if (!$file || !$file->isValid()) {
             session()->setFlashdata('error', 'Tidak ada file yang diupload.');

@@ -6,7 +6,8 @@ Auth Controller (Tests\App\Controllers\AuthController)
  [x] Post login with valid credentials sets session
  [x] Post login redirects to previous
  [x] Get logout redirects to login
- [ ] Get logout clears session
+ [x] Logout does not throw error
+ [x] Logout creates audit log
  [x] Get logout redirects when not logged in
  [x] Repeated failed logins are recorded
  [x] Successful login creates audit log

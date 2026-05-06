@@ -17,14 +17,15 @@ trait CsrfTestTrait
         $result = $this->get('/login');
         $body = (string) $result->getBody();
 
-        if (preg_match('/name="([^"]+)"[^>]+value="([^"]+)"/', $body, $m)) {
-            $this->csrfToken = $m[2];
+        if (preg_match('/name="(csrf_test_name)"[^>]+value="([^"]+)"/', $body, $m)) {
+            $this->csrfToken  = $m[2];
             $this->csrfCookie = $m[1];
         }
     }
 
     protected function csrfPost(string $url, array $data = []): \CodeIgniter\Test\TestResponse
     {
+        $this->setupCsrf();
         $data[$this->csrfCookie] = $this->csrfToken;
         return $this->post($url, $data);
     }
