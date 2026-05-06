@@ -5,6 +5,7 @@ namespace Tests\App\Controllers;
 use CodeIgniter\Test\CIUnitTestCase;
 use CodeIgniter\Test\DatabaseTestTrait;
 use CodeIgniter\Test\FeatureTestTrait;
+use App\TestTraits\CsrfTestTrait;
 
 /**
  * @internal
@@ -13,6 +14,7 @@ final class UserControllerTest extends CIUnitTestCase
 {
     use DatabaseTestTrait;
     use FeatureTestTrait;
+    use CsrfTestTrait;
 
     protected $migrate   = true;
     protected $seed      = \App\Database\Seeds\ArteriSeeder::class;
@@ -29,6 +31,12 @@ final class UserControllerTest extends CIUnitTestCase
             'akses_modul' => ['user' => 'on'],
             'menu_master' => true,
         ];
+    }
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->setupCsrf();
     }
 
     // ── Auth gate ──
@@ -210,6 +218,52 @@ final class UserControllerTest extends CIUnitTestCase
         $response = $this->csrfPost('user/cekUsername', ['username' => 'nonexistentuser']);
         $response->assertOK();
         $this->assertStringContainsString('ok', (string) $response->getBody());
+    }
+
+    // ── Access control for non-privileged users ──
+
+    private function getRegularUserSession(): array
+    {
+        return [
+            'username'    => 'regular',
+            'id_user'     => 3,
+            'tipe'        => 'user',
+            'akses_klas'  => '',
+            'akses_modul' => ['entridata' => 'on'],
+            'menu_master' => false,
+        ];
+    }
+
+    public function testNonAdminCannotCreateUser(): void
+    {
+        $this->withSession($this->getRegularUserSession());
+        $response = $this->csrfPost('user', [
+            'username'    => 'hacker',
+            'password'    => 'secret123',
+            'conf_password' => 'secret123',
+            'tipe'        => 'user',
+        ]);
+        $response->assertOK();
+        $this->assertStringContainsString('error', (string) $response->getBody());
+        $this->assertStringContainsString('Akses ditolak', (string) $response->getBody());
+    }
+
+    public function testNonAdminCannotGetUser(): void
+    {
+        $this->withSession($this->getRegularUserSession());
+        $response = $this->csrfPost('user/get', ['id' => '1']);
+        $response->assertOK();
+        $this->assertStringContainsString('error', (string) $response->getBody());
+        $this->assertStringContainsString('Akses ditolak', (string) $response->getBody());
+    }
+
+    public function testNonAdminCannotDeleteUser(): void
+    {
+        $this->withSession($this->getRegularUserSession());
+        $response = $this->csrfPost('user/delete', ['id' => '1']);
+        $response->assertOK();
+        $this->assertStringContainsString('error', (string) $response->getBody());
+        $this->assertStringContainsString('Akses ditolak', (string) $response->getBody());
     }
 }
 

@@ -59,8 +59,12 @@
               ?>
             </td>
             <td><?= esc($u['tipe']) ?></td>
+            <?php if (hasModuleAccess('user')): ?>
             <td><a data-toggle="modal" data-target="#edituser" class="eduser" href="#" id="<?= esc($u['id'], 'attr') ?>" title="Edit"><i class="glyphicon glyphicon-edit"></i> </a></td>
             <td><a data-toggle="modal" data-target="#deluser" class="deluser" href="#" id="<?= esc($u['id'], 'attr') ?>" title="Delete"><i class="glyphicon glyphicon-trash"></i> </a></td>
+            <?php else: ?>
+            <td></td><td></td>
+            <?php endif; ?>
           </tr>
           <?php $no++; ?>
         <?php endforeach; ?>

@@ -6,6 +6,15 @@ use App\Models\UserModel;
 
 class User extends BaseController
 {
+    private function requireAccess(): bool
+    {
+        if (! hasModuleAccess('user')) {
+            $this->response->setJSON(['status' => 'error', 'message' => 'Akses ditolak.'])->send();
+            return false;
+        }
+        return true;
+    }
+
     public function index()
     {
         $katakunci = $this->request->getGet('katakunci') ?? '';
@@ -35,6 +44,8 @@ class User extends BaseController
 
     public function create()
     {
+        if (! $this->requireAccess()) return;
+
         $rules = [
             'username'      => 'required|max_length[255]|string',
             'password'      => 'required|min_length[8]|regex_match[/[a-zA-Z]/]|regex_match[/[0-9]/]',
@@ -66,6 +77,8 @@ class User extends BaseController
 
     public function update()
     {
+        if (! $this->requireAccess()) return;
+
         $id = (int) $this->request->getPost('id');
 
         $rules = [
@@ -108,6 +121,8 @@ class User extends BaseController
 
     public function delete()
     {
+        if (! $this->requireAccess()) return;
+
         $id = (int) $this->request->getPost('id');
 
         if (! $this->validate(['id' => 'required|integer'])) {
@@ -135,6 +150,8 @@ class User extends BaseController
 
     public function get()
     {
+        if (! $this->requireAccess()) return;
+
         $id = (int) $this->request->getPost('id');
 
         if (! $this->validate(['id' => 'required|integer'])) {
@@ -149,6 +166,8 @@ class User extends BaseController
 
     public function cekUsername()
     {
+        if (! $this->requireAccess()) return;
+
         $username = $this->request->getPost('username');
         if (empty($username)) {
             return $this->response->setJSON(['msg' => 'error', 'message' => 'Username tidak boleh kosong.']);
@@ -221,8 +240,12 @@ class User extends BaseController
 
             $html .= '</td>';
             $html .= '<td>' . esc($u['tipe']) . '</td>';
-            $html .= '<td><a data-toggle="modal" data-target="#edituser" class="eduser" href="#" id="' . esc($u['id'], 'attr') . '" title="Edit"><i class="glyphicon glyphicon-edit"></i> </a></td>';
-            $html .= '<td><a data-toggle="modal" data-target="#deluser" class="deluser" href="#" id="' . esc($u['id'], 'attr') . '" title="Delete"><i class="glyphicon glyphicon-trash"></i> </a></td>';
+            if (hasModuleAccess('user')) {
+                $html .= '<td><a data-toggle="modal" data-target="#edituser" class="eduser" href="#" id="' . esc($u['id'], 'attr') . '" title="Edit"><i class="glyphicon glyphicon-edit"></i> </a></td>';
+                $html .= '<td><a data-toggle="modal" data-target="#deluser" class="deluser" href="#" id="' . esc($u['id'], 'attr') . '" title="Delete"><i class="glyphicon glyphicon-trash"></i> </a></td>';
+            } else {
+                $html .= '<td></td><td></td>';
+            }
             $html .= '</tr>';
             $no++;
         }
