@@ -188,9 +188,25 @@ final class ArsipControllerTest extends CIUnitTestCase
         $id = $this->insertArsipInDb(['noarsip' => 'DEL-001']);
 
         $this->withSession($this->getAdminSession());
-        $response = $this->csrfPost('arsip/delete/' . $id);
+        $response = $this->post('arsip/delete/' . $id);
         $response->assertOK();
-        $this->assertStringContainsString('success', (string) $response->getBody());
+        $body = $response->getBody();
+        $json = $this->extractJson($body);
+        $this->assertNotEmpty($json);
+        $decoded = json_decode($json, true);
+        $this->assertIsArray($decoded);
+        $this->assertSame('success', $decoded['status'] ?? null);
+    }
+
+    private function extractJson(?string $html): ?string
+    {
+        if ($html === null) {
+            return null;
+        }
+        if (preg_match('#\{.*\}#s', $html, $matches)) {
+            return $matches[0];
+        }
+        return $html;
     }
 
     // ── FK Validation ──
@@ -216,7 +232,7 @@ final class ArsipControllerTest extends CIUnitTestCase
     public function testDeleteWithInvalidIdReturnsError(): void
     {
         $this->withSession($this->getAdminSession());
-        $response = $this->csrfPost('arsip/delete', ['id' => 'invalid']);
+        $response = $this->csrfPost('arsip/delete/invalid');
         $this->assertStringContainsString('error', (string) $response->getBody());
     }
 }

@@ -224,10 +224,13 @@ class Arsip extends BaseController
 
     public function delete($id)
     {
-        if (! $this->requireAccess()) return;
+        if (! $this->requireAccess()) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Akses ditolak.']);
+        }
 
-        if (! $this->validate(['id' => 'required|integer'])) {
-            return $this->response->setJSON($this->formatValidationErrors($this->validator->getErrors()));
+        $id = (int) $id;
+        if ($id <= 0) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'ID tidak valid.']);
         }
 
         $arsipModel = new ArsipModel();
@@ -247,10 +250,13 @@ class Arsip extends BaseController
 
     public function deleteFile($id)
     {
-        if (! $this->requireAccess()) return;
+        if (! $this->requireAccess()) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Akses ditolak.']);
+        }
 
-        if (! $this->validate(['id' => 'required|integer'])) {
-            return $this->response->setJSON($this->formatValidationErrors($this->validator->getErrors()));
+        $id = (int) $id;
+        if ($id <= 0) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'ID tidak valid.']);
         }
 
         $arsipModel = new ArsipModel();

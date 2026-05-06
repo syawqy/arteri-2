@@ -3,7 +3,6 @@
 namespace App\Controllers;
 
 use App\Models\ArsipModel;
-use CodeIgniter\Exceptions\PageNotFoundException;
 
 class FileController extends BaseController
 {
@@ -13,12 +12,12 @@ class FileController extends BaseController
         $arsip = $arsipModel->where('file', $filename)->first();
 
         if ($arsip === null) {
-            throw PageNotFoundException::forPageNotFound('File tidak ditemukan.');
+            return $this->response->setStatusCode(404)->setJSON(['message' => 'File tidak ditemukan.']);
         }
 
         $filePath = WRITEPATH . 'uploads' . DIRECTORY_SEPARATOR . 'arsip' . DIRECTORY_SEPARATOR . $filename;
         if (! is_file($filePath)) {
-            throw PageNotFoundException::forPageNotFound('File tidak ditemukan.');
+            return $this->response->setStatusCode(404)->setJSON(['message' => 'File tidak ditemukan.']);
         }
 
         $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));

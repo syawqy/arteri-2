@@ -23,8 +23,8 @@ $routes->get('arsip/new', 'Arsip::new');
 $routes->post('arsip', 'Arsip::create');
 $routes->get('arsip/edit/(:num)', 'Arsip::edit/$1');
 $routes->post('arsip/update/(:num)', 'Arsip::update/$1');
-$routes->post('arsip/delete/(:num)', 'Arsip::delete/$1');
-$routes->post('arsip/delfile/(:num)', 'Arsip::deleteFile/$1');
+$routes->post('arsip/delete/(:any)', 'Arsip::delete/$1');
+$routes->post('arsip/delfile/(:any)', 'Arsip::deleteFile/$1');
 
 // Master Data
 $routes->group('master', function ($routes) {

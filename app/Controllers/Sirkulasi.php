@@ -194,9 +194,9 @@ class Sirkulasi extends BaseController
         if ($id === null) {
             $id = $this->request->getPost('id');
         }
-
-        if (! $this->validate(['id' => 'required|integer'])) {
-            return $this->response->setJSON($this->formatValidationErrors($this->validator->getErrors()));
+        $id = (int) $id;
+        if ($id <= 0) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'ID tidak valid.']);
         }
 
         $sirkulasiModel = new SirkulasiModel();
@@ -212,9 +212,9 @@ class Sirkulasi extends BaseController
         if ($id === null) {
             $id = $this->request->getPost('id');
         }
-
-        if (! $this->validate(['id' => 'required|integer'])) {
-            return $this->response->setJSON($this->formatValidationErrors($this->validator->getErrors()));
+        $id = (int) $id;
+        if ($id <= 0) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'ID tidak valid.']);
         }
 
         $sirkulasiModel = new SirkulasiModel();
