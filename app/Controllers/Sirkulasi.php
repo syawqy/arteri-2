@@ -35,6 +35,8 @@ class Sirkulasi extends BaseController
         $pager->makeLinks((int) $pager->getCurrentPage(), $this->perPage, $total, 'bootstrap3');
         $offset = ((int) $pager->getCurrentPage() - 1) * $this->perPage;
 
+        $this->logPageView('sirkulasi/index');
+
         $data = [
             'data'      => $sirkulasiModel->search($katakunci, $this->perPage, $offset),
             'jml'       => $total,
@@ -55,6 +57,8 @@ class Sirkulasi extends BaseController
         if (! $this->requireAccess()) {
             return redirect()->to('/');
         }
+
+        $this->logPageView('sirkulasi/new');
 
         $data = [
             'title'  => 'Peminjaman Arsip',
@@ -107,6 +111,9 @@ class Sirkulasi extends BaseController
             'tgl_haruskembali'  => $this->request->getPost('tgl_haruskembali'),
             'tgl_transaksi'     => date('Y-m-d H:i:s'),
         ]);
+        $insertId = $sirkulasiModel->getInsertID();
+
+        $this->logAction('CREATE', 'sirkulasi', $insertId);
 
         return redirect()->to('/sirkulasi')->with('message', 'Peminjaman berhasil dicatat.');
     }
@@ -123,6 +130,8 @@ class Sirkulasi extends BaseController
         if ($row === null) {
             return redirect()->to('/sirkulasi');
         }
+
+        $this->logPageView('sirkulasi/edit');
 
         $data = $row;
         $data['title']  = 'Update Data Peminjaman';
@@ -184,6 +193,8 @@ class Sirkulasi extends BaseController
             'tgl_haruskembali'  => $this->request->getPost('tgl_haruskembali'),
         ]);
 
+        $this->logAction('UPDATE', 'sirkulasi', (int) $id);
+
         return redirect()->to('/sirkulasi')->with('message', 'Peminjaman berhasil diperbarui.');
     }
 
@@ -201,6 +212,8 @@ class Sirkulasi extends BaseController
 
         $sirkulasiModel = new SirkulasiModel();
         $sirkulasiModel->delete($id);
+
+        $this->logAction('DELETE', 'sirkulasi', $id);
 
         return $this->response->setJSON(['status' => 'success', 'message' => 'Sirkulasi berhasil dihapus.']);
     }
@@ -225,6 +238,8 @@ class Sirkulasi extends BaseController
         }
 
         $sirkulasiModel->returnArchive($id);
+
+        $this->logAction('KEMBALI', 'sirkulasi', $id);
 
         return $this->response->setJSON(['status' => 'success', 'message' => 'Arsip berhasil dikembalikan.']);
     }

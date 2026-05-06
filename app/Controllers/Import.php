@@ -29,6 +29,8 @@ class Import extends BaseController
         }
 
         helper('acl');
+        $this->logPageView('import/index');
+
         return view('layout/header', ['title' => 'Import Data'])
              . view('import/index')
              . view('layout/footer');
@@ -138,8 +140,14 @@ class Import extends BaseController
                     $message .= ' ...dan ' . (count($errors) - 5) . ' error lainnya.';
                 }
             }
+            $this->logAction('IMPORT', 'data_arsip', null, [
+                'inserted' => $insertedCount,
+                'errors'   => count($errors),
+            ]);
+
             session()->setFlashdata('message', $message);
         } catch (\Exception $e) {
+            $this->logAction('IMPORT_FAILED', 'data_arsip', null, ['error' => $e->getMessage()]);
             session()->setFlashdata('error', 'Gagal import: ' . $e->getMessage());
         }
         return redirect()->to('/import');

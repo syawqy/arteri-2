@@ -29,9 +29,13 @@ class Home extends BaseController
         $offset = (int) $offset;
         helper('form');
 
-        $arsipModel = new ArsipModel();
-
         $keywords = $this->request->getGet('katakunci') ?? '';
+        if ($keywords !== '') {
+            $this->logAction('SEARCH', 'data_arsip', null, ['keywords' => $keywords]);
+        }
+        $this->logPageView('search');
+
+        $arsipModel = new ArsipModel();
 
         $filters = [
             'noarsip' => $this->request->getGet('noarsip') ?? '',
@@ -98,6 +102,8 @@ class Home extends BaseController
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Arsip tidak ditemukan');
         }
 
+        $this->logAction('VIEW_DETAIL', 'data_arsip', (int) $id);
+
         return view('layout/header', $data)
              . view('home/detail', $data)
              . view('layout/footer');
@@ -105,8 +111,10 @@ class Home extends BaseController
 
     public function download()
     {
-        $arsipModel = new ArsipModel();
         $keywords = $this->request->getGet('katakunci') ?? '';
+        $this->logAction('DOWNLOAD', 'data_arsip', null, ['keywords' => $keywords]);
+
+        $arsipModel = new ArsipModel();
         $filters = [
             'noarsip' => $this->request->getGet('noarsip') ?? '',
             'tanggal' => $this->request->getGet('tanggal') ?? '',

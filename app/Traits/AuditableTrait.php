@@ -8,7 +8,18 @@ trait AuditableTrait
 {
     protected function logActivity(string $aksi, string $tabel, ?int $recordId = null, ?array $detail = null): void
     {
-        (new SystemLogModel())->log($aksi, $tabel, $recordId, $detail);
+        $log = new SystemLogModel();
+
+        $log->insert([
+            'kode_transaksi'     => $aksi,
+            'username_transaksi' => session('username') ?? 'system',
+            'tgl_transaksi'      => date('Y-m-d H:i:s'),
+            'aksi'               => $aksi,
+            'tabel'              => $tabel,
+            'record_id'          => $recordId,
+            'detail'             => $detail ? json_encode($detail) : null,
+            'ip_address'         => $this->request ? $this->request->getIPAddress() : null,
+        ]);
     }
 
     protected function logCrud(string $action, string $table, int $id, ?array $old = null, ?array $new = null): void
@@ -23,13 +34,13 @@ trait AuditableTrait
         $this->logActivity($action, $table, $id, $detail ?: null);
     }
 
-    protected function logLogin(string $username, bool $success, ?string $failReason = null): void
+    protected function logPageView(string $page): void
     {
-        $aksi  = $success ? 'LOGIN_SUCCESS' : 'LOGIN_FAILED';
-        $detail = null;
-        if (! $success && $failReason) {
-            $detail = ['reason' => $failReason];
-        }
-        $this->logActivity($aksi, 'master_user', null, $detail);
+        $this->logActivity('PAGE_VIEW', $page);
+    }
+
+    protected function logAction(string $action, string $table, ?int $recordId = null, ?array $detail = null): void
+    {
+        $this->logActivity($action, $table, $recordId, $detail);
     }
 }

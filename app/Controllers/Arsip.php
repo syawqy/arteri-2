@@ -28,6 +28,8 @@ class Arsip extends BaseController
             return redirect()->to('/');
         }
 
+        $this->logPageView('entridata/new');
+
         $data['title']    = 'Tambah Arsip';
         $data['isEdit']   = false;
         $data['kode2']    = (new MasterKodeModel())->orderBy('kode', 'ASC')->findAll();
@@ -107,6 +109,8 @@ class Arsip extends BaseController
 
         $insertId = $arsipModel->insert($insertData, true);
 
+        $this->logAction('CREATE', 'data_arsip', $insertId);
+
         return redirect()->to('/view/' . $insertId)->with('message', 'Arsip berhasil ditambahkan.');
     }
 
@@ -122,6 +126,8 @@ class Arsip extends BaseController
         if ($row === null) {
             return redirect()->to('/');
         }
+
+        $this->logPageView('entridata/edit');
 
         $data = $row;
         $data['title']         = 'Ubah Arsip';
@@ -219,6 +225,8 @@ class Arsip extends BaseController
 
         $arsipModel->update($id, $updateData);
 
+        $this->logAction('UPDATE', 'data_arsip', (int) $id);
+
         return redirect()->to('/view/' . $id)->with('message', 'Arsip berhasil diperbarui.');
     }
 
@@ -244,6 +252,8 @@ class Arsip extends BaseController
         }
 
         $arsipModel->delete($id);
+
+        $this->logAction('DELETE', 'data_arsip', $id);
 
         return $this->response->setJSON(['status' => 'success', 'message' => 'Arsip berhasil dihapus.']);
     }
@@ -274,6 +284,8 @@ class Arsip extends BaseController
 
             $arsipModel->update($id, ['file' => null]);
         }
+
+        $this->logAction('DELETE_FILE', 'data_arsip', $id);
 
         return $this->response->setJSON(['status' => 'success', 'message' => 'File berhasil dihapus.']);
     }

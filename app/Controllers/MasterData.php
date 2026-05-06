@@ -196,6 +196,8 @@ class MasterData extends BaseController
         }
 
         $katakunci = $this->request->getGet('katakunci') ?? '';
+        $this->logPageView('datamaster/klasifikasi');
+
         $data = [
             'items'     => $this->fetchList('kode', $katakunci),
             'katakunci' => $katakunci,
@@ -219,6 +221,8 @@ class MasterData extends BaseController
             'nama'    => $this->request->getPost('nama'),
             'retensi' => $this->request->getPost('retensi'),
         ]);
+        $insertId = (new MasterKodeModel())->getInsertID();
+        $this->logAction('CREATE', 'master_kode', $insertId);
 
         return $this->response->setJSON(['status' => 'success']);
     }
@@ -237,6 +241,7 @@ class MasterData extends BaseController
             'nama'    => $this->request->getPost('nama'),
             'retensi' => $this->request->getPost('retensi'),
         ]);
+        $this->logAction('UPDATE', 'master_kode', $id);
 
         return $this->response->setJSON(['status' => 'success']);
     }
@@ -250,6 +255,7 @@ class MasterData extends BaseController
             return $this->response->setJSON(['status' => 'error', 'message' => 'Kode sedang digunakan oleh data arsip.']);
         }
         (new MasterKodeModel())->delete($id);
+        $this->logAction('DELETE', 'master_kode', $id);
         return $this->response->setJSON(['status' => 'success']);
     }
 
@@ -282,6 +288,8 @@ class MasterData extends BaseController
         }
 
         $katakunci = $this->request->getGet('katakunci') ?? '';
+        $this->logPageView('datamaster/pencipta');
+
         $data = [
             'items'     => $this->fetchList('pencipta', $katakunci),
             'katakunci' => $katakunci,
@@ -300,9 +308,12 @@ class MasterData extends BaseController
             return $this->response->setJSON(['status' => 'error', 'errors' => $this->validator->getErrors()]);
         }
 
-        (new MasterPenciptaModel())->insert([
+        $model = new MasterPenciptaModel();
+        $model->insert([
             'nama_pencipta' => $this->request->getPost('nama'),
         ]);
+        $insertId = $model->getInsertID();
+        $this->logAction('CREATE', 'master_pencipta', $insertId);
 
         return $this->response->setJSON(['status' => 'success']);
     }
@@ -319,6 +330,7 @@ class MasterData extends BaseController
         (new MasterPenciptaModel())->update($id, [
             'nama_pencipta' => $this->request->getPost('nama'),
         ]);
+        $this->logAction('UPDATE', 'master_pencipta', $id);
 
         return $this->response->setJSON(['status' => 'success']);
     }
@@ -332,6 +344,7 @@ class MasterData extends BaseController
             return $this->response->setJSON(['status' => 'error', 'message' => 'Pencipta sedang digunakan oleh data arsip.']);
         }
         (new MasterPenciptaModel())->delete($id);
+        $this->logAction('DELETE', 'master_pencipta', $id);
         return $this->response->setJSON(['status' => 'success']);
     }
 
@@ -364,6 +377,8 @@ class MasterData extends BaseController
         }
 
         $katakunci = $this->request->getGet('katakunci') ?? '';
+        $this->logPageView('datamaster/pengolah');
+
         $data = [
             'items'     => $this->fetchList('pengolah', $katakunci),
             'katakunci' => $katakunci,
@@ -382,9 +397,12 @@ class MasterData extends BaseController
             return $this->response->setJSON(['status' => 'error', 'errors' => $this->validator->getErrors()]);
         }
 
-        (new MasterPengolahModel())->insert([
+        $model = new MasterPengolahModel();
+        $model->insert([
             'nama_pengolah' => $this->request->getPost('nama'),
         ]);
+        $insertId = $model->getInsertID();
+        $this->logAction('CREATE', 'master_pengolah', $insertId);
 
         return $this->response->setJSON(['status' => 'success']);
     }
@@ -401,6 +419,7 @@ class MasterData extends BaseController
         (new MasterPengolahModel())->update($id, [
             'nama_pengolah' => $this->request->getPost('nama'),
         ]);
+        $this->logAction('UPDATE', 'master_pengolah', $id);
 
         return $this->response->setJSON(['status' => 'success']);
     }
@@ -414,6 +433,7 @@ class MasterData extends BaseController
             return $this->response->setJSON(['status' => 'error', 'message' => 'Unit pengolah sedang digunakan oleh data arsip.']);
         }
         (new MasterPengolahModel())->delete($id);
+        $this->logAction('DELETE', 'master_pengolah', $id);
         return $this->response->setJSON(['status' => 'success']);
     }
 
@@ -446,6 +466,8 @@ class MasterData extends BaseController
         }
 
         $katakunci = $this->request->getGet('katakunci') ?? '';
+        $this->logPageView('datamaster/lokasi');
+
         $data = [
             'items'     => $this->fetchList('lokasi', $katakunci),
             'katakunci' => $katakunci,
@@ -464,9 +486,12 @@ class MasterData extends BaseController
             return $this->response->setJSON(['status' => 'error', 'errors' => $this->validator->getErrors()]);
         }
 
-        (new MasterLokasiModel())->insert([
+        $model = new MasterLokasiModel();
+        $model->insert([
             'nama_lokasi' => $this->request->getPost('nama'),
         ]);
+        $insertId = $model->getInsertID();
+        $this->logAction('CREATE', 'master_lokasi', $insertId);
 
         return $this->response->setJSON(['status' => 'success']);
     }
@@ -483,6 +508,7 @@ class MasterData extends BaseController
         (new MasterLokasiModel())->update($id, [
             'nama_lokasi' => $this->request->getPost('nama'),
         ]);
+        $this->logAction('UPDATE', 'master_lokasi', $id);
 
         return $this->response->setJSON(['status' => 'success']);
     }
@@ -496,6 +522,7 @@ class MasterData extends BaseController
             return $this->response->setJSON(['status' => 'error', 'message' => 'Lokasi sedang digunakan oleh data arsip.']);
         }
         (new MasterLokasiModel())->delete($id);
+        $this->logAction('DELETE', 'master_lokasi', $id);
         return $this->response->setJSON(['status' => 'success']);
     }
 
@@ -528,6 +555,8 @@ class MasterData extends BaseController
         }
 
         $katakunci = $this->request->getGet('katakunci') ?? '';
+        $this->logPageView('datamaster/media');
+
         $data = [
             'items'     => $this->fetchList('media', $katakunci),
             'katakunci' => $katakunci,
@@ -546,9 +575,12 @@ class MasterData extends BaseController
             return $this->response->setJSON(['status' => 'error', 'errors' => $this->validator->getErrors()]);
         }
 
-        (new MasterMediaModel())->insert([
+        $model = new MasterMediaModel();
+        $model->insert([
             'nama_media' => $this->request->getPost('nama'),
         ]);
+        $insertId = $model->getInsertID();
+        $this->logAction('CREATE', 'master_media', $insertId);
 
         return $this->response->setJSON(['status' => 'success']);
     }
@@ -565,6 +597,7 @@ class MasterData extends BaseController
         (new MasterMediaModel())->update($id, [
             'nama_media' => $this->request->getPost('nama'),
         ]);
+        $this->logAction('UPDATE', 'master_media', $id);
 
         return $this->response->setJSON(['status' => 'success']);
     }
@@ -578,6 +611,7 @@ class MasterData extends BaseController
             return $this->response->setJSON(['status' => 'error', 'message' => 'Media sedang digunakan oleh data arsip.']);
         }
         (new MasterMediaModel())->delete($id);
+        $this->logAction('DELETE', 'master_media', $id);
         return $this->response->setJSON(['status' => 'success']);
     }
 

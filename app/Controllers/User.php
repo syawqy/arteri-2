@@ -35,6 +35,8 @@ class User extends BaseController
 
         $users = $builder->orderBy('username', 'ASC')->get()->getResultArray();
 
+        $this->logPageView('user/index');
+
         $data = [
             'users'     => $users,
             'katakunci' => $katakunci,
@@ -75,6 +77,9 @@ class User extends BaseController
             'akses_klas'   => $this->request->getPost('akses_klas') ?? '',
             'akses_modul'  => json_encode($this->request->getPost('modul') ?? []),
         ]);
+        $insertId = $model->getInsertID();
+
+        $this->logAction('CREATE', 'master_user', $insertId);
 
         return $this->response->setJSON(['status' => 'success', 'message' => 'User berhasil dibuat.']);
     }
@@ -120,6 +125,8 @@ class User extends BaseController
 
         $model->update($id, $data);
 
+        $this->logAction('UPDATE', 'master_user', $id);
+
         return $this->response->setJSON(['status' => 'success', 'message' => 'User berhasil diperbarui.']);
     }
 
@@ -148,6 +155,8 @@ class User extends BaseController
         }
 
         $model->delete($id);
+
+        $this->logAction('DELETE', 'master_user', $id);
 
         return $this->response->setJSON(['status' => 'success', 'message' => 'User berhasil dihapus.']);
     }

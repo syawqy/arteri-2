@@ -67,6 +67,8 @@ class AuditLog extends BaseController
 
         $totalPages = (int) ceil($total / $this->perPage);
 
+        $this->logPageView('admin/auditlog');
+
         $data = [
             'title'      => 'Audit Log',
             'logs'       => $logs,

@@ -51,56 +51,15 @@
         </style>
     </head>
     <body>
-        <h2>Arsip Controller (Tests\App\Controllers\ArsipController)</h2>
+        <h2>Audit Log Controller (Tests\App\Controllers\AuditLogController)</h2>
         <ul>
-            <li class="success">Create form has csrf hidden field</li>
-            <li class="success">Get arsip new requires auth</li>
-            <li class="success">Post arsip create requires auth</li>
-            <li class="success">Get arsip edit requires auth</li>
-            <li class="success">Post arsip update requires auth</li>
-            <li class="success">Get new returns 200 when logged in</li>
-            <li class="success">Create with valid data redirects</li>
-            <li class="success">Create with invalid data redirects back</li>
-            <li class="success">Get edit returns 200 for existing</li>
-            <li class="success">Get edit redirects for nonexistent</li>
-            <li class="success">Update with valid data redirects</li>
-            <li class="success">Update for nonexistent redirects</li>
-            <li class="success">Delete returns json success</li>
-            <li class="success">Create fails when kode not found</li>
-            <li class="success">Delete with invalid id returns error</li>
-            <li class="success">Create form has file input</li>
-            <li class="success">Create without file does not error</li>
-            <li class="success">Edit form has file input</li>
-            <li class="success">Delete file returns json success</li>
-            <li class="success">Delete file for nonexistent arsip returns error</li>
-            <li class="success">Delete file without file on disk does not error</li>
-        </ul>
-        <h2>Auth Controller (Tests\App\Controllers\AuthController)</h2>
-        <ul>
-            <li class="success">Get login returns 200</li>
-            <li class="success">Get login redirects to home when already logged in</li>
-            <li class="success">Post login with wrong credentials redirects to login</li>
-            <li class="success">Post login with valid credentials redirects to home</li>
-            <li class="success">Post login with valid credentials sets session</li>
-            <li class="success">Post login redirects to previous</li>
-            <li class="success">Get logout redirects to login</li>
-            <li class="success">Logout does not throw error</li>
-            <li class="success">Logout creates audit log</li>
-            <li class="success">Get logout redirects when not logged in</li>
-            <li class="success">Repeated failed logins are recorded</li>
-            <li class="success">Successful login creates audit log</li>
-            <li class="success">Failed login creates audit log</li>
-            <li class="success">Post login with empty input shows error</li>
-        </ul>
-        <h2>Custom Rules (Tests\App\Validation\CustomRules)</h2>
-        <ul>
-            <li class="success">Valid fk passes</li>
-            <li class="success">Valid fk fails</li>
-            <li class="success">Valid fk with empty value</li>
-            <li class="success">Valid date range passes</li>
-            <li class="success">Valid date range fails when end before start</li>
-            <li class="success">Password strength passes</li>
-            <li class="success">Password strength fails weak</li>
+            <li class="success">Index requires auth</li>
+            <li class="success">Index rejects non admin</li>
+            <li class="success">Index returns 200 for admin</li>
+            <li class="success">Index shows no data message when empty</li>
+            <li class="success">Index with filter by aksi</li>
+            <li class="success">Detail returns json for admin</li>
+            <li class="success">Detail returns error for non admin</li>
         </ul>
         <h2>File Controller (Tests\App\Controllers\FileController)</h2>
         <ul>
@@ -114,120 +73,6 @@
             <li class="success">Index returns 200</li>
             <li class="success">Index has csrf hidden field</li>
             <li class="success">Do import redirects without file</li>
-        </ul>
-        <h2>Master Data Controller (Tests\App\Controllers\MasterDataController)</h2>
-        <ul>
-            <li class="success">List page requires auth</li>
-            <li class="success">Create requires auth</li>
-            <li class="success">Update requires auth</li>
-            <li class="success">Delete requires auth</li>
-            <li class="success">List returns 200 with data set #0</li>
-            <li class="success">List returns 200 with data set #1</li>
-            <li class="success">List returns 200 with data set #2</li>
-            <li class="success">List returns 200 with data set #3</li>
-            <li class="success">List returns 200 with data set #4</li>
-            <li class="success">List with keyword with data set #0</li>
-            <li class="success">List with keyword with data set #1</li>
-            <li class="success">List with keyword with data set #2</li>
-            <li class="success">List with keyword with data set #3</li>
-            <li class="success">List with keyword with data set #4</li>
-            <li class="success">Create success with data set "klas"</li>
-            <li class="success">Create success with data set "penc"</li>
-            <li class="success">Create success with data set "pengolah"</li>
-            <li class="success">Create success with data set "lokasi"</li>
-            <li class="success">Create success with data set "media"</li>
-            <li class="success">Create validation error with data set #0</li>
-            <li class="success">Create validation error with data set #1</li>
-            <li class="success">Create validation error with data set #2</li>
-            <li class="success">Create validation error with data set #3</li>
-            <li class="success">Create validation error with data set #4</li>
-            <li class="success">Get returns record with data set "klas"</li>
-            <li class="success">Get returns record with data set "penc"</li>
-            <li class="success">Get returns record with data set "pengolah"</li>
-            <li class="success">Get returns record with data set "lokasi"</li>
-            <li class="success">Get returns record with data set "media"</li>
-            <li class="success">Get returns empty for nonexistent with data set "klas"</li>
-            <li class="success">Get returns empty for nonexistent with data set "penc"</li>
-            <li class="success">Get returns empty for nonexistent with data set "pengolah"</li>
-            <li class="success">Get returns empty for nonexistent with data set "lokasi"</li>
-            <li class="success">Get returns empty for nonexistent with data set "media"</li>
-            <li class="success">Update success with data set "klas"</li>
-            <li class="success">Update success with data set "penc"</li>
-            <li class="success">Update success with data set "pengolah"</li>
-            <li class="success">Update success with data set "lokasi"</li>
-            <li class="success">Update success with data set "media"</li>
-            <li class="success">Delete deletes new record with data set "klas"</li>
-            <li class="success">Delete deletes new record with data set "penc"</li>
-            <li class="success">Delete deletes new record with data set "pengolah"</li>
-            <li class="success">Delete deletes new record with data set "lokasi"</li>
-            <li class="success">Delete deletes new record with data set "media"</li>
-            <li class="success">Delete kode fails when referenced</li>
-            <li class="success">Reload returns html with data set #0</li>
-            <li class="success">Reload returns html with data set #1</li>
-            <li class="success">Reload returns html with data set #2</li>
-            <li class="success">Reload returns html with data set #3</li>
-            <li class="success">Reload returns html with data set #4</li>
-            <li class="success">Reload requires auth with data set #0</li>
-            <li class="success">Reload requires auth with data set #1</li>
-            <li class="success">Reload requires auth with data set #2</li>
-            <li class="success">Reload requires auth with data set #3</li>
-            <li class="success">Reload requires auth with data set #4</li>
-        </ul>
-        <h2>Sirkulasi Controller (Tests\App\Controllers\SirkulasiController)</h2>
-        <ul>
-            <li class="success">Get sirkulasi requires auth</li>
-            <li class="success">New form requires auth</li>
-            <li class="success">New form has csrf hidden field</li>
-            <li class="success">Create requires auth</li>
-            <li class="success">Index returns 200</li>
-            <li class="success">New form returns 200</li>
-            <li class="success">Create success</li>
-            <li class="success">Create validation error</li>
-            <li class="success">Edit returns 200 for existing</li>
-            <li class="success">Edit redirects for nonexistent</li>
-            <li class="success">Update success</li>
-            <li class="success">Update for nonexistent redirects</li>
-            <li class="success">Delete success</li>
-            <li class="success">Kembali success</li>
-            <li class="success">Kembali fails for nonexistent</li>
-            <li class="success">Xhr arsip returns empty for no keyword</li>
-            <li class="success">Xhr arsip returns results</li>
-            <li class="success">Xhr user returns empty for no keyword</li>
-            <li class="success">Xhr user returns results</li>
-            <li class="success">Create fails when arsip not found</li>
-            <li class="success">Create fails when user not found</li>
-            <li class="success">Delete with invalid id returns error</li>
-        </ul>
-        <h2>System Log Model (Tests\App\Models\SystemLogModel)</h2>
-        <ul>
-            <li class="success">Insert and find log</li>
-            <li class="success">Insert with minimal fields</li>
-            <li class="success">Find returns null for nonexistent id</li>
-            <li class="success">Filter by aksi</li>
-        </ul>
-        <h2>User Controller (Tests\App\Controllers\UserController)</h2>
-        <ul>
-            <li class="success">Index requires auth</li>
-            <li class="success">Create requires auth</li>
-            <li class="success">Delete requires auth</li>
-            <li class="success">Index returns 200</li>
-            <li class="success">Create success</li>
-            <li class="success">Create fails when password too short</li>
-            <li class="success">Create fails when password missing letters</li>
-            <li class="success">Create fails when password missing numbers</li>
-            <li class="success">Create fails when password unmatch</li>
-            <li class="success">Create fails when username exists</li>
-            <li class="success">Get returns record</li>
-            <li class="success">Update success</li>
-            <li class="success">Delete success</li>
-            <li class="success">Delete fails for last admin</li>
-            <li class="success">Cek username exists</li>
-            <li class="success">Cek username available</li>
-            <li class="success">Non admin cannot create user</li>
-            <li class="success">Non admin cannot get user</li>
-            <li class="success">Non admin cannot delete user</li>
-            <li class="success">Non admin cannot view user page</li>
-            <li class="success">Non admin cannot reload user table</li>
         </ul>
     </body>
 </html>
