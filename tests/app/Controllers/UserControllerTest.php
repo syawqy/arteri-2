@@ -265,6 +265,21 @@ final class UserControllerTest extends CIUnitTestCase
         $this->assertStringContainsString('error', (string) $response->getBody());
         $this->assertStringContainsString('Akses ditolak', (string) $response->getBody());
     }
+
+    public function testNonAdminCannotViewUserPage(): void
+    {
+        $this->withSession($this->getRegularUserSession());
+        $this->get('user')->assertRedirectTo('/');
+    }
+
+    public function testNonAdminCannotReloadUserTable(): void
+    {
+        $this->withSession($this->getRegularUserSession());
+        $response = $this->get('user/reload');
+        $response->assertOK();
+        $this->assertStringContainsString('error', (string) $response->getBody());
+        $this->assertStringContainsString('Akses ditolak', (string) $response->getBody());
+    }
 }
 
 

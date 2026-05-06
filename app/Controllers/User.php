@@ -17,6 +17,10 @@ class User extends BaseController
 
     public function index()
     {
+        if (! hasModuleAccess('user')) {
+            return redirect()->to('/');
+        }
+
         $katakunci = $this->request->getGet('katakunci') ?? '';
 
         $model = new UserModel();
@@ -185,6 +189,10 @@ class User extends BaseController
 
     public function reload()
     {
+        if (! hasModuleAccess('user')) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Akses ditolak.']);
+        }
+
         $katakunci = $this->request->getGet('katakunci') ?? '';
 
         $model = new UserModel();
