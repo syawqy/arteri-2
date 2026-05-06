@@ -262,7 +262,11 @@ class Arsip extends BaseController
         $arsipModel = new ArsipModel();
         $row = $arsipModel->find($id);
 
-        if ($row !== null && ! empty($row['file'])) {
+        if ($row === null) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Arsip tidak ditemukan.']);
+        }
+
+        if (! empty($row['file'])) {
             $filePath = WRITEPATH . 'uploads' . DIRECTORY_SEPARATOR . 'arsip' . DIRECTORY_SEPARATOR . $row['file'];
             if (is_file($filePath)) {
                 unlink($filePath);

@@ -1,15 +1,3 @@
-Acl Helper (Tests\App\Helpers\AclHelper)
- [x] Is admin returns true for admin
- [x] Is admin returns false for non admin
- [x] Has module access admin always true
- [x] Has module access user with enabled module
- [x] Has module access user with disabled module
- [x] Has module access user without module
- [x] Has classification access admin always true
- [x] Has classification access empty means all
- [x] Has classification access with matching code
- [x] Has classification access without matching code
-
 Arsip Controller (Tests\App\Controllers\ArsipController)
  [x] Create form has csrf hidden field
  [x] Get arsip new requires auth
@@ -26,25 +14,12 @@ Arsip Controller (Tests\App\Controllers\ArsipController)
  [x] Delete returns json success
  [x] Create fails when kode not found
  [x] Delete with invalid id returns error
-
-Arsip Model (Tests\App\Models\ArsipModel)
- [x] Search with empty keyword returns results
- [x] Search count returns int
- [x] Get detail returns null for nonexistent id
- [x] Insert and find arsip
- [x] Update arsip
- [x] Delete arsip
- [x] Insert sets timestamps
- [x] Find returns array with allowed fields
-
-Audit Log Controller (Tests\App\Controllers\AuditLogController)
- [x] Index requires auth
- [x] Index rejects non admin
- [x] Index returns 200 for admin
- [x] Index shows no data message when empty
- [x] Index with filter by aksi
- [x] Detail returns json for admin
- [x] Detail returns error for non admin
+ [x] Create form has file input
+ [x] Create without file does not error
+ [x] Edit form has file input
+ [x] Delete file returns json success
+ [x] Delete file for nonexistent arsip returns error
+ [x] Delete file without file on disk does not error
 
 Auth Controller (Tests\App\Controllers\AuthController)
  [x] Get login returns 200
@@ -62,11 +37,6 @@ Auth Controller (Tests\App\Controllers\AuthController)
  [x] Failed login creates audit log
  [x] Post login with empty input shows error
 
-Auth Filter (Tests\App\Filters\AuthFilter)
- [x] Before without session redirects to login
- [x] Before with session does not redirect
- [x] After does nothing
-
 Custom Rules (Tests\App\Validation\CustomRules)
  [x] Valid fk passes
  [x] Valid fk fails
@@ -76,28 +46,10 @@ Custom Rules (Tests\App\Validation\CustomRules)
  [x] Password strength passes
  [x] Password strength fails weak
 
-Example Database
- [x] Model find all
- [x] Soft delete leaves row
-
-Example Session
- [x] Session simple
-
 File Controller (Tests\App\Controllers\FileController)
  [x] File requires auth
  [x] File returns 404 for nonexistent file
  [x] File returns 404 when no db record
-
-Health
- [x] Is defined app path
- [x] Base url has been set
-
-Home Controller (Tests\App\Controllers\HomeController)
- [x] Index redirects to search
- [x] Get search returns 200 when logged in
- [x] Get search with advanced filter
- [x] Get view redirects to login when not logged in
- [x] Detail throws 404 for nonexistent arsip
 
 Import Controller (Tests\App\Controllers\ImportController)
  [x] Index requires auth
@@ -162,33 +114,6 @@ Master Data Controller (Tests\App\Controllers\MasterDataController)
  [x] Reload requires auth with data set #3
  [x] Reload requires auth with data set #4
 
-Master Kode Model (Tests\App\Models\MasterKodeModel)
- [x] Insert and find
- [x] Update and delete
- [x] Search with keyword
- [x] Search with empty keyword returns all
- [x] Search with keyword no match returns empty
-
-Master Lokasi Model (Tests\App\Models\MasterLokasiModel)
- [x] Insert and find
- [x] Update and delete
- [x] Find all returns ordered
-
-Master Media Model (Tests\App\Models\MasterMediaModel)
- [x] Insert and find
- [x] Update and delete
- [x] Find all returns ordered
-
-Master Pencipta Model (Tests\App\Models\MasterPenciptaModel)
- [x] Insert and find
- [x] Update and delete
- [x] Find all returns ordered
-
-Master Pengolah Model (Tests\App\Models\MasterPengolahModel)
- [x] Insert and find
- [x] Update and delete
- [x] Find all returns ordered
-
 Sirkulasi Controller (Tests\App\Controllers\SirkulasiController)
  [x] Get sirkulasi requires auth
  [x] New form requires auth
@@ -212,14 +137,6 @@ Sirkulasi Controller (Tests\App\Controllers\SirkulasiController)
  [x] Create fails when arsip not found
  [x] Create fails when user not found
  [x] Delete with invalid id returns error
-
-Sirkulasi Model (Tests\App\Models\SirkulasiModel)
- [x] Insert and find
- [x] Search with keyword
- [x] Search with keyword no match returns empty
- [x] Search count
- [x] Return archive
- [x] Search with empty keyword returns all
 
 System Log Model (Tests\App\Models\SystemLogModel)
  [x] Insert and find log
@@ -249,13 +166,4 @@ User Controller (Tests\App\Controllers\UserController)
  [x] Non admin cannot delete user
  [x] Non admin cannot view user page
  [x] Non admin cannot reload user table
-
-User Model (Tests\App\Models\UserModel)
- [x] Attempt login with valid credentials
- [x] Attempt login with invalid password
- [x] Attempt login with nonexistent username
- [x] Insert and find user
- [x] Update user
- [x] Delete user
- [x] Allowed fields only inserted
 

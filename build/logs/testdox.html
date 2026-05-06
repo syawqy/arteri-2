@@ -51,19 +51,6 @@
         </style>
     </head>
     <body>
-        <h2>Acl Helper (Tests\App\Helpers\AclHelper)</h2>
-        <ul>
-            <li class="success">Is admin returns true for admin</li>
-            <li class="success">Is admin returns false for non admin</li>
-            <li class="success">Has module access admin always true</li>
-            <li class="success">Has module access user with enabled module</li>
-            <li class="success">Has module access user with disabled module</li>
-            <li class="success">Has module access user without module</li>
-            <li class="success">Has classification access admin always true</li>
-            <li class="success">Has classification access empty means all</li>
-            <li class="success">Has classification access with matching code</li>
-            <li class="success">Has classification access without matching code</li>
-        </ul>
         <h2>Arsip Controller (Tests\App\Controllers\ArsipController)</h2>
         <ul>
             <li class="success">Create form has csrf hidden field</li>
@@ -81,27 +68,12 @@
             <li class="success">Delete returns json success</li>
             <li class="success">Create fails when kode not found</li>
             <li class="success">Delete with invalid id returns error</li>
-        </ul>
-        <h2>Arsip Model (Tests\App\Models\ArsipModel)</h2>
-        <ul>
-            <li class="success">Search with empty keyword returns results</li>
-            <li class="success">Search count returns int</li>
-            <li class="success">Get detail returns null for nonexistent id</li>
-            <li class="success">Insert and find arsip</li>
-            <li class="success">Update arsip</li>
-            <li class="success">Delete arsip</li>
-            <li class="success">Insert sets timestamps</li>
-            <li class="success">Find returns array with allowed fields</li>
-        </ul>
-        <h2>Audit Log Controller (Tests\App\Controllers\AuditLogController)</h2>
-        <ul>
-            <li class="success">Index requires auth</li>
-            <li class="success">Index rejects non admin</li>
-            <li class="success">Index returns 200 for admin</li>
-            <li class="success">Index shows no data message when empty</li>
-            <li class="success">Index with filter by aksi</li>
-            <li class="success">Detail returns json for admin</li>
-            <li class="success">Detail returns error for non admin</li>
+            <li class="success">Create form has file input</li>
+            <li class="success">Create without file does not error</li>
+            <li class="success">Edit form has file input</li>
+            <li class="success">Delete file returns json success</li>
+            <li class="success">Delete file for nonexistent arsip returns error</li>
+            <li class="success">Delete file without file on disk does not error</li>
         </ul>
         <h2>Auth Controller (Tests\App\Controllers\AuthController)</h2>
         <ul>
@@ -120,12 +92,6 @@
             <li class="success">Failed login creates audit log</li>
             <li class="success">Post login with empty input shows error</li>
         </ul>
-        <h2>Auth Filter (Tests\App\Filters\AuthFilter)</h2>
-        <ul>
-            <li class="success">Before without session redirects to login</li>
-            <li class="success">Before with session does not redirect</li>
-            <li class="success">After does nothing</li>
-        </ul>
         <h2>Custom Rules (Tests\App\Validation\CustomRules)</h2>
         <ul>
             <li class="success">Valid fk passes</li>
@@ -136,33 +102,11 @@
             <li class="success">Password strength passes</li>
             <li class="success">Password strength fails weak</li>
         </ul>
-        <h2>Example Database</h2>
-        <ul>
-            <li class="success">Model find all</li>
-            <li class="success">Soft delete leaves row</li>
-        </ul>
-        <h2>Example Session</h2>
-        <ul>
-            <li class="success">Session simple</li>
-        </ul>
         <h2>File Controller (Tests\App\Controllers\FileController)</h2>
         <ul>
             <li class="success">File requires auth</li>
             <li class="success">File returns 404 for nonexistent file</li>
             <li class="success">File returns 404 when no db record</li>
-        </ul>
-        <h2>Health</h2>
-        <ul>
-            <li class="success">Is defined app path</li>
-            <li class="success">Base url has been set</li>
-        </ul>
-        <h2>Home Controller (Tests\App\Controllers\HomeController)</h2>
-        <ul>
-            <li class="success">Index redirects to search</li>
-            <li class="success">Get search returns 200 when logged in</li>
-            <li class="success">Get search with advanced filter</li>
-            <li class="success">Get view redirects to login when not logged in</li>
-            <li class="success">Detail throws 404 for nonexistent arsip</li>
         </ul>
         <h2>Import Controller (Tests\App\Controllers\ImportController)</h2>
         <ul>
@@ -229,38 +173,6 @@
             <li class="success">Reload requires auth with data set #3</li>
             <li class="success">Reload requires auth with data set #4</li>
         </ul>
-        <h2>Master Kode Model (Tests\App\Models\MasterKodeModel)</h2>
-        <ul>
-            <li class="success">Insert and find</li>
-            <li class="success">Update and delete</li>
-            <li class="success">Search with keyword</li>
-            <li class="success">Search with empty keyword returns all</li>
-            <li class="success">Search with keyword no match returns empty</li>
-        </ul>
-        <h2>Master Lokasi Model (Tests\App\Models\MasterLokasiModel)</h2>
-        <ul>
-            <li class="success">Insert and find</li>
-            <li class="success">Update and delete</li>
-            <li class="success">Find all returns ordered</li>
-        </ul>
-        <h2>Master Media Model (Tests\App\Models\MasterMediaModel)</h2>
-        <ul>
-            <li class="success">Insert and find</li>
-            <li class="success">Update and delete</li>
-            <li class="success">Find all returns ordered</li>
-        </ul>
-        <h2>Master Pencipta Model (Tests\App\Models\MasterPenciptaModel)</h2>
-        <ul>
-            <li class="success">Insert and find</li>
-            <li class="success">Update and delete</li>
-            <li class="success">Find all returns ordered</li>
-        </ul>
-        <h2>Master Pengolah Model (Tests\App\Models\MasterPengolahModel)</h2>
-        <ul>
-            <li class="success">Insert and find</li>
-            <li class="success">Update and delete</li>
-            <li class="success">Find all returns ordered</li>
-        </ul>
         <h2>Sirkulasi Controller (Tests\App\Controllers\SirkulasiController)</h2>
         <ul>
             <li class="success">Get sirkulasi requires auth</li>
@@ -285,15 +197,6 @@
             <li class="success">Create fails when arsip not found</li>
             <li class="success">Create fails when user not found</li>
             <li class="success">Delete with invalid id returns error</li>
-        </ul>
-        <h2>Sirkulasi Model (Tests\App\Models\SirkulasiModel)</h2>
-        <ul>
-            <li class="success">Insert and find</li>
-            <li class="success">Search with keyword</li>
-            <li class="success">Search with keyword no match returns empty</li>
-            <li class="success">Search count</li>
-            <li class="success">Return archive</li>
-            <li class="success">Search with empty keyword returns all</li>
         </ul>
         <h2>System Log Model (Tests\App\Models\SystemLogModel)</h2>
         <ul>
@@ -325,16 +228,6 @@
             <li class="success">Non admin cannot delete user</li>
             <li class="success">Non admin cannot view user page</li>
             <li class="success">Non admin cannot reload user table</li>
-        </ul>
-        <h2>User Model (Tests\App\Models\UserModel)</h2>
-        <ul>
-            <li class="success">Attempt login with valid credentials</li>
-            <li class="success">Attempt login with invalid password</li>
-            <li class="success">Attempt login with nonexistent username</li>
-            <li class="success">Insert and find user</li>
-            <li class="success">Update user</li>
-            <li class="success">Delete user</li>
-            <li class="success">Allowed fields only inserted</li>
         </ul>
     </body>
 </html>

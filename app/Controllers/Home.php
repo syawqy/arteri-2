@@ -26,6 +26,7 @@ class Home extends BaseController
 
     public function search($offset = 0)
     {
+        $offset = (int) $offset;
         helper('form');
 
         $arsipModel = new ArsipModel();

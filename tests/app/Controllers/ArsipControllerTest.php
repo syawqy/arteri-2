@@ -235,6 +235,105 @@ final class ArsipControllerTest extends CIUnitTestCase
         $response = $this->csrfPost('arsip/delete/invalid');
         $this->assertStringContainsString('error', (string) $response->getBody());
     }
+
+    // ── File upload ──
+
+    public function testCreateFormHasFileInput(): void
+    {
+        $this->withSession($this->getAdminSession());
+        $body = (string) $this->get('arsip/new')->getBody();
+        $this->assertStringContainsString('type="file"', $body);
+        $this->assertStringContainsString('name="file"', $body);
+    }
+
+    public function testCreateWithoutFileDoesNotError(): void
+    {
+        $this->withSession($this->getAdminSession());
+
+        $data = $this->validArsipData();
+        $data['noarsip'] = 'CRT-NOFILE';
+
+        $response = $this->csrfPost('arsip', $data);
+        $response->assertRedirect();
+
+        $db = \Config\Database::connect();
+        $row = $db->table('data_arsip')->where('noarsip', 'CRT-NOFILE')->get()->getRowArray();
+        $this->assertNotNull($row);
+        $this->assertEmpty($row['file']);
+    }
+
+    // ── Edit form file input ──
+
+    public function testEditFormHasFileInput(): void
+    {
+        $id = $this->insertArsipInDb(['noarsip' => 'EDIT-FILE']);
+
+        $this->withSession($this->getAdminSession());
+        $body = (string) $this->get('arsip/edit/' . $id)->getBody();
+        $this->assertStringContainsString('type="file"', $body);
+    }
+
+    // ── Delete file (via direct DB insert to simulate uploaded file) ──
+
+    public function testDeleteFileReturnsJsonSuccess(): void
+    {
+        $id = $this->insertArsipInDb([
+            'noarsip' => 'DELFILE-001',
+            'file'    => 'test_uploaded_file.pdf',
+        ]);
+
+        // Create dummy file on disk
+        $uploadDir = WRITEPATH . 'uploads' . DIRECTORY_SEPARATOR . 'arsip' . DIRECTORY_SEPARATOR;
+        if (! is_dir($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+        file_put_contents($uploadDir . 'test_uploaded_file.pdf', '%PDF-1.4');
+
+        $this->withSession($this->getAdminSession());
+        $response = $this->post('arsip/delfile/' . $id);
+        $response->assertOK();
+        $json = $this->extractJson((string) $response->getBody());
+        $decoded = json_decode($json, true);
+        $this->assertIsArray($decoded);
+        $this->assertSame('success', $decoded['status'] ?? null);
+
+        // Verify DB field cleared
+        $db = \Config\Database::connect();
+        $row = $db->table('data_arsip')->where('id', $id)->get()->getRowArray();
+        $this->assertNull($row['file']);
+
+        // Verify file deleted from disk
+        $this->assertFileDoesNotExist($uploadDir . 'test_uploaded_file.pdf');
+    }
+
+    public function testDeleteFileForNonexistentArsipReturnsError(): void
+    {
+        $this->withSession($this->getAdminSession());
+        $response = $this->post('arsip/delfile/99999');
+        $response->assertOK();
+        $json = $this->extractJson((string) $response->getBody());
+        $decoded = json_decode($json, true);
+        $this->assertIsArray($decoded);
+        $this->assertSame('error', $decoded['status'] ?? null);
+    }
+
+    public function testDeleteFileWithoutFileOnDiskDoesNotError(): void
+    {
+        $id = $this->insertArsipInDb([
+            'noarsip' => 'DELFILE-NOFILE',
+            'file'    => 'nonexistent_file.pdf',
+        ]);
+
+        $this->withSession($this->getAdminSession());
+        $response = $this->post('arsip/delfile/' . $id);
+        $response->assertOK();
+        $json = $this->extractJson((string) $response->getBody());
+        $decoded = json_decode($json, true);
+        $this->assertSame('success', $decoded['status'] ?? null);
+    }
+
+    // ── Helpers ──
+
 }
 
 
