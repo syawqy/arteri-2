@@ -96,6 +96,13 @@ final class SirkulasiControllerTest extends CIUnitTestCase
         $this->get('sirkulasi/new')->assertRedirectTo('/login');
     }
 
+    public function testNewFormHasCsrfHiddenField(): void
+    {
+        $this->withSession($this->getAdminSession());
+        $body = (string) $this->get('sirkulasi/new')->getBody();
+        $this->assertStringContainsString('name="csrf_test_name"', $body);
+    }
+
     public function testCreateRequiresAuth(): void
     {
         $this->csrfPost('sirkulasi', [])->assertRedirectTo('/login');

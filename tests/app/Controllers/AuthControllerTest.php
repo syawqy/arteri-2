@@ -103,12 +103,27 @@ final class AuthControllerTest extends CIUnitTestCase
         $this->get('logout')->assertRedirectTo('/login');
     }
 
-    /**
-     * Session destroy behavior differs in test environment.
-     */
-    public function testGetLogoutClearsSession(): void
+    public function testLogoutDoesNotThrowError(): void
     {
-        $this->markTestSkipped('Session destroy in test env requires handler setup.');
+        $this->withSession($this->getAdminSession());
+        $response = $this->get('logout');
+
+        $response->assertRedirectTo('/login');
+        $this->assertSame(302, $response->response()->getStatusCode());
+    }
+
+    public function testLogoutCreatesAuditLog(): void
+    {
+        $this->withSession($this->getAdminSession());
+        $this->get('logout');
+
+        $db = \Config\Database::connect();
+        $log = $db->table('system_log')
+            ->where('aksi', 'LOGOUT')
+            ->where('username_transaksi', 'admin')
+            ->countAllResults();
+
+        $this->assertSame(1, $log);
     }
 
     public function testGetLogoutRedirectsWhenNotLoggedIn(): void

@@ -5,6 +5,7 @@ namespace Tests\App\Controllers;
 use CodeIgniter\Test\CIUnitTestCase;
 use CodeIgniter\Test\DatabaseTestTrait;
 use CodeIgniter\Test\FeatureTestTrait;
+use App\TestTraits\CsrfTestTrait;
 
 /**
  * @internal
@@ -18,6 +19,7 @@ final class ImportControllerTest extends CIUnitTestCase
 {
     use DatabaseTestTrait;
     use FeatureTestTrait;
+    use CsrfTestTrait;
 
     protected $migrate   = true;
     protected $seed      = \App\Database\Seeds\ArteriSeeder::class;
@@ -38,6 +40,12 @@ final class ImportControllerTest extends CIUnitTestCase
 
     // ── Auth gate ──
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->setupCsrf();
+    }
+
     public function testIndexRequiresAuth(): void
     {
         $this->get('import')->assertRedirectTo('/login');
@@ -49,6 +57,13 @@ final class ImportControllerTest extends CIUnitTestCase
     {
         $this->withSession($this->getAdminSession());
         $this->get('import')->assertStatus(200);
+    }
+
+    public function testIndexHasCsrfHiddenField(): void
+    {
+        $this->withSession($this->getAdminSession());
+        $body = (string) $this->get('import')->getBody();
+        $this->assertStringContainsString('name="csrf_test_name"', $body);
     }
 
     // ── doImport ──

@@ -6,6 +6,7 @@ use CodeIgniter\Exceptions\PageNotFoundException;
 use CodeIgniter\Test\CIUnitTestCase;
 use CodeIgniter\Test\DatabaseTestTrait;
 use CodeIgniter\Test\FeatureTestTrait;
+use App\TestTraits\CsrfTestTrait;
 
 /**
  * @internal
@@ -14,6 +15,7 @@ final class ArsipControllerTest extends CIUnitTestCase
 {
     use DatabaseTestTrait;
     use FeatureTestTrait;
+    use CsrfTestTrait;
 
     protected $migrate   = true;
     protected $seed      = \App\Database\Seeds\ArteriSeeder::class;
@@ -37,6 +39,8 @@ final class ArsipControllerTest extends CIUnitTestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->setupCsrf();
 
         $db = \Config\Database::connect();
 
@@ -88,6 +92,13 @@ final class ArsipControllerTest extends CIUnitTestCase
     }
 
     // ── Auth gate ──
+
+    public function testCreateFormHasCsrfHiddenField(): void
+    {
+        $this->withSession($this->getAdminSession());
+        $body = (string) $this->get('arsip/new')->getBody();
+        $this->assertStringContainsString('name="csrf_test_name"', $body);
+    }
 
     public function testGetArsipNewRequiresAuth(): void
     {
