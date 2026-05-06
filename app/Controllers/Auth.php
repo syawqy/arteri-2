@@ -97,10 +97,11 @@ class Auth extends Controller
 
     public function logout()
     {
-        $this->logLoginAttempt(session('username') ?? 'unknown', true, 'LOGOUT');
+        $username = session('username') ?? 'unknown';
 
         session()->destroy();
-        session()->regenerate(true);
+
+        $this->logLoginAttempt($username, true, 'LOGOUT');
 
         return redirect()->to('/login');
     }
