@@ -51,28 +51,29 @@
         </style>
     </head>
     <body>
-        <h2>Audit Log Controller (Tests\App\Controllers\AuditLogController)</h2>
+        <h2>User Controller (Tests\App\Controllers\UserController)</h2>
         <ul>
             <li class="success">Index requires auth</li>
-            <li class="success">Index rejects non admin</li>
-            <li class="success">Index returns 200 for admin</li>
-            <li class="success">Index shows no data message when empty</li>
-            <li class="success">Index with filter by aksi</li>
-            <li class="success">Detail returns json for admin</li>
-            <li class="success">Detail returns error for non admin</li>
-        </ul>
-        <h2>File Controller (Tests\App\Controllers\FileController)</h2>
-        <ul>
-            <li class="success">File requires auth</li>
-            <li class="success">File returns 404 for nonexistent file</li>
-            <li class="success">File returns 404 when no db record</li>
-        </ul>
-        <h2>Import Controller (Tests\App\Controllers\ImportController)</h2>
-        <ul>
-            <li class="success">Index requires auth</li>
+            <li class="success">Create requires auth</li>
+            <li class="success">Delete requires auth</li>
             <li class="success">Index returns 200</li>
-            <li class="success">Index has csrf hidden field</li>
-            <li class="success">Do import redirects without file</li>
+            <li class="success">Create success</li>
+            <li class="success">Create fails when password too short</li>
+            <li class="success">Create fails when password missing letters</li>
+            <li class="success">Create fails when password missing numbers</li>
+            <li class="success">Create fails when password unmatch</li>
+            <li class="success">Create fails when username exists</li>
+            <li class="success">Get returns record</li>
+            <li class="success">Update success</li>
+            <li class="success">Delete success</li>
+            <li class="success">Delete fails for last admin</li>
+            <li class="success">Cek username exists</li>
+            <li class="success">Cek username available</li>
+            <li class="success">Non admin cannot create user</li>
+            <li class="success">Non admin cannot get user</li>
+            <li class="success">Non admin cannot delete user</li>
+            <li class="success">Non admin cannot view user page</li>
+            <li class="success">Non admin cannot reload user table</li>
         </ul>
     </body>
 </html>

@@ -1,20 +1,23 @@
-Audit Log Controller (Tests\App\Controllers\AuditLogController)
+User Controller (Tests\App\Controllers\UserController)
  [x] Index requires auth
- [x] Index rejects non admin
- [x] Index returns 200 for admin
- [x] Index shows no data message when empty
- [x] Index with filter by aksi
- [x] Detail returns json for admin
- [x] Detail returns error for non admin
-
-File Controller (Tests\App\Controllers\FileController)
- [x] File requires auth
- [x] File returns 404 for nonexistent file
- [x] File returns 404 when no db record
-
-Import Controller (Tests\App\Controllers\ImportController)
- [x] Index requires auth
+ [x] Create requires auth
+ [x] Delete requires auth
  [x] Index returns 200
- [x] Index has csrf hidden field
- [x] Do import redirects without file
+ [x] Create success
+ [x] Create fails when password too short
+ [x] Create fails when password missing letters
+ [x] Create fails when password missing numbers
+ [x] Create fails when password unmatch
+ [x] Create fails when username exists
+ [x] Get returns record
+ [x] Update success
+ [x] Delete success
+ [x] Delete fails for last admin
+ [x] Cek username exists
+ [x] Cek username available
+ [x] Non admin cannot create user
+ [x] Non admin cannot get user
+ [x] Non admin cannot delete user
+ [x] Non admin cannot view user page
+ [x] Non admin cannot reload user table
 

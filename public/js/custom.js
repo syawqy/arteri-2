@@ -11,11 +11,11 @@ $(document).ready(function() {
 	var segments = url.split("/");
 
 	// CSRF protection: inject token into all AJAX requests
+	// Reads from meta tag rendered by header.php (data-name/data-value attributes)
+	var csrfMeta = $('meta[data-name][data-value]');
+	var csrfName = csrfMeta.length ? csrfMeta.data('name') : '';
+	var csrfHash = csrfMeta.length ? csrfMeta.data('value') : '';
 	$(document).ajaxSend(function(e, xhr, settings) {
-		var csrfName = $('meta[name="<?= csrf_token() ?>"]') && $('meta[name="<?= csrf_token() ?>"]').length
-			? $('meta[name="<?= csrf_token() ?>"]').data('name') : '<?= csrf_token() ?>';
-		var csrfHash = $('meta[name="<?= csrf_token() ?>"]') && $('meta[name="<?= csrf_token() ?>"]').length
-			? $('meta[name="<?= csrf_token() ?>"]').data('value') : '<?= csrf_hash() ?>';
 
 		if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && settings.type !== undefined) {
 			if (settings.data && typeof settings.data === 'string') {
