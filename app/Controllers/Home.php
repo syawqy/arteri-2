@@ -11,6 +11,7 @@ use App\Models\MasterPengolahModel;
 use App\Models\MasterLokasiModel;
 use App\Models\MasterMediaModel;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
@@ -48,8 +49,8 @@ class Home extends BaseController
             'peng'    => $this->request->getGet('peng') ?? '',
             'lok'     => $this->request->getGet('lok') ?? '',
             'med'     => $this->request->getGet('med') ?? '',
+            'nobox'   => $this->request->getGet('nobox') ?? '',
         ];
-        $nobox = $this->request->getGet('nobox') ?? '';
 
         $results = $arsipModel->search($keywords, $filters, $this->perPage, $offset);
         $total   = $arsipModel->searchCount($keywords, $filters);
@@ -63,7 +64,7 @@ class Home extends BaseController
                 'med'     => '', 'nobox'   => '',
             ];
         } else {
-            $src = array_merge($filters, ['nobox' => $nobox]);
+            $src = $filters;
         }
 
         $data['kode'] = (new MasterKodeModel())->orderBy('kode', 'ASC')->findAll();
@@ -102,6 +103,10 @@ class Home extends BaseController
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Arsip tidak ditemukan');
         }
 
+        if (! hasClassificationAccess((string) ($data['nama_kode'] ?? ''))) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Arsip tidak ditemukan');
+        }
+
         $this->logAction('VIEW_DETAIL', 'data_arsip', (int) $id);
 
         return view('layout/header', $data)
@@ -126,6 +131,7 @@ class Home extends BaseController
             'peng'    => $this->request->getGet('peng') ?? '',
             'lok'     => $this->request->getGet('lok') ?? '',
             'med'     => $this->request->getGet('med') ?? '',
+            'nobox'   => $this->request->getGet('nobox') ?? '',
         ];
 
         $data = $arsipModel->search($keywords, $filters, 0, 0);
@@ -158,18 +164,18 @@ class Home extends BaseController
 
         foreach ($data as $d) {
             $sheet->setCellValue('A' . $row, $no);
-            $sheet->setCellValue('B' . $row, $d['noarsip']);
-            $sheet->setCellValue('C' . $row, $d['tanggal']);
-            $sheet->setCellValue('D' . $row, $d['nama_kode'] ?? '');
-            $sheet->setCellValue('E' . $row, $d['uraian']);
-            $sheet->setCellValue('F' . $row, $d['nama_pencipta'] ?? '');
-            $sheet->setCellValue('G' . $row, $d['nama_pengolah'] ?? '');
-            $sheet->setCellValue('H' . $row, $d['nama_media'] ?? '');
-            $sheet->setCellValue('I' . $row, $d['nama_lokasi'] ?? '');
-            $sheet->setCellValue('J' . $row, $d['ket']);
+            $this->setExportString($sheet, 'B' . $row, $d['noarsip']);
+            $this->setExportString($sheet, 'C' . $row, $d['tanggal']);
+            $this->setExportString($sheet, 'D' . $row, $d['nama_kode'] ?? '');
+            $this->setExportString($sheet, 'E' . $row, $d['uraian']);
+            $this->setExportString($sheet, 'F' . $row, $d['nama_pencipta'] ?? '');
+            $this->setExportString($sheet, 'G' . $row, $d['nama_pengolah'] ?? '');
+            $this->setExportString($sheet, 'H' . $row, $d['nama_media'] ?? '');
+            $this->setExportString($sheet, 'I' . $row, $d['nama_lokasi'] ?? '');
+            $this->setExportString($sheet, 'J' . $row, $d['ket']);
             $sheet->setCellValue('K' . $row, $d['jumlah']);
-            $sheet->setCellValue('L' . $row, $d['nobox']);
-            $sheet->setCellValue('M' . $row, $d['b'] ?? '');
+            $this->setExportString($sheet, 'L' . $row, $d['nobox']);
+            $this->setExportString($sheet, 'M' . $row, $d['b'] ?? '');
 
             if (($d['f'] ?? '') === 'sudah') {
                 $sheet->getStyle('M' . $row)->applyFromArray($redStyle);
@@ -187,5 +193,10 @@ class Home extends BaseController
         $writer = new Xlsx($spreadsheet);
         $writer->save('php://output');
         exit;
+    }
+
+    private function setExportString($sheet, string $cell, mixed $value): void
+    {
+        $sheet->setCellValueExplicit($cell, (string) ($value ?? ''), DataType::TYPE_STRING);
     }
 }

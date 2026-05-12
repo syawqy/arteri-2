@@ -75,6 +75,11 @@ class Arsip extends BaseController
             return redirect()->back()->withInput()->with('error', 'Data master terkait tidak ditemukan. Silakan coba lagi.');
         }
 
+        $kodeRow = (new MasterKodeModel())->find((int) $post['kode']);
+        if ($kodeRow === null || ! hasClassificationAccess((string) $kodeRow['kode'])) {
+            return redirect()->back()->withInput()->with('error', 'Akses klasifikasi ditolak.');
+        }
+
         $arsipModel = new ArsipModel();
 
         $insertData = [
@@ -99,7 +104,7 @@ class Arsip extends BaseController
                 mkdir($uploadPath, 0755, true);
             }
 
-            $ext = strtolower($file->getExtension());
+            $ext = strtolower($file->getClientExtension());
             if (in_array($ext, ['pdf', 'doc', 'docx'], true)) {
                 $newName = $file->getRandomName();
                 $file->move($uploadPath, $newName);
@@ -124,6 +129,10 @@ class Arsip extends BaseController
         $row = $arsipModel->find($id);
 
         if ($row === null) {
+            return redirect()->to('/');
+        }
+
+        if (! $this->canAccessArchive($row)) {
             return redirect()->to('/');
         }
 
@@ -177,6 +186,10 @@ class Arsip extends BaseController
             return redirect()->to('/');
         }
 
+        if (! $this->canAccessArchive($existing)) {
+            return redirect()->to('/');
+        }
+
         $post = $this->request->getPost();
 
         if (! $this->validateForeignKey((int) $post['kode'], new MasterKodeModel(), 'kode')
@@ -185,6 +198,11 @@ class Arsip extends BaseController
             || ! $this->validateForeignKey((int) $post['lokasi'], new MasterLokasiModel(), 'lokasi')
             || ! $this->validateForeignKey((int) $post['media'], new MasterMediaModel(), 'media')) {
             return redirect()->back()->withInput()->with('error', 'Data master terkait tidak ditemukan. Silakan coba lagi.');
+        }
+
+        $kodeRow = (new MasterKodeModel())->find((int) $post['kode']);
+        if ($kodeRow === null || ! hasClassificationAccess((string) $kodeRow['kode'])) {
+            return redirect()->back()->withInput()->with('error', 'Akses klasifikasi ditolak.');
         }
 
         $updateData = [
@@ -208,7 +226,7 @@ class Arsip extends BaseController
                 mkdir($uploadPath, 0755, true);
             }
 
-            $ext = strtolower($file->getExtension());
+            $ext = strtolower($file->getClientExtension());
             if (in_array($ext, ['pdf', 'doc', 'docx'], true)) {
                 if (! empty($existing['file'])) {
                     $oldPath = $uploadPath . $existing['file'];
@@ -230,13 +248,13 @@ class Arsip extends BaseController
         return redirect()->to('/view/' . $id)->with('message', 'Arsip berhasil diperbarui.');
     }
 
-    public function delete($id)
+    public function delete($id = null)
     {
         if (! $this->requireAccess()) {
             return $this->response->setJSON(['status' => 'error', 'message' => 'Akses ditolak.']);
         }
 
-        $id = (int) $id;
+        $id = (int) ($id ?? $this->request->getPost('id'));
         if ($id <= 0) {
             return $this->response->setJSON(['status' => 'error', 'message' => 'ID tidak valid.']);
         }
@@ -244,7 +262,11 @@ class Arsip extends BaseController
         $arsipModel = new ArsipModel();
         $row = $arsipModel->find($id);
 
-        if ($row !== null && ! empty($row['file'])) {
+        if ($row === null || ! $this->canAccessArchive($row)) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Arsip tidak ditemukan.']);
+        }
+
+        if (! empty($row['file'])) {
             $filePath = WRITEPATH . 'uploads' . DIRECTORY_SEPARATOR . 'arsip' . DIRECTORY_SEPARATOR . $row['file'];
             if (is_file($filePath)) {
                 unlink($filePath);
@@ -276,6 +298,10 @@ class Arsip extends BaseController
             return $this->response->setJSON(['status' => 'error', 'message' => 'Arsip tidak ditemukan.']);
         }
 
+        if (! $this->canAccessArchive($row)) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Arsip tidak ditemukan.']);
+        }
+
         if (! empty($row['file'])) {
             $filePath = WRITEPATH . 'uploads' . DIRECTORY_SEPARATOR . 'arsip' . DIRECTORY_SEPARATOR . $row['file'];
             if (is_file($filePath)) {
@@ -293,5 +319,12 @@ class Arsip extends BaseController
     private function validateForeignKey(int $id, $model, string $label): bool
     {
         return $model->find($id) !== null;
+    }
+
+    private function canAccessArchive(array $row): bool
+    {
+        $kode = (new MasterKodeModel())->find((int) ($row['kode'] ?? 0));
+
+        return $kode !== null && hasClassificationAccess((string) $kode['kode']);
     }
 }

@@ -18,6 +18,22 @@ class App extends BaseConfig
      */
     public string $baseURL = 'http://localhost:8080/';
 
+    public function __construct()
+    {
+        parent::__construct();
+
+        $runtimeBaseURL = getenv('E2E_BASE_URL') ?: null;
+
+        if ($runtimeBaseURL === null && PHP_SAPI !== 'cli' && isset($_SERVER['HTTP_HOST'])) {
+            $scheme = (! empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+            $runtimeBaseURL = $scheme . '://' . $_SERVER['HTTP_HOST'];
+        }
+
+        if (is_string($runtimeBaseURL) && trim($runtimeBaseURL) !== '') {
+            $this->baseURL = rtrim($runtimeBaseURL, '/') . '/';
+        }
+    }
+
     /**
      * Allowed Hostnames in the Site URL other than the hostname in the baseURL.
      * If you want to accept multiple Hostnames, set this.

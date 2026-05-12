@@ -83,7 +83,7 @@ class Auth extends Controller
             }
             session()->set('menu_master', $menuMaster);
 
-            if ($previous && $previous !== '') {
+            if ($this->isSafeRedirectTarget($previous)) {
                 return redirect()->to($previous);
             }
             return redirect()->to('/');
@@ -125,5 +125,29 @@ class Auth extends Controller
             'detail'             => $detail ? json_encode($detail) : null,
             'ip_address'         => $this->request->getIPAddress(),
         ]);
+    }
+
+    private function isSafeRedirectTarget(?string $target): bool
+    {
+        if ($target === null || trim($target) === '') {
+            return false;
+        }
+
+        if (str_starts_with($target, '/') && ! str_starts_with($target, '//')) {
+            return true;
+        }
+
+        $baseUrl = parse_url(site_url('/'));
+        $targetUrl = parse_url($target);
+
+        if ($targetUrl === false || ! isset($targetUrl['host'])) {
+            return false;
+        }
+
+        $sameHost = strcasecmp($targetUrl['host'], $baseUrl['host'] ?? '') === 0;
+        $sameScheme = strcasecmp($targetUrl['scheme'] ?? '', $baseUrl['scheme'] ?? '') === 0;
+        $samePort = ($targetUrl['port'] ?? null) === ($baseUrl['port'] ?? null);
+
+        return $sameHost && $sameScheme && $samePort;
     }
 }

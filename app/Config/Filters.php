@@ -76,6 +76,7 @@ class Filters extends BaseFilters
             'auth' => ['except' => ['login*', 'auth*']],
         ],
         'after' => [
+            'secureheaders',
         ],
     ];
 

@@ -3,6 +3,12 @@
 <?php if ($zz = session()->getFlashdata('zz')): ?>
     <div class="alert alert-danger" role="alert"><?= esc($zz) ?></div>
 <?php endif; ?>
+<?php if ($message = session()->getFlashdata('message')): ?>
+    <div class="alert alert-success" role="alert"><?= esc($message) ?></div>
+<?php endif; ?>
+<?php if ($error = session()->getFlashdata('error')): ?>
+    <div class="alert alert-danger" role="alert"><?= esc($error) ?></div>
+<?php endif; ?>
 <div class="row">
 	<div class="panel panel-default">
 		<div class="panel-heading">Export data</div>

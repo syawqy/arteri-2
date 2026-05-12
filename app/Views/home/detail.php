@@ -11,7 +11,7 @@
     <div class="collapse navbar-collapse" id="module-submenu">
       <ul class="nav navbar-nav navbar-right">
         <?php if (hasModuleAccess('entridata')): ?>
-          <li><a href="<?= site_url('/admin/vedit/' . $id) ?>"><i class="glyphicon glyphicon-pencil"></i> Edit Arsip</a></li>
+          <li><a href="<?= site_url('/arsip/edit/' . $id) ?>"><i class="glyphicon glyphicon-pencil"></i> Edit Arsip</a></li>
         <?php endif; ?>
       </ul>
     </div><!-- /.navbar-collapse -->

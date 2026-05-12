@@ -102,9 +102,6 @@ class ArsipModel extends Model
         $builder->join('master_pencipta p', 'p.id = a.pencipta');
         $builder->join('master_pengolah pn', 'pn.id = a.unit_pengolah');
 
-        $whereGroups = [];
-        $klas = [];
-
         if ($keywords !== '') {
             // Simple search: OR conditions
             $builder->groupStart()
@@ -115,27 +112,22 @@ class ArsipModel extends Model
         } else {
             // Advanced search: AND conditions
             if (!empty($filters['noarsip'])) {
-                $whereGroups[] = ['a.noarsip' => $filters['noarsip']];
                 $builder->like('a.noarsip', $filters['noarsip']);
             }
             if (!empty($filters['tanggal'])) {
-                $whereGroups[] = ['a.tanggal' => $filters['tanggal']];
                 $builder->like('a.tanggal', $filters['tanggal']);
             }
             if (!empty($filters['uraian'])) {
-                $whereGroups[] = ['a.uraian' => $filters['uraian']];
                 $builder->like('a.uraian', $filters['uraian']);
             }
             if (!empty($filters['ket']) && $filters['ket'] !== 'all') {
-                $whereGroups[] = ['a.ket' => $filters['ket']];
                 $builder->where('a.ket', $filters['ket']);
             }
             if (!empty($filters['nobox'])) {
-                $whereGroups[] = ['a.nobox' => $filters['nobox']];
                 $builder->like('a.nobox', $filters['nobox']);
             }
             if (!empty($filters['kode']) && $filters['kode'] !== 'all') {
-                $klas[] = $filters['kode'];
+                $builder->like('k.kode', $filters['kode'], 'after');
             }
             if (!empty($filters['retensi']) && $filters['retensi'] !== 'all') {
                 if ($filters['retensi'] === 'sudah') {
@@ -161,16 +153,20 @@ class ArsipModel extends Model
         // Session-based klasifikasi access filter
         $aksesKlas = session('akses_klas');
         if (!empty($aksesKlas)) {
-            $k = array_filter(explode(',', $aksesKlas));
-            sort($k);
-            if (count($k) > 0) {
-                $klas = array_merge($klas, $k);
-            }
-        }
+            $prefixes = array_values(array_filter(array_map('trim', explode(',', $aksesKlas))));
+            sort($prefixes);
 
-        if (count($klas) > 0) {
-            $regexp = implode('|', $klas);
-            $builder->where("k.kode REGEXP '$regexp'", null, false);
+            if ($prefixes !== []) {
+                $builder->groupStart();
+                foreach ($prefixes as $index => $prefix) {
+                    if ($index === 0) {
+                        $builder->like('k.kode', $prefix, 'after');
+                    } else {
+                        $builder->orLike('k.kode', $prefix, 'after');
+                    }
+                }
+                $builder->groupEnd();
+            }
         }
 
         return $builder;

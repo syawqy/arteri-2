@@ -167,7 +167,7 @@
           <td><a href='<?= site_url("view/" . $a["id"]) ?>'><i class="glyphicon glyphicon-search"></i></a></td>
           <td>
             <?php if (hasModuleAccess('entridata')): ?>
-              <a href='<?= site_url('/admin/vedit/' . $a['id']) ?>'><span class='glyphicon glyphicon-pencil' aria-hidden='true'></span></a>
+              <a href='<?= site_url('/arsip/edit/' . $a['id']) ?>'><span class='glyphicon glyphicon-pencil' aria-hidden='true'></span></a>
             <?php endif; ?>
           </td>
           <td>
@@ -194,7 +194,8 @@
         <h4 class="modal-title">Delete Data</h4>
       </div>
       <div class="modal-body">
-        <form id="fdeldata" class="form-horizontal" role="form" method="post" action="<?= site_url('/admin/del1') ?>">
+        <form id="fdeldata" class="form-horizontal" role="form" method="post" action="<?= site_url('/arsip/delete') ?>">
+          <?= csrf_field() ?>
           <h4 class="modal-title">Yakin ingin Hapus Data ini?</h4>
           <input type="hidden" name="id" id="deliddata" value="">
         </form>

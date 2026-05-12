@@ -422,6 +422,18 @@ $(document).ready(function() {
 		if (resp.status === 'success') { showToast(resp.message || 'Data berhasil disimpan'); $("#addmed").modal("hide"); $("#faddmed")[0].reset(); reloadmed(); }
 		else { showToast(resp.message || 'Gagal menyimpan', 'error'); }
 	}});
+	$("#divtabelmed").on("click", ".edmed", function() {
+		var d = $(this).attr("id");
+		$.ajax({
+			type: "POST", url: site_url + "/master/media/get", data: "id=" + d, cache: false,
+			success: function(ahtml) {
+				var html = parseAjaxResponse(ahtml);
+				if (!html || html.status === 'error') return;
+				$("#enama").val(html.nama_media);
+				$("#edidmed").val(html.id);
+			}
+		});
+	});
 
 	/** XHR/Autocomplete untuk sirkulasi */
 	$(".xhr").each(function() {

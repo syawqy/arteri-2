@@ -1,0 +1,18 @@
+{
+  "name": "arteri-e2e",
+  "private": true,
+  "scripts": {
+    "audit:composer": "composer audit",
+    "audit:npm": "npm audit --audit-level=moderate",
+    "audit:security": "npm run test:security:e2e && npm run test:security:phpunit && npm run audit:npm && npm run audit:composer",
+    "audit:zap": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/zap-baseline.ps1",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:ui": "playwright test --ui",
+    "test:security:e2e": "playwright test e2e/security-owasp.spec.ts --project=chromium --reporter=html,line",
+    "test:security:phpunit": "vendor\\bin\\phpunit tests\\app\\Security\\OwaspSecurityTest.php --testdox"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.0"
+  }
+}

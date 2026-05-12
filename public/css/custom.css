@@ -134,3 +134,26 @@ label.isi {
     border-color: red;
     background-color: orange;
 }
+@media (max-width: 767px) {
+  body {
+    padding-top: 0;
+    overflow-x: hidden;
+  }
+
+  .navbar-fixed-top {
+    position: static;
+    margin-bottom: 20px;
+  }
+
+  .table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .navbar-inverse .navbar-header .navbar-toggle {
+    position: relative;
+    z-index: 3;
+  }
+}

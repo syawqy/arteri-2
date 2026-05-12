@@ -48,14 +48,15 @@ class Import extends BaseController
             return redirect()->to('/import');
         }
 
-        $ext = strtolower($file->getExtension());
+        $ext = strtolower($file->getClientExtension());
         if (!in_array($ext, ['xls', 'xlsx'], true)) {
             session()->setFlashdata('error', 'Format file tidak didukung. Gunakan .xls atau .xlsx.');
             return redirect()->to('/import');
         }
 
         try {
-            $reader = IOFactory::createReaderForFile($file->getTempName());
+            $readerType = $ext === 'xls' ? 'Xls' : 'Xlsx';
+            $reader = IOFactory::createReader($readerType);
             $reader->setReadDataOnly(true);
             $spreadsheet = $reader->load($file->getTempName());
             $sheets = $spreadsheet->getSheetNames();

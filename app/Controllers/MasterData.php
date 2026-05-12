@@ -645,6 +645,13 @@ class MasterData extends BaseController
     {
         $cfg   = $this->entities[$type];
         $table = $cfg['table'];
+        $legacyUiType = match ($type) {
+            'pencipta' => 'penc',
+            'pengolah' => 'peng',
+            'lokasi'   => 'lok',
+            'media'    => 'med',
+            default    => $type,
+        };
 
         $html = '<table class="table table-bordered" name="v' . esc($type, 'attr') . '" id="v' . esc($type, 'attr') . '">';
         $html .= '<thead>';
@@ -684,8 +691,8 @@ class MasterData extends BaseController
                     $html .= '<td>' . esc($u[$cfg['display_col']]) . '</td>';
                     break;
             }
-            $html .= '<td><a data-toggle="modal" data-target="#edit' . $type . '" class="ed' . $type . '" href="#" id="' . esc($u['id'], 'attr') . '" title="Edit"><i class="glyphicon glyphicon-edit"></i> </a></td>';
-            $html .= '<td><a data-toggle="modal" data-target="#del' . $type . '" class="del' . $type . '" href="#" id="' . esc($u['id'], 'attr') . '" title="Delete"><i class="glyphicon glyphicon-trash"></i> </a></td>';
+            $html .= '<td><a data-toggle="modal" data-target="#edit' . $legacyUiType . '" class="ed' . $legacyUiType . '" href="#" id="' . esc($u['id'], 'attr') . '" title="Edit"><i class="glyphicon glyphicon-edit"></i> </a></td>';
+            $html .= '<td><a data-toggle="modal" data-target="#del' . $legacyUiType . '" class="del' . $legacyUiType . '" href="#" id="' . esc($u['id'], 'attr') . '" title="Delete"><i class="glyphicon glyphicon-trash"></i> </a></td>';
             $html .= '</tr>';
             $no++;
         }

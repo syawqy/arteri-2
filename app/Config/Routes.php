@@ -24,6 +24,7 @@ $routes->post('arsip', 'Arsip::create');
 $routes->get('arsip/edit/(:num)', 'Arsip::edit/$1');
 $routes->post('arsip/update/(:num)', 'Arsip::update/$1');
 $routes->post('arsip/delete/(:any)', 'Arsip::delete/$1');
+$routes->post('arsip/delete', 'Arsip::delete');
 $routes->post('arsip/delfile/(:any)', 'Arsip::deleteFile/$1');
 
 // Master Data
