@@ -116,6 +116,10 @@ class Home extends BaseController
 
     public function download()
     {
+        if (session('tipe') !== 'admin') {
+            return redirect()->to('/');
+        }
+
         $keywords = $this->request->getGet('katakunci') ?? '';
         $this->logAction('DOWNLOAD', 'data_arsip', null, ['keywords' => $keywords]);
 
@@ -186,13 +190,34 @@ class Home extends BaseController
         }
 
         $filename = 'Data Arsip Arteri-' . time() . '.xlsx';
-        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment;filename="' . $filename . '"');
-        header('Cache-Control: max-age=0');
-
         $writer = new Xlsx($spreadsheet);
-        $writer->save('php://output');
-        exit;
+        $cachePath = WRITEPATH . 'cache';
+
+        if (! is_dir($cachePath)) {
+            mkdir($cachePath, 0755, true);
+        }
+
+        $tempFile = tempnam($cachePath, 'arteri-export-');
+
+        if ($tempFile === false) {
+            throw new \RuntimeException('Tidak dapat membuat file export sementara.');
+        }
+
+        $writer->save($tempFile);
+        $body = file_get_contents($tempFile);
+        unlink($tempFile);
+
+        if ($body === false) {
+            throw new \RuntimeException('Tidak dapat membaca file export sementara.');
+        }
+
+        return $this->response
+            ->download($filename, $body, true)
+            ->setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            ->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '"')
+            ->setHeader('Content-Transfer-Encoding', 'binary')
+            ->setHeader('Content-Length', (string) strlen($body))
+            ->setHeader('Cache-Control', 'max-age=0');
     }
 
     private function setExportString($sheet, string $cell, mixed $value): void

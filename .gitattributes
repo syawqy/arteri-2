@@ -1,0 +1,16 @@
+/build export-ignore
+/docs/security export-ignore
+/e2e export-ignore
+/node_modules export-ignore
+/plans export-ignore
+/playwright-report export-ignore
+/reports export-ignore
+/scripts export-ignore
+/test-results export-ignore
+/tests export-ignore
+/vendor export-ignore
+/.env export-ignore
+/package.json export-ignore
+/package-lock.json export-ignore
+/phpunit.xml.dist export-ignore
+/playwright.config.ts export-ignore

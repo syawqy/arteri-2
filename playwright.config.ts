@@ -19,14 +19,17 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
+      grepInvert: /@responsive/,
       use: { browserName: 'chromium' },
     },
     {
       name: 'firefox',
+      grepInvert: /@responsive/,
       use: { browserName: 'firefox' },
     },
     {
       name: 'webkit',
+      grepInvert: /@responsive/,
       use: { browserName: 'webkit' },
     },
     {

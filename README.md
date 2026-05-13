@@ -1,61 +1,124 @@
-# CodeIgniter 4 Framework
+# Arteri 2
 
-## What is CodeIgniter?
+Arteri 2 adalah aplikasi pengelola arsip digital berbasis CodeIgniter 4 untuk pencatatan, pencarian, pengelolaan, peminjaman, audit, impor, ekspor, dan pengamanan akses arsip.
 
-CodeIgniter is a PHP full-stack web framework that is light, fast, flexible and secure.
-More information can be found at the [official site](https://codeigniter.com).
+Proyek ini adalah kelanjutan dari [Arteri](https://github.com/dicarve/arteri), dengan target runtime PHP yang lebih baru, basis aplikasi yang lebih stabil, dan praktik keamanan yang lebih kuat untuk penggunaan publik.
 
-This repository holds the distributable version of the framework.
-It has been built from the
-[development repository](https://github.com/codeigniter4/CodeIgniter4).
+## Fitur Utama
 
-More information about the plans for version 4 can be found in [CodeIgniter 4](https://forum.codeigniter.com/forumdisplay.php?fid=28) on the forums.
+- Manajemen arsip digital beserta metadata arsip.
+- Pencarian dan filter arsip.
+- Master data kode klasifikasi, lokasi, media, pencipta, dan unit pengolah.
+- Manajemen pengguna dan kontrol akses berbasis peran.
+- Sirkulasi atau peminjaman arsip.
+- Impor dan ekspor data arsip.
+- Audit log untuk aktivitas penting.
+- Proteksi dasar aplikasi web seperti autentikasi, CSRF, validasi input, dan test keamanan OWASP.
 
-You can read the [user guide](https://codeigniter.com/user_guide/)
-corresponding to the latest version of the framework.
+## Kebutuhan Sistem
 
-## Important Change with index.php
+- PHP 8.2 atau lebih baru.
+- Composer.
+- Ekstensi PHP `intl` dan `mbstring`.
+- Database yang didukung CodeIgniter 4, misalnya MySQL atau MariaDB.
+- Node.js hanya dibutuhkan untuk menjalankan E2E test, bukan untuk menjalankan aplikasi produksi.
 
-`index.php` is no longer in the root of the project! It has been moved inside the *public* folder,
-for better security and separation of components.
+## Instalasi Lokal
 
-This means that you should configure your web server to "point" to your project's *public* folder, and
-not to the project root. A better practice would be to configure a virtual host to point there. A poor practice would be to point your web server to the project root and expect to enter *public/...*, as the rest of your logic and the
-framework are exposed.
+1. Salin konfigurasi environment:
 
-**Please** read the user guide for a better explanation of how CI4 works!
+   ```bash
+   cp env .env
+   ```
 
-## Repository Management
+2. Atur konfigurasi utama di `.env`, terutama `app.baseURL`, koneksi database, dan secret aplikasi.
 
-We use GitHub issues, in our main repository, to track **BUGS** and to track approved **DEVELOPMENT** work packages.
-We use our [forum](http://forum.codeigniter.com) to provide SUPPORT and to discuss
-FEATURE REQUESTS.
+3. Install dependency PHP:
 
-This repository is a "distribution" one, built by our release preparation script.
-Problems with it can be raised on our forum, or as issues in the main repository.
+   ```bash
+   composer install
+   ```
 
-## Contributing
+4. Jalankan migrasi dan seeder awal:
 
-We welcome contributions from the community.
+   ```bash
+   php spark migrate
+   php spark db:seed ArteriSeeder
+   ```
 
-Please read the [*Contributing to CodeIgniter*](https://github.com/codeigniter4/CodeIgniter4/blob/develop/CONTRIBUTING.md) section in the development repository.
+5. Jalankan server lokal:
 
-## Server Requirements
+   ```bash
+   php spark serve
+   ```
 
-PHP version 8.2 or higher is required, with the following extensions installed:
+   Secara default aplikasi dapat dibuka melalui `http://localhost:8080`.
 
-- [intl](http://php.net/manual/en/intl.requirements.php)
-- [mbstring](http://php.net/manual/en/mbstring.installation.php)
+## Menjalankan Test
 
-> [!WARNING]
-> - The end of life date for PHP 7.4 was November 28, 2022.
-> - The end of life date for PHP 8.0 was November 26, 2023.
-> - The end of life date for PHP 8.1 was December 31, 2025.
-> - If you are still using below PHP 8.2, you should upgrade immediately.
-> - The end of life date for PHP 8.2 will be December 31, 2026.
+Unit dan integration test PHP:
 
-Additionally, make sure that the following extensions are enabled in your PHP:
+```bash
+vendor/bin/phpunit --no-coverage --testdox
+```
 
-- json (enabled by default - don't turn it off)
-- [mysqlnd](http://php.net/manual/en/mysqlnd.install.php) if you plan to use MySQL
-- [libcurl](http://php.net/manual/en/curl.requirements.php) if you plan to use the HTTP\CURLRequest library
+E2E test browser:
+
+```bash
+npm install
+npm run test:e2e
+```
+
+E2E test menggunakan Playwright dan akan menjalankan server PHP lokal sesuai `playwright.config.ts`. Untuk mengganti alamat server:
+
+```bash
+E2E_BASE_URL=http://localhost:8081 npm run test:e2e
+```
+
+## Strategi File Test dan Release
+
+File test tetap disimpan di repository publik karena penting untuk audit kualitas, keamanan, dan kontribusi. Namun file test tidak perlu ikut paket aplikasi yang diunduh pengguna akhir.
+
+Strategi release yang disarankan:
+
+- Branch utama menyimpan source lengkap, termasuk `tests/`, `e2e/`, konfigurasi PHPUnit, dan konfigurasi Playwright.
+- CI menjalankan Composer audit, npm audit, PHPUnit, dan Playwright sebelum release.
+- Artefak test seperti `build/`, `playwright-report/`, `test-results/`, dan `reports/` tidak dicommit.
+- Paket release dibuat sebagai artifact terpisah dari GitHub Actions atau proses release lokal.
+- Paket release hanya berisi file aplikasi yang dibutuhkan runtime, tanpa `tests/`, `e2e/`, report test, cache test, dependency dev, dan file environment lokal.
+- Untuk deployment produksi berbasis Composer, gunakan:
+
+  ```bash
+  composer install --no-dev --optimize-autoloader
+  ```
+
+`.gitattributes` sudah menandai file dan folder development/test dengan `export-ignore`, sehingga arsip release berbasis `git archive` dapat dibuat lebih bersih.
+
+## Catatan Produksi
+
+- Arahkan document root web server ke folder `public/`, bukan root repository.
+- Jangan commit `.env`, file upload pengguna, cache, session, log, atau report test.
+- Gunakan HTTPS di deployment publik.
+- Pastikan permission folder `writable/` hanya dibuka sesuai kebutuhan aplikasi.
+- Jalankan migrasi database sebelum aplikasi digunakan.
+- Buat backup database dan file upload secara rutin.
+
+## Pengembangan
+
+Perintah yang umum dipakai:
+
+```bash
+composer test
+npm run test:e2e
+npm run audit:security
+```
+
+Untuk E2E yang lebih cepat selama pengembangan, jalankan satu project browser:
+
+```bash
+npx playwright test --project=chromium
+```
+
+## Lisensi
+
+Arteri 2 mengikuti lisensi yang tercantum pada file `LICENSE`.

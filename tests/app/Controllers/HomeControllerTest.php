@@ -48,6 +48,18 @@ final class HomeControllerTest extends CIUnitTestCase
         ];
     }
 
+    private function getRegularUserSession(): array
+    {
+        return [
+            'username'    => 'regular',
+            'id_user'     => 3,
+            'tipe'        => 'user',
+            'akses_klas'  => '',
+            'akses_modul' => ['entridata' => 'on'],
+            'menu_master' => false,
+        ];
+    }
+
     private function insertArsipInDb(array $overrides = []): int
     {
         $db = \Config\Database::connect();
@@ -157,7 +169,7 @@ final class HomeControllerTest extends CIUnitTestCase
         ob_end_clean();
         $response->assertStatus(200);
 
-        $contentType = $response->getHeaderLine('Content-Type');
+        $contentType = $response->response()->getHeaderLine('Content-Type');
         $this->assertStringContainsString('spreadsheet', $contentType);
     }
 
