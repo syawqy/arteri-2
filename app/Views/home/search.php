@@ -133,6 +133,7 @@
 
 <!-- Page Features -->
 <div class="row" id="hslsrc">
+  <div class="table-responsive">
   <table id="tblhslsrc" class="table table-bordered table-hover" cellspacing="0" width="100%">
     <thead>
       <tr>
@@ -181,6 +182,7 @@
       <?php endforeach; ?>
     </tbody>
   </table>
+  </div><!-- /.table-responsive -->
 </div>
 <!-- /.row -->
 

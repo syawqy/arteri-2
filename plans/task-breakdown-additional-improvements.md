@@ -81,23 +81,23 @@ Dokumen ini berisi breakdown task kecil dari `additional-improvements.md`
 ## 4. Dashboard Analytics
 
 ### 4a. Statistik Dashboard
-- [ ] **4a-1**: Buat method untuk count total arsip
-- [ ] **4a-2**: Buat method untuk count arsip sedang dipinjam
-- [ ] **4a-3**: Buat method untuk count arsip overdue
-- [ ] **4a-4**: Buat method untuk statistik per klasifikasi
-- [ ] **4a-5**: Buat method untuk statistik aktivitas bulanan
-- [ ] **4a-6**: Buat `DashboardModel` untuk analytics queries
-- [ ] **4a-7**: Buat `DashboardController` untuk API endpoints
-- [ ] **4a-8**: Update dashboard view dengan statistik
+- [x] **4a-1**: Buat method untuk count total arsip ✓ (DashboardModel)
+- [x] **4a-2**: Buat method untuk count arsip sedang dipinjam ✓ (DashboardModel)
+- [x] **4a-3**: Buat method untuk count arsip overdue ✓ (DashboardModel)
+- [x] **4a-4**: Buat method untuk statistik per klasifikasi ✓ (DashboardModel)
+- [x] **4a-5**: Buat method untuk statistik aktivitas bulanan ✓ (DashboardModel)
+- [x] **4a-6**: Buat `DashboardModel` untuk analytics queries ✓ (app/Models/DashboardModel.php)
+- [x] **4a-7**: Buat `DashboardController` untuk API endpoints ✓ (app/Controllers/Dashboard.php)
+- [x] **4a-8**: Update dashboard view dengan statistik ✓ (app/Views/dashboard/index.php)
 
 ### 4b. Laporan
-- [ ] **4b-1**: Buat laporan arsip (list view)
-- [ ] **4b-2**: Buat laporan sirkulasi
-- [ ] **4b-3**: Implementasi filter berdasarkan tanggal
-- [ ] **4b-4**: Implementasi filter berdasarkan klasifikasi
-- [ ] **4b-5**: Implementasi export PDF
-- [ ] **4b-6**: Implementasi export Excel
-- [ ] **4b-7**: Buat report template
+- [x] **4b-1**: Buat laporan arsip (list view) ✓ (app/Controllers/Report.php + app/Views/report/arsip.php)
+- [x] **4b-2**: Buat laporan sirkulasi ✓ (app/Controllers/Report.php + app/Views/report/sirkulasi.php)
+- [x] **4b-3**: Implementasi filter berdasarkan tanggal ✓ (Report.php)
+- [x] **4b-4**: Implementasi filter berdasarkan klasifikasi ✓ (Report.php)
+- [ ] **4b-5**: Implementasi export PDF (ditunda - perlu library tambahan dompdf)
+- [x] **4b-6**: Implementasi export Excel ✓ (Report.php exportArsipExcel, exportSirkulasiExcel)
+- [x] **4b-7**: Buat report template ✓ (app/Views/report/*.php)
 - [ ] **4b-8**: Test export functionality
 
 ---
@@ -105,10 +105,10 @@ Dokumen ini berisi breakdown task kecil dari `additional-improvements.md`
 ## 5. Mobile Optimization
 
 ### 5a. Responsive Design
-- [ ] **5a-1**: Audit tabel data di mobile (table-responsive wrapper)
+- [x] **5a-1**: Audit tabel data di mobile (table-responsive wrapper) ✓ (search.php)
 - [ ] **5a-2**: Audit form input di mobile (input sizes, touch-friendly)
 - [ ] **5a-3**: Audit navigation menu di mobile (hamburger menu)
-- [ ] **5a-4**: Fix issue pada data tables responsive
+- [x] **5a-4**: Fix issue pada data tables responsive ✓ (search.php table-responsive)
 - [ ] **5a-5**: Fix issue pada form inputs
 - [ ] **5a-6**: Fix issue pada navigation
 - [ ] **5a-7**: Test responsive design di berbagai device sizes

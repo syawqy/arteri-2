@@ -18,6 +18,23 @@ $routes->get('search/(:num)', 'Home::search/$1');
 $routes->get('dl', 'Home::download');
 $routes->get('view/(:num)', 'Home::detail/$1');
 
+// Dashboard
+$routes->get('dashboard', 'Dashboard::index');
+$routes->get('dashboard/api/stats', 'Dashboard::apiStats');
+$routes->get('dashboard/api/summary', 'Dashboard::apiSummary');
+$routes->get('dashboard/api/by-klasifikasi', 'Dashboard::apiByKlasifikasi');
+$routes->get('dashboard/api/by-bulan', 'Dashboard::apiByBulan');
+$routes->get('dashboard/api/by-lokasi', 'Dashboard::apiByLokasi');
+$routes->get('dashboard/api/by-media', 'Dashboard::apiByMedia');
+$routes->get('dashboard/api/by-pencipta', 'Dashboard::apiByPencipta');
+
+// Report
+$routes->get('report', 'Report::index');
+$routes->get('report/arsip', 'Report::arsip');
+$routes->get('report/arsip/export-excel', 'Report::exportArsipExcel');
+$routes->get('report/sirkulasi', 'Report::sirkulasi');
+$routes->get('report/sirkulasi/export-excel', 'Report::exportSirkulasiExcel');
+
 // Arsip (CRUD)
 $routes->get('arsip/new', 'Arsip::new');
 $routes->post('arsip', 'Arsip::create');

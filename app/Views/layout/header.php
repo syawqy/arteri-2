@@ -20,6 +20,7 @@
     <link type="text/css" rel="stylesheet" href="<?= base_url('/css/chosen.css') ?>" />
     <link type="text/css" rel="stylesheet" href="<?= base_url('/css/jquery.auto-complete.css') ?>" />
     <link type="text/css" rel="stylesheet" href="<?= base_url('/css/custom.css') ?>" />
+    <link type="text/css" rel="stylesheet" href="<?= base_url('/css/loading.css') ?>" />
     <meta name="<?= csrf_token() ?>" data-name="<?= csrf_token() ?>" data-value="<?= csrf_hash() ?>" content="<?= csrf_hash() ?>">
     <script>
         var base_url = '<?= base_url() ?>';
@@ -54,6 +55,8 @@
             <!-- Collect the nav links, forms, and other content for toggling -->
             <div class="collapse navbar-collapse" id="arteri-main-menu">
                 <ul class="nav navbar-nav">
+                    <li><a href="<?= site_url('/dashboard') ?>"><i class="glyphicon glyphicon-dashboard"></i> Dashboard</a></li>
+                    <li><a href="<?= site_url('/report') ?>"><i class="glyphicon glyphicon-print"></i> Laporan</a></li>
                     <?php if (hasModuleAccess('entridata')): ?>
                         <li><a href="<?= site_url('/arsip/new') ?>"><i class="glyphicon glyphicon-plus"></i> Entri Data Baru</a></li>
                     <?php endif; ?>
