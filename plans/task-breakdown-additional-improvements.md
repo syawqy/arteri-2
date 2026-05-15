@@ -206,9 +206,9 @@ Dokumen ini berisi breakdown task kecil dari `additional-improvements.md`
 ## Technical Debt
 
 ### Cleanup Items
-- [ ] **TD-1**: Review dan hapus unused code comments
-- [ ] **TD-2**: Standarisasi error handling di semua controller
-- [ ] **TD-3**: Buat API documentation
+- [x] **TD-1**: Review dan hapus unused code comments ✓ (codebase sudah bersih)
+- [x] **TD-2**: Standarisasi error handling di semua controller ✓ (JsonResponseTrait)
+- [x] **TD-3**: Buat API documentation ✓ (README.md endpoints tables)
 - [x] **TD-4**: Buat internal documentation (README.md update) ✓ (ditambahkan arsitektur, API endpoints, database schema)
 - [ ] **TD-5**: Setup unit test framework
 - [ ] **TD-6**: Write unit tests untuk critical functions

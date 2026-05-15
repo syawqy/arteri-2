@@ -76,6 +76,117 @@ public/
 - Modul access per user (`akses_modul`)
 - Login attempt tracking untuk keamanan
 
+### API Documentation
+
+#### REST Endpoints
+
+**Autocomplete API:**
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/ajax/arsip/{keywords}` | Search arsip for autocomplete (max 10 results) |
+| GET | `/ajax/user/{keywords}` | Search user for autocomplete (max 10 results) |
+
+**Master Data AJAX:**
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/master/klas/create` | Create new klasifikasi |
+| POST | `/master/klas/update` | Update klasifikasi |
+| POST | `/master/klas/delete` | Delete klasifikasi |
+| POST | `/master/klas/get` | Get single klasifikasi |
+| GET | `/master/klas/reload` | Reload klasifikasi table |
+| POST | `/master/penc/create` | Create pencipta |
+| POST | `/master/penc/update` | Update pencipta |
+| POST | `/master/penc/delete` | Delete pencipta |
+| POST | `/master/penc/get` | Get single pencipta |
+| GET | `/master/penc/reload` | Reload pencipta table |
+| POST | `/master/pengolah/create` | Create unit pengolah |
+| POST | `/master/pengolah/update` | Update unit pengolah |
+| POST | `/master/pengolah/delete` | Delete unit pengolah |
+| POST | `/master/pengolah/get` | Get single unit pengolah |
+| GET | `/master/pengolah/reload` | Reload unit pengolah table |
+| POST | `/master/lokasi/create` | Create lokasi |
+| POST | `/master/lokasi/update` | Update lokasi |
+| POST | `/master/lokasi/delete` | Delete lokasi |
+| POST | `/master/lokasi/get` | Get single lokasi |
+| GET | `/master/lokasi/reload` | Reload lokasi table |
+| POST | `/master/media/create` | Create media |
+| POST | `/master/media/update` | Update media |
+| POST | `/master/media/delete` | Delete media |
+| POST | `/master/media/get` | Get single media |
+| GET | `/master/media/reload` | Reload media table |
+
+**Sirkulasi API:**
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/sirkulasi` | List sirkulasi with pagination |
+| GET | `/sirkulasi/new` | Form new sirkulasi |
+| POST | `/sirkulasi` | Create new sirkulasi |
+| GET | `/sirkulasi/edit/{id}` | Edit sirkulasi |
+| POST | `/sirkulasi/update/{id}` | Update sirkulasi |
+| POST | `/sirkulasi/delete/{id}` | Delete sirkulasi |
+| POST | `/sirkulasi/kembali/{id}` | Return arsip |
+
+**Arsip API:**
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/arsip/new` | Form new arsip |
+| POST | `/arsip` | Create new arsip |
+| GET | `/arsip/edit/{id}` | Edit arsip |
+| POST | `/arsip/update/{id}` | Update arsip |
+| POST | `/arsip/delete/{id}` | Delete arsip |
+| POST | `/arsip/delfile/{id}` | Delete arsip file |
+| GET | `/view/{id}` | View arsip detail |
+| GET | `/search` | Search arsip |
+
+**Auth API:**
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/login` | Login page |
+| POST | `/login` | Perform login |
+| GET | `/logout` | Logout |
+
+**User Management API:**
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/user` | User list |
+| POST | `/user` | Create user |
+| POST | `/user/update` | Update user |
+| POST | `/user/delete` | Delete user |
+| POST | `/user/get` | Get single user |
+| POST | `/user/cekUsername` | Check username availability |
+| GET | `/user/reload` | Reload user table |
+
+#### Response Format
+
+**Success Response:**
+```json
+{
+  "status": "success",
+  "message": "Operation successful",
+  "data": { }
+}
+```
+
+**Error Response:**
+```json
+{
+  "status": "error",
+  "message": "Error message",
+  "errors": { }
+}
+```
+
+**Validation Error Response:**
+```json
+{
+  "status": "error",
+  "message": "Validasi gagal. Periksa kembali input Anda.",
+  "errors": {
+    "field_name": "Error message"
+  }
+}
+```
+
 ## Kebutuhan Sistem
 
 - PHP 8.2 atau lebih baru.
