@@ -1,3 +1,5 @@
+<?= $this->extend('layout/main') ?>
+<?= $this->section('content') ?>
 <nav class="navbar navbar-inverse navbar-submenu">
   <div class="container-fluid">
     <!-- Brand and toggle get grouped for better mobile display -->
@@ -98,3 +100,4 @@
 
 </div><!-- /2nd column -->
 </div><!-- /.row -->
+<?= $this->endSection() ?>

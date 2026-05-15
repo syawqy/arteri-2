@@ -31,9 +31,7 @@ class Dashboard extends BaseController
         $data['title'] = 'Dashboard';
         $data['stats'] = $this->dashboardModel->getAllStats();
 
-        return view('layout/header', $data)
-             . view('dashboard/index', $data)
-             . view('layout/footer');
+        return view('dashboard/index', $data);
     }
 
     /**

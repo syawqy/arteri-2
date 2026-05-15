@@ -1,3 +1,5 @@
+<?= $this->extend('layout/main') ?>
+<?= $this->section('content') ?>
 <h2>Import Data</h2>
 <hr>
 <?php if ($zz = session()->getFlashdata('zz')): ?>
@@ -26,3 +28,4 @@
 		</div>
 	</div>
 </div>
+<?= $this->endSection() ?>

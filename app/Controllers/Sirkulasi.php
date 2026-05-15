@@ -47,9 +47,7 @@ class Sirkulasi extends BaseController
             'pages'     => $pager->links('default', 'bootstrap3'),
         ];
 
-        echo view('layout/header', $data)
-            . view('sirkulasi/index', $data)
-            . view('layout/footer');
+        return view('sirkulasi/index', $data);
     }
 
     public function new()
@@ -66,9 +64,7 @@ class Sirkulasi extends BaseController
             'now'    => date('Y-m-d'),
         ];
 
-        echo view('layout/header', $data)
-            . view('sirkulasi/form', $data)
-            . view('layout/footer');
+        return view('sirkulasi/form', $data);
     }
 
     public function create()
@@ -143,9 +139,7 @@ class Sirkulasi extends BaseController
             $data['previous'] = $previous;
         }
 
-        echo view('layout/header', $data)
-            . view('sirkulasi/form', $data)
-            . view('layout/footer');
+        return view('sirkulasi/form', $data);
     }
 
     public function update($id)

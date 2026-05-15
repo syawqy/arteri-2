@@ -7,15 +7,15 @@ Dokumen ini berisi breakdown task kecil dari `additional-improvements.md`
 ## 1. Performance Optimization
 
 ### 1a. Caching untuk Master Data
-- [ ] **1a-1**: Buat service class untuk cache manager
-- [ ] **1a-2**: Implementasi caching di `MasterKodeModel` getter methods
-- [ ] **1a-3**: Implementasi caching di `MasterLokasiModel` getter methods
-- [ ] **1a-4**: Implementasi caching di `MasterMediaModel` getter methods
-- [ ] **1a-5**: Implementasi caching di `MasterPenciptaModel` getter methods
-- [ ] **1a-6**: Implementasi caching di `MasterPengolahModel` getter methods
-- [ ] **1a-7**: Buat method untuk invalidate cache saat data master berubah
-- [ ] **1a-8**: Set TTL cache 1 jam (3600 seconds)
-- [ ] **1a-9**: Konfigurasi APCu atau File cache di Config\Cache
+- [x] **1a-1**: Buat service class untuk cache manager ✓ (app/Services/CacheManager.php)
+- [x] **1a-2**: Implementasi caching di `MasterKodeModel` getter methods ✓ (MasterCacheTrait)
+- [x] **1a-3**: Implementasi caching di `MasterLokasiModel` getter methods ✓ (MasterCacheTrait)
+- [x] **1a-4**: Implementasi caching di `MasterMediaModel` getter methods ✓ (MasterCacheTrait)
+- [x] **1a-5**: Implementasi caching di `MasterPenciptaModel` getter methods ✓ (MasterCacheTrait)
+- [x] **1a-6**: Implementasi caching di `MasterPengolahModel` getter methods ✓ (MasterCacheTrait)
+- [x] **1a-7**: Buat method untuk invalidate cache saat data master berubah ✓ (invalidateCache di trait)
+- [x] **1a-8**: Set TTL cache 1 jam (3600 seconds) ✓ (Cache.php + CacheManager.php)
+- [x] **1a-9**: Konfigurasi APCu atau File cache di Config\Cache ✓ (file handler configured)
 
 ### 1b. Database Query Optimization
 - [x] **1b-1**: Buat migration untuk add index pada `data_arsip.noarsip` ✓ (sudah ada di migration awal)

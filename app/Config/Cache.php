@@ -51,12 +51,13 @@ class Cache extends BaseConfig
      * --------------------------------------------------------------------------
      *
      * The default number of seconds to save items when none is specified.
+     * Set to 3600 (1 hour) for master data caching optimization.
      *
      * WARNING: This is not used by framework handlers where 60 seconds is
      * hard-coded, but may be useful to projects and modules. This will replace
      * the hard-coded value in a future release.
      */
-    public int $ttl = 60;
+    public int $ttl = 3600;
 
     /**
      * --------------------------------------------------------------------------

@@ -1,3 +1,5 @@
+<?= $this->extend('layout/main') ?>
+<?= $this->section('content') ?>
 <?php
 /**
  * Report Index - Halaman Utama Laporan
@@ -68,8 +70,9 @@
     <div class="col-lg-12">
         <div class="alert alert-info">
             <i class="glyphicon glyphicon-info-sign"></i>
-            <strong>TIP:</strong> Untuk melihat statistik cepat, silakan kunjungi 
+            <strong>TIP:</strong> Untuk melihat statistik cepat, silakan kunjungi
             <a href="<?= site_url('dashboard') ?>" class="alert-link">Halaman Dashboard</a>.
         </div>
     </div>
 </div>
+<?= $this->endSection() ?>

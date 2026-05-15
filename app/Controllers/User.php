@@ -43,9 +43,7 @@ class User extends BaseController
             'title'     => 'Data User',
         ];
 
-        return view('layout/header', $data)
-            . view('user/index', $data)
-            . view('layout/footer');
+        return view('user/index', $data);
     }
 
     public function create()

@@ -38,9 +38,7 @@ class Arsip extends BaseController
         $data['lokasi2']  = (new MasterLokasiModel())->orderBy('nama_lokasi', 'ASC')->findAll();
         $data['media2']   = (new MasterMediaModel())->orderBy('nama_media', 'ASC')->findAll();
 
-        return view('layout/header', $data)
-             . view('arsip/form', $data)
-             . view('layout/footer');
+        return view('arsip/form', $data);
     }
 
     public function create()
@@ -152,9 +150,7 @@ class Arsip extends BaseController
             $data['previous'] = $previous;
         }
 
-        return view('layout/header', $data)
-             . view('arsip/form', $data)
-             . view('layout/footer');
+        return view('arsip/form', $data);
     }
 
     public function update($id)

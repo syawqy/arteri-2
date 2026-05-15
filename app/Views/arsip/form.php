@@ -1,3 +1,5 @@
+<?= $this->extend('layout/main') ?>
+<?= $this->section('content') ?>
 <?php
 
 /**
@@ -280,3 +282,4 @@ $fileVal     = $isEdit ? ($file ?? '') : '';
   </div>
 </div>
 <?php endif; ?>
+<?= $this->endSection() ?>

@@ -92,9 +92,7 @@ class Home extends BaseController
         $data['pager'] = $pager;
         $data['pages'] = $pager->links('default', 'bootstrap3');
 
-        return view('layout/header', $data)
-             . view('home/search', $data)
-             . view('layout/footer');
+        return view('home/search', $data);
     }
 
     public function detail($id)
@@ -112,9 +110,7 @@ class Home extends BaseController
 
         $this->logAction('VIEW_DETAIL', 'data_arsip', (int) $id);
 
-        return view('layout/header', $data)
-             . view('home/detail', $data)
-             . view('layout/footer');
+        return view('home/detail', $data);
     }
 
     public function download()

@@ -1,3 +1,5 @@
+<?= $this->extend('layout/main') ?>
+<?= $this->section('content') ?>
 <?php
 /**
  * Laporan Arsip View
@@ -24,7 +26,7 @@
                 <form method="GET" action="<?= site_url('report/arsip') ?>" class="form-inline">
                     <div class="form-group">
                         <label for="katakunci">Kata Kunci:</label>
-                        <input type="text" class="form-control" id="katakunci" name="katakunci" 
+                        <input type="text" class="form-control" id="katakunci" name="katakunci"
                                value="<?= esc($filters['katakunci'] ?? '') ?>" placeholder="Uraian arsip">
                     </div>
                     <div class="form-group">
@@ -84,7 +86,7 @@
     <div class="col-lg-12">
         <div class="panel panel-default">
             <div class="panel-heading">
-                <i class="glyphicon glyphicon-list"></i> Hasil Laporan 
+                <i class="glyphicon glyphicon-list"></i> Hasil Laporan
                 <span class="badge"><?= number_format($total ?? 0) ?> data</span>
             </div>
             <div class="panel-body">
@@ -139,3 +141,4 @@
         </div>
     </div>
 </div>
+<?= $this->endSection() ?>

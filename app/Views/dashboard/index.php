@@ -1,3 +1,5 @@
+<?= $this->extend('layout/main') ?>
+<?= $this->section('content') ?>
 <?php
 /**
  * Dashboard View - Statistik Arsip
@@ -308,3 +310,4 @@
         </div>
     </div>
 </div>
+<?= $this->endSection() ?>

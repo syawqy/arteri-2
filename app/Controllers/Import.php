@@ -31,9 +31,7 @@ class Import extends BaseController
         helper('acl');
         $this->logPageView('import/index');
 
-        return view('layout/header', ['title' => 'Import Data'])
-             . view('import/index')
-             . view('layout/footer');
+        return view('import/index', ['title' => 'Import Data']);
     }
 
     public function doImport()

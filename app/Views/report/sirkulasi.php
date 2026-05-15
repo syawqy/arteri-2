@@ -1,3 +1,5 @@
+<?= $this->extend('layout/main') ?>
+<?= $this->section('content') ?>
 <?php
 /**
  * Laporan Sirkulasi View
@@ -24,7 +26,7 @@
                 <form method="GET" action="<?= site_url('report/sirkulasi') ?>" class="form-inline">
                     <div class="form-group">
                         <label for="username">Peminjam:</label>
-                        <input type="text" class="form-control" id="username" name="username" 
+                        <input type="text" class="form-control" id="username" name="username"
                                value="<?= esc($filters['username'] ?? '') ?>" placeholder="Nama peminjam">
                     </div>
                     <div class="form-group">
@@ -38,12 +40,12 @@
                     </div>
                     <div class="form-group">
                         <label for="tanggal_from">Dari Tanggal:</label>
-                        <input type="date" class="form-control" id="tanggal_from" name="tanggal_from" 
+                        <input type="date" class="form-control" id="tanggal_from" name="tanggal_from"
                                value="<?= esc($filters['tanggal_from'] ?? '') ?>">
                     </div>
                     <div class="form-group">
                         <label for="tanggal_to">Sampai Tanggal:</label>
-                        <input type="date" class="form-control" id="tanggal_to" name="tanggal_to" 
+                        <input type="date" class="form-control" id="tanggal_to" name="tanggal_to"
                                value="<?= esc($filters['tanggal_to'] ?? '') ?>">
                     </div>
                     <button type="submit" class="btn btn-primary">
@@ -82,7 +84,7 @@
     <div class="col-lg-12">
         <div class="panel panel-default">
             <div class="panel-heading">
-                <i class="glyphicon glyphicon-list"></i> Hasil Laporan 
+                <i class="glyphicon glyphicon-list"></i> Hasil Laporan
                 <span class="badge"><?= number_format($total ?? 0) ?> data</span>
             </div>
             <div class="panel-body">
@@ -103,7 +105,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php $no = 1; foreach ($results as $row): 
+                                <?php $no = 1; foreach ($results as $row):
                                     $status = is_null($row['tgl_pengembalian']) ? 'Dipinjam' : 'Dikembalikan';
                                     $statusClass = is_null($row['tgl_pengembalian']) ? 'label-warning' : 'label-success';
                                     if (is_null($row['tgl_pengembalian']) && $row['tgl_haruskembali'] < date('Y-m-d H:i:s')) {
@@ -136,3 +138,4 @@
         </div>
     </div>
 </div>
+<?= $this->endSection() ?>

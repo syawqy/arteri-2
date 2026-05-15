@@ -1,3 +1,5 @@
+<?= $this->extend('layout/main') ?>
+<?= $this->section('content') ?>
 <nav class="navbar navbar-inverse navbar-submenu">
     <div class="container-fluid">
         <div class="navbar-header">
@@ -138,3 +140,4 @@
         </div>
     </div>
 </div>
+<?= $this->endSection() ?>

@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\MasterCacheTrait;
 use CodeIgniter\Model;
 
 class MasterPenciptaModel extends Model
 {
+    use MasterCacheTrait;
+
     protected $table            = 'master_pencipta';
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
@@ -15,4 +18,27 @@ class MasterPenciptaModel extends Model
         'nama_pencipta',
     ];
     protected $useTimestamps = false;
+
+    /**
+     * Cache prefix for this model
+     * @var string
+     */
+    protected string $cachePrefix = 'master_pencipta_';
+
+    /**
+     * Get all pencipta for dropdown with caching.
+     *
+     * @return array
+     */
+    public function getForDropdown(): array
+    {
+        $data = $this->getAllCached();
+        
+        $options = [];
+        foreach ($data as $row) {
+            $options[$row['id']] = $row['nama_pencipta'];
+        }
+        
+        return $options;
+    }
 }

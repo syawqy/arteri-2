@@ -1,3 +1,5 @@
+<?= $this->extend('layout/main') ?>
+<?= $this->section('content') ?>
 <?php
 $actionUrl = $isEdit
     ? site_url('/sirkulasi/update/' . esc($id))
@@ -95,3 +97,4 @@ $tglHarusKembaliVal   = $isEdit ? esc($tgl_haruskembali ?? '') : '';
     </div>
 
 </form>
+<?= $this->endSection() ?>

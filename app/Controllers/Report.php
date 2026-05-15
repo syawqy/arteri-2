@@ -36,9 +36,7 @@ class Report extends BaseController
         // Load master data untuk filter
         $data['kode'] = (new MasterKodeModel())->orderBy('kode', 'ASC')->findAll();
 
-        return view('layout/header', $data)
-             . view('report/index', $data)
-             . view('layout/footer');
+        return view('report/index', $data);
     }
 
     /**
@@ -92,9 +90,7 @@ class Report extends BaseController
         $data['title'] = 'Laporan Arsip';
         $data['kode'] = (new MasterKodeModel())->orderBy('kode', 'ASC')->findAll();
 
-        return view('layout/header', $data)
-             . view('report/arsip', $data)
-             . view('layout/footer');
+        return view('report/arsip', $data);
     }
 
     /**
@@ -125,9 +121,7 @@ class Report extends BaseController
 
         $data['title'] = 'Laporan Sirkulasi';
 
-        return view('layout/header', $data)
-             . view('report/sirkulasi', $data)
-             . view('layout/footer');
+        return view('report/sirkulasi', $data);
     }
 
     /**
