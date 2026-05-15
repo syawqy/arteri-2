@@ -1,3 +1,5 @@
+<?= $this->extend('layout/main') ?>
+<?= $this->section('content') ?>
 <h1 class="sub-header">Audit Log</h1>
 
 <!-- Filter -->
@@ -140,3 +142,4 @@ $(function() {
     });
 });
 </script>
+<?= $this->endSection() ?>
