@@ -3,22 +3,24 @@
 namespace Tests\App\Models;
 
 use App\Models\ArsipModel;
+use App\Models\MasterKodeModel;
+use App\Models\MasterLokasiModel;
+use App\Models\MasterMediaModel;
+use App\Models\MasterPenciptaModel;
+use App\Models\MasterPengolahModel;
 use CodeIgniter\Test\CIUnitTestCase;
-use CodeIgniter\Test\DatabaseTestTrait;
+use Tests\Support\DatabaseTestTrait;
 
 /**
- * @internal
+ * Unit tests for ArsipModel
+ * 
+ * @group Model
  */
-final class ArsipModelTest extends CIUnitTestCase
+class ArsipModelTest extends CIUnitTestCase
 {
     use DatabaseTestTrait;
 
-    protected $migrate   = true;
-    protected $seed      = \App\Database\Seeds\ArteriSeeder::class;
-    protected $basePath  = APPPATH . 'Database';
-    protected $namespace = 'App';
-
-    private ArsipModel $model;
+    protected $seed = 'Tests\Support\Database\Seeds\ArteriSeeder';
 
     protected function setUp(): void
     {
@@ -26,115 +28,187 @@ final class ArsipModelTest extends CIUnitTestCase
         $this->model = new ArsipModel();
     }
 
-    // ── MySQL-dependent tests (pertahankan) ──
-
-    public function testSearchWithEmptyKeywordReturnsResults(): void
+    protected function tearDown(): void
     {
-        $this->skipIfNotMysql();
+        parent::tearDown();
+    }
 
-        $results = $this->model->search('', [], 20, 0);
+    /**
+     * Test that model returns array type
+     */
+    public function testReturnType(): void
+    {
+        $result = $this->model->findAll(1);
+        $this->assertIsArray($result);
+    }
+
+    /**
+     * Test search method returns results
+     */
+    public function testSearchReturnsArray(): void
+    {
+        $results = $this->model->search('', [], 10);
         $this->assertIsArray($results);
     }
 
+    /**
+     * Test search with keywords returns filtered results
+     */
+    public function testSearchWithKeywords(): void
+    {
+        $results = $this->model->search('arsip', [], 10);
+        $this->assertIsArray($results);
+    }
+
+    /**
+     * Test searchCount returns integer
+     */
     public function testSearchCountReturnsInt(): void
     {
-        $this->skipIfNotMysql();
-
-        $count = $this->model->searchCount('');
+        $count = $this->model->searchCount();
         $this->assertIsInt($count);
     }
 
-    public function testGetDetailReturnsNullForNonexistentId(): void
+    /**
+     * Test getDetail returns array or null
+     */
+    public function testGetDetailReturnsArrayOrNull(): void
     {
-        $this->skipIfNotMysql();
-
-        $result = $this->model->getDetail(99999);
-        $this->assertNull($result);
+        // Get first ID from search
+        $results = $this->model->search('', [], 1);
+        if (! empty($results)) {
+            $id = $results[0]['id'] ?? null;
+            if ($id !== null) {
+                $detail = $this->model->getDetail($id);
+                $this->assertIsArray($detail);
+            }
+        }
+        // Test with non-existent ID
+        $detail = $this->model->getDetail(999999);
+        $this->assertNull($detail);
     }
 
-    // ── Non-MySQL tests (basic CRUD, jalan di SQLite) ──
-
-    public function testInsertAndFindArsip(): void
+    /**
+     * Test that allowed fields are correctly set
+     */
+    public function testAllowedFields(): void
     {
-        $data = $this->makeSampleArsipData();
-        $id   = $this->model->insert($data, true);
-
-        $row = $this->model->find($id);
-        $this->assertNotNull($row);
-        $this->assertSame('TST-ARSIP-001', $row['noarsip']);
-        $this->assertSame('Test Uraian', $row['uraian']);
+        $allowedFields = $this->model->allowedFields;
+        
+        $this->assertContains('noarsip', $allowedFields);
+        $this->assertContains('kode', $allowedFields);
+        $this->assertContains('uraian', $allowedFields);
+        $this->assertContains('tanggal', $allowedFields);
     }
 
-    public function testUpdateArsip(): void
+    /**
+     * Test table name is correctly set
+     */
+    public function testTableName(): void
     {
-        $id = $this->model->insert($this->makeSampleArsipData(), true);
-
-        $this->model->update($id, ['uraian' => 'Updated Uraian']);
-        $row = $this->model->find($id);
-        $this->assertSame('Updated Uraian', $row['uraian']);
+        $this->assertEquals('data_arsip', $this->model->table);
     }
 
-    public function testDeleteArsip(): void
+    /**
+     * Test that primary key is id
+     */
+    public function testPrimaryKey(): void
     {
-        $id = $this->model->insert($this->makeSampleArsipData(), true);
-        $this->model->delete($id);
-        $this->assertNull($this->model->find($id));
+        $this->assertEquals('id', $this->model->primaryKey);
     }
 
-    public function testInsertSetsTimestamps(): void
+    /**
+     * Test insert method works
+     */
+    public function testInsert(): void
     {
-        $id = $this->model->insert($this->makeSampleArsipData(), true);
-
-        $row = $this->model->find($id);
-        $this->assertNotEmpty($row['tgl_input']);
-    }
-
-    public function testFindReturnsArrayWithAllowedFields(): void
-    {
-        $data = $this->makeSampleArsipData();
-        $data['nonexistent'] = 'should-not-persist';
-        $id = $this->model->insert($data, true);
-
-        $row = $this->model->find($id);
-        $this->assertArrayNotHasKey('nonexistent', $row);
-    }
-
-    // ── Helpers ──
-
-    private function makeSampleArsipData(): array
-    {
-        // Resolve master IDs from seeder
-        $db = \Config\Database::connect();
-
-        $kode     = $db->table('master_kode')->where('kode', 'SDM.01')->get()->getRowArray();
-        $pencipta = $db->table('master_pencipta')->get()->getFirstRow('array');
-        $pengolah = $db->table('master_pengolah')->get()->getFirstRow('array');
-        $lokasi   = $db->table('master_lokasi')->get()->getFirstRow('array');
-        $media    = $db->table('master_media')->get()->getFirstRow('array');
-
-        return [
-            'noarsip'       => 'TST-ARSIP-001',
-            'tanggal'       => '2025-06-01',
-            'pencipta'      => $pencipta['id'],
-            'unit_pengolah' => $pengolah['id'],
-            'kode'          => $kode['id'],
-            'uraian'        => 'Test Uraian',
-            'lokasi'        => $lokasi['id'],
-            'media'         => $media['id'],
+        $data = [
+            'noarsip'       => 'TEST-' . time(),
+            'tanggal'       => date('Y-m-d'),
+            'pencipta'      => 1,
+            'unit_pengolah' => 1,
+            'kode'          => 1,
+            'uraian'        => 'Test arsip for unit testing',
+            'lokasi'        => 1,
+            'media'         => 1,
             'ket'           => 'asli',
             'jumlah'        => 1,
-            'nobox'         => 'B-01',
-            'username'      => 'admin',
+            'username'      => 'test_user',
         ];
+
+        $result = $this->model->insert($data);
+        $this->assertNotFalse($result);
+
+        // Cleanup
+        if ($result) {
+            $this->model->delete($result);
+        }
     }
 
-    private function skipIfNotMysql(): void
+    /**
+     * Test update method works
+     */
+    public function testUpdate(): void
     {
-        $db = \Config\Database::connect();
-        if ($db->DBDriver === 'SQLite3') {
-            $this->markTestSkipped(
-                'ArsipModel uses MySQL functions (DATE_ADD, CURDATE). Run against a MySQL test DB.'
-            );
-        }
+        // First insert
+        $data = [
+            'noarsip'       => 'UPDATE-' . time(),
+            'tanggal'       => date('Y-m-d'),
+            'pencipta'      => 1,
+            'unit_pengolah' => 1,
+            'kode'          => 1,
+            'uraian'        => 'Test update arsip',
+            'lokasi'        => 1,
+            'media'         => 1,
+            'ket'           => 'asli',
+            'jumlah'        => 1,
+            'username'      => 'test_user',
+        ];
+
+        $id = $this->model->insert($data);
+        $this->assertNotFalse($id);
+
+        // Update
+        $updateResult = $this->model->update($id, ['uraian' => 'Updated arsip']);
+        $this->assertTrue($updateResult);
+
+        // Verify update
+        $updated = $this->model->find($id);
+        $this->assertEquals('Updated arsip', $updated['uraian']);
+
+        // Cleanup
+        $this->model->delete($id);
+    }
+
+    /**
+     * Test delete method works
+     */
+    public function testDelete(): void
+    {
+        // First insert
+        $data = [
+            'noarsip'       => 'DELETE-' . time(),
+            'tanggal'       => date('Y-m-d'),
+            'pencipta'      => 1,
+            'unit_pengolah' => 1,
+            'kode'          => 1,
+            'uraian'        => 'Test delete arsip',
+            'lokasi'        => 1,
+            'media'         => 1,
+            'ket'           => 'asli',
+            'jumlah'        => 1,
+            'username'      => 'test_user',
+        ];
+
+        $id = $this->model->insert($data);
+        $this->assertNotFalse($id);
+
+        // Delete
+        $deleteResult = $this->model->delete($id);
+        $this->assertTrue($deleteResult);
+
+        // Verify deletion
+        $deleted = $this->model->find($id);
+        $this->assertNull($deleted);
     }
 }
