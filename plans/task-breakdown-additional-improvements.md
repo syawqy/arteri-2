@@ -210,8 +210,8 @@ Dokumen ini berisi breakdown task kecil dari `additional-improvements.md`
 - [x] **TD-2**: Standarisasi error handling di semua controller ✓ (JsonResponseTrait)
 - [x] **TD-3**: Buat API documentation ✓ (README.md endpoints tables)
 - [x] **TD-4**: Buat internal documentation (README.md update) ✓ (ditambahkan arsitektur, API endpoints, database schema)
-- [ ] **TD-5**: Setup unit test framework
-- [ ] **TD-6**: Write unit tests untuk critical functions
+- [x] **TD-5**: Setup unit test framework ✓ (PHPUnit configured, seeder exists)
+- [x] **TD-6**: Write unit tests untuk critical functions ✓ (ArsipModelTest, SirkulasiModelTest)
 - [ ] **TD-7**: Review dan cleanup obsolete migration files
 - [ ] **TD-8**: Setup CI/CD untuk automated testing
 
