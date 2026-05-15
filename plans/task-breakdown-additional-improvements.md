@@ -212,8 +212,8 @@ Dokumen ini berisi breakdown task kecil dari `additional-improvements.md`
 - [x] **TD-4**: Buat internal documentation (README.md update) ✓ (ditambahkan arsitektur, API endpoints, database schema)
 - [x] **TD-5**: Setup unit test framework ✓ (PHPUnit configured, seeder exists)
 - [x] **TD-6**: Write unit tests untuk critical functions ✓ (ArsipModelTest, SirkulasiModelTest)
-- [ ] **TD-7**: Review dan cleanup obsolete migration files
-- [ ] **TD-8**: Setup CI/CD untuk automated testing
+- [x] **TD-7**: Review dan cleanup obsolete migration files ✓ (hapus 2026-05-05-000002 duplicate)
+- [x] **TD-8**: Setup CI/CD untuk automated testing ✓ (.github/workflows/ci.yml)
 
 ---
 
