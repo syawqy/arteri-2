@@ -24,7 +24,9 @@
         <li><a href="#" role="button" data-toggle="collapse" data-target="#advanced-search"
           aria-expanded="false" aria-controls="advanced-search"
           class="open-advanced-search"><i class="glyphicon glyphicon-search"></i> Pencarian Lanjut</a></li>
+        <?php if (session('username')): ?>
         <li><a href="<?= site_url('/home/dl') . (service('request')->getUri()->getQuery() ? '?' . service('request')->getUri()->getQuery() : '') ?>"><i class="glyphicon glyphicon-download"></i> Download Data</a></li>
+        <?php endif; ?>
       </ul>
     </div><!-- /.navbar-collapse -->
   </div><!-- /.container-fluid -->
@@ -158,7 +160,7 @@
           <td><?= esc($a['ket']) ?></td>
           <td><?php if ($a['file'] === ''): ?>
             <?php else: ?>
-              <a href='<?= base_url('files/' . $a['file']) ?>' target='_blank'><span class='glyphicon glyphicon-save' aria-hidden='true'></span></a>
+              <a href='<?= site_url('file/' . $a['file']) ?>' target='_blank'><span class='glyphicon glyphicon-save' aria-hidden='true'></span></a>
             <?php endif; ?>
           </td>
           <td><?= esc($a['jumlah']) ?></td>

@@ -31,8 +31,17 @@ $(document).ready(function() {
 	// Global AJAX error handler
 	$(document).ajaxError(function(e, xhr, settings, error) {
 		if (xhr.status === 403) {
-			alert('Sesi telah berakhir. Silakan login kembali.');
-			window.location.href = site_url + '/login';
+			showToast('Sesi Anda telah berakhir. Silakan login kembali.', 'error');
+			setTimeout(function() {
+				window.location.href = site_url + '/login';
+			}, 2000);
+		} else {
+			var msg = 'Terjadi kesalahan pada server. Silakan coba lagi.';
+			try {
+				var resp = JSON.parse(xhr.responseText);
+				if (resp.message) msg = resp.message;
+			} catch(e) {}
+			showToast(msg, 'error');
 		}
 	});
 

@@ -28,6 +28,9 @@ class Home extends BaseController
     public function search($offset = 0)
     {
         $offset = (int) $offset;
+        if ($offset < 0) {
+            $offset = 0;
+        }
         helper('form');
 
         $keywords = $this->request->getGet('katakunci') ?? '';
@@ -116,8 +119,9 @@ class Home extends BaseController
 
     public function download()
     {
-        if (session('tipe') !== 'admin') {
-            return redirect()->to('/');
+        // User harus login untuk download (hak akses klasifikasi difilter oleh model)
+        if (! session('username')) {
+            return redirect()->to('/login');
         }
 
         $keywords = $this->request->getGet('katakunci') ?? '';
@@ -138,6 +142,7 @@ class Home extends BaseController
             'nobox'   => $this->request->getGet('nobox') ?? '',
         ];
 
+        // Gunakan search() yang sudah memiliki filter klasifikasi berdasarkan hak akses user
         $data = $arsipModel->search($keywords, $filters, 0, 0);
 
         $spreadsheet = new Spreadsheet();
