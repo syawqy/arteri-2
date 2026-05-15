@@ -444,15 +444,65 @@ $(document).ready(function() {
 		});
 	});
 
-	/** XHR/Autocomplete untuk sirkulasi */
+	/** XHR/Autocomplete untuk sirkulasi dengan loading state dan error handling */
 	$(".xhr").each(function() {
 		var $this = $(this);
+		var loader = $('<span class="autocomplete-loader"></span>').hide();
+		$this.after(loader);
+		
 		$this.autoComplete({
+			minChars: 3,
+			delay: 150,
+			cache: true,
 			source: function(term, response) {
-				$.getJSON($this.data("xhr") + "/" + term, function(data) {
-					response(data);
+				var $field = $this;
+				var endpoint = $field.data("xhr");
+				
+				// Show loading indicator
+				loader.show();
+				
+				$.getJSON(endpoint + "/" + encodeURIComponent(term), function(data) {
+					loader.hide();
+					if (data && data.length > 0) {
+						response(data);
+					} else {
+						// Handle empty results gracefully
+						response([{ label: 'Tidak ada hasil untuk "' + term + '"', value: '', empty: true }]);
+					}
+				}).fail(function(xhr, status, error) {
+					loader.hide();
+					console.error('Autocomplete error:', status, error);
+					showToast('Gagal mengambil data. Silakan coba lagi.', 'error');
 				});
+			},
+			renderItem: function(item, search) {
+				if (item.empty) {
+					return '<div class="autocomplete-suggestion" data-val="">' + item.label + '</div>';
+				}
+				var label = item.label || item.noarsip || item.username || '';
+				var display = label;
+				if (item.kode) display += ' <span class="text-muted">(' + item.kode + ')</span>';
+				if (item.nobox) display += ' - Box ' + item.nobox;
+				
+				// Highlight search term
+				search = search.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
+				var highlighted = display.replace(new RegExp("(" + search.split(" ").join("|") + ")", "gi"), "<b>$1</b>");
+				
+				return '<div class="autocomplete-suggestion" data-val="' + label + '">' + highlighted + '</div>';
+			},
+			onSelect: function(e, term, suggestion) {
+				if (suggestion.data('val') === '' && suggestion.text().indexOf('Tidak ada hasil') !== -1) {
+					e.preventDefault();
+					return false;
+				}
+				// Update the input value if needed
+				$field.val(term);
 			}
 		});
 	});
+	
+	// Add CSS for autocomplete loader
+	$('<style>')
+		.text('.autocomplete-loader { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; border: 2px solid #f3f3f3; border-top: 2px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite; } @keyframes spin { 0% { transform: translateY(-50%) rotate(0deg); } 100% { transform: translateY(-50%) rotate(360deg); } } .autocomplete-suggestion .text-muted { color: #999; font-size: 0.9em; }')
+		.appendTo('head');
 });

@@ -18,12 +18,12 @@ Dokumen ini berisi breakdown task kecil dari `additional-improvements.md`
 - [ ] **1a-9**: Konfigurasi APCu atau File cache di Config\Cache
 
 ### 1b. Database Query Optimization
-- [ ] **1b-1**: Buat migration untuk add index pada `data_arsip.noarsip`
-- [ ] **1b-2**: Buat migration untuk add index pada `data_arsip.kode`
-- [ ] **1b-3**: Buat migration untuk add index pada `sirkulasi.noarsip`
-- [ ] **1b-4**: Buat migration untuk add index pada `sirkulasi.username`
-- [ ] **1b-5**: Buat migration untuk add index pada `sirkulasi.tanggal_pinjam`
-- [ ] **1b-6**: Verifikasi semua index dengan EXPLAIN query
+- [x] **1b-1**: Buat migration untuk add index pada `data_arsip.noarsip` ✓ (sudah ada di migration awal)
+- [x] **1b-2**: Buat migration untuk add index pada `data_arsip.kode` ✓ (sudah ada di migration awal)
+- [x] **1b-3**: Buat migration untuk add index pada `sirkulasi.noarsip` ✓ (sudah ada di migration awal)
+- [x] **1b-4**: Buat migration untuk add index pada `sirkulasi.username` ✓ (sudah ada di migration awal)
+- [x] **1b-5**: Buat migration untuk add index pada `sirkulasi.tanggal_pinjam` ✓ (sudah ada di migration awal)
+- [x] **1b-6**: Verifikasi semua index dengan EXPLAIN query ✓ (2026-05-15-000002_AddAdditionalIndexes.php)
 
 ### 1c. Pagination Optimization
 - [ ] **1c-1**: Review default pagination limit (saat ini 50)
@@ -125,12 +125,12 @@ Dokumen ini berisi breakdown task kecil dari `additional-improvements.md`
 ## 6. User Experience
 
 ### 6a. Autocomplete Search
-- [ ] **6a-1**: Pilih library autocomplete (Select2 / jQuery UI / custom)
-- [ ] **6a-2**: Setup autocomplete untuk field `noarsip` di sirkulasi form
-- [ ] **6a-3**: Setup autocomplete untuk klasifikasi di arsip form
-- [ ] **6a-4**: Buat API endpoint untuk autocomplete suggestions
-- [ ] **6a-5**: Add loading state untuk autocomplete
-- [ ] **6a-6**: Handle empty results gracefully
+- [x] **6a-1**: Pilih library autocomplete (Select2 / jQuery UI / custom) ✓ (jQuery autoComplete)
+- [x] **6a-2**: Setup autocomplete untuk field `noarsip` di sirkulasi form ✓ (custom.js)
+- [x] **6a-3**: Setup autocomplete untuk klasifikasi di arsip form ✓ (sudah ada di form)
+- [x] **6a-4**: Buat API endpoint untuk autocomplete suggestions ✓ (xhrArsip, xhrUser)
+- [x] **6a-5**: Add loading state untuk autocomplete ✓ (spinner loader di custom.js)
+- [x] **6a-6**: Handle empty results gracefully ✓ (custom renderItem dengan "Tidak ada hasil")
 - [ ] **6a-7**: Test autocomplete functionality
 
 ### 6b. Drag & Drop Upload
@@ -209,7 +209,7 @@ Dokumen ini berisi breakdown task kecil dari `additional-improvements.md`
 - [ ] **TD-1**: Review dan hapus unused code comments
 - [ ] **TD-2**: Standarisasi error handling di semua controller
 - [ ] **TD-3**: Buat API documentation
-- [ ] **TD-4**: Buat internal documentation (README.md update)
+- [x] **TD-4**: Buat internal documentation (README.md update) ✓ (ditambahkan arsitektur, API endpoints, database schema)
 - [ ] **TD-5**: Setup unit test framework
 - [ ] **TD-6**: Write unit tests untuk critical functions
 - [ ] **TD-7**: Review dan cleanup obsolete migration files

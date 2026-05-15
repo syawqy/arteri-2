@@ -15,6 +15,67 @@ Proyek ini adalah kelanjutan dari [Arteri](https://github.com/dicarve/arteri), d
 - Audit log untuk aktivitas penting.
 - Proteksi dasar aplikasi web seperti autentikasi, CSRF, validasi input, dan test keamanan OWASP.
 
+## Arsitektur Aplikasi
+
+### Struktur Folder
+
+```
+app/
+├── Config/          # Konfigurasi aplikasi (Database, Routes, dll)
+├── Controllers/     # Controller untuk handling request HTTP
+├── Database/        # Migration dan Seeder
+├── Helpers/         # Helper functions
+├── Libraries/       # Library custom
+├── Models/          # Model untuk akses database
+├── Views/           # Template view (layout, partials)
+│   ├── layout/      # Template utama (header, footer)
+│   ├── arsip/       # View halaman arsip
+│   ├── sirkulasi/   # View halaman sirkulasi
+│   ├── master/      # View master data
+│   └── user/        # View manajemen user
+public/
+├── css/             # CSS stylesheets
+├── js/              # JavaScript files (custom.js, plugins)
+├── images/          # Gambar statis
+├── uploads/         # File upload pengguna
+└── index.php        # Entry point aplikasi
+```
+
+### Database Schema
+
+**Tabel Utama:**
+- `data_arsip` - Data arsip dengan metadata lengkap
+- `sirkulasi` - Record peminjaman arsip
+- `master_kode` - Klasifikasi kode arsip
+- `master_lokasi` - Lokasi penyimpanan arsip
+- `master_media` - Tipe media penyimpanan
+- `master_pencipta` - Informasi pencipta arsip
+- `master_pengolah` - Unit pengolah arsip
+- `master_user` - Data pengguna aplikasi
+- `system_log` - Log aktivitas sistem
+- `login_attempts` - Log percobaan login
+
+### API Endpoints
+
+**Autocomplete:**
+- `GET /ajax/arsip/{keywords}` - Cari arsip untuk autocomplete
+- `GET /ajax/user/{keywords}` - Cari user untuk autocomplete
+
+**Master Data:**
+- `GET /master/klas` - Daftar klasifikasi
+- `GET /master/penc` - Daftar pencipta
+- `GET /master/pengolah` - Daftar unit pengolah
+- `GET /master/lokasi` - Daftar lokasi
+- `GET /master/media` - Daftar media
+
+### Autentikasi & Otorisasi
+
+- Session-based authentication dengan CSRF protection
+- Role-based access control (admin/user)
+- Akses klasifikasi per user (`akses_klas`)
+- Modul access per user (`akses_modul`)
+- Login attempt tracking untuk keamanan
+
 ## Kebutuhan Sistem
 
 - PHP 8.2 atau lebih baru.
