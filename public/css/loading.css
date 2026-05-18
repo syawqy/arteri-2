@@ -107,6 +107,50 @@
     margin: 0 auto;
 }
 
+/* Dashboard skeleton card styles */
+.skeleton-card {
+    min-height: 120px;
+}
+
+.skeleton-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 4px;
+}
+
+.skeleton-number {
+    height: 36px;
+    width: 80px;
+    margin-bottom: 8px;
+}
+
+.skeleton-label {
+    height: 14px;
+    width: 100px;
+}
+
+.skeleton-row td {
+    padding: 10px 8px;
+}
+
+.skeleton-cell {
+    height: 18px;
+}
+
+/* Fade-in animation */
+.fade-in {
+    animation: fadeIn 0.4s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
 /* Loading spinner overlay */
 .loading-overlay {
     position: absolute;
