@@ -150,9 +150,9 @@ Dokumen ini berisi breakdown task kecil dari `additional-improvements.md`
 - [ ] **6c-6**: Test inline edit functionality
 
 ### 6d. Loading States
-- [ ] **6d-1**: Buat skeleton loader component
-- [ ] **6d-2**: Implementasi skeleton untuk data tables
-- [ ] **6d-3**: Implementasi skeleton untuk dashboard cards
+- [x] **6d-1**: Buat skeleton loader component ✓ (loading.css skeleton classes)
+- [x] **6d-2**: Implementasi skeleton untuk data tables ✓ (dashboard/index.php skeleton rows)
+- [x] **6d-3**: Implementasi skeleton untuk dashboard cards ✓ (dashboard/index.php card skeletons)
 - [ ] **6d-4**: Buat progress indicator component
 - [ ] **6d-5**: Implementasi progress indicator untuk import
 - [ ] **6d-6**: Implementasi progress indicator untuk export
@@ -226,11 +226,11 @@ Dokumen ini berisi breakdown task kecil dari `additional-improvements.md`
 | Notification System | 9 | 0 |
 | Dashboard Analytics | 16 | 14 |
 | Mobile Optimization | 7 | 7 |
-| User Experience | 16 | 11 |
+| User Experience | 16 | 14 |
 | Backup & Recovery | 15 | 0 |
 | Multi-Tenant Support | 11 | 0 |
 | Technical Debt | 8 | 8 |
-| **TOTAL** | **110** | **60** |
+| **TOTAL** | **110** | **63** |
 
 ---
 
