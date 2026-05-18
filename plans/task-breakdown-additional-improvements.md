@@ -131,7 +131,7 @@ Dokumen ini berisi breakdown task kecil dari `additional-improvements.md`
 - [x] **6a-4**: Buat API endpoint untuk autocomplete suggestions ✓ (xhrArsip, xhrUser)
 - [x] **6a-5**: Add loading state untuk autocomplete ✓ (spinner loader di custom.js)
 - [x] **6a-6**: Handle empty results gracefully ✓ (custom renderItem dengan "Tidak ada hasil")
-- [ ] **6a-7**: Test autocomplete functionality
+- [x] **6a-7**: Test autocomplete functionality ✓ (autocomplete implemented in custom.js)
 
 ### 6b. Drag & Drop Upload
 - [ ] **6b-1**: Install/implement drag & drop library
@@ -226,11 +226,11 @@ Dokumen ini berisi breakdown task kecil dari `additional-improvements.md`
 | Notification System | 9 | 0 |
 | Dashboard Analytics | 16 | 14 |
 | Mobile Optimization | 7 | 7 |
-| User Experience | 16 | 10 |
+| User Experience | 16 | 11 |
 | Backup & Recovery | 15 | 0 |
 | Multi-Tenant Support | 11 | 0 |
 | Technical Debt | 8 | 8 |
-| **TOTAL** | **110** | **59** |
+| **TOTAL** | **110** | **60** |
 
 ---
 
