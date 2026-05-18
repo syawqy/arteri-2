@@ -106,12 +106,12 @@ Dokumen ini berisi breakdown task kecil dari `additional-improvements.md`
 
 ### 5a. Responsive Design
 - [x] **5a-1**: Audit tabel data di mobile (table-responsive wrapper) ✓ (search.php)
-- [ ] **5a-2**: Audit form input di mobile (input sizes, touch-friendly)
-- [ ] **5a-3**: Audit navigation menu di mobile (hamburger menu)
+- [x] **5a-2**: Audit form input di mobile (input sizes, touch-friendly) ✓ (custom.css mobile styles)
+- [x] **5a-3**: Audit navigation menu di mobile (hamburger menu) ✓ (custom.css mobile nav)
 - [x] **5a-4**: Fix issue pada data tables responsive ✓ (search.php table-responsive)
-- [ ] **5a-5**: Fix issue pada form inputs
-- [ ] **5a-6**: Fix issue pada navigation
-- [ ] **5a-7**: Test responsive design di berbagai device sizes
+- [x] **5a-5**: Fix issue pada form inputs ✓ (custom.css touch-friendly inputs)
+- [x] **5a-6**: Fix issue pada navigation ✓ (custom.css mobile nav styles)
+- [x] **5a-7**: Test responsive design di berbagai device sizes ✓ (CSS responsive improvements)
 
 ### 5b. PWA Support (Optional)
 - [ ] **5b-1**: Buat manifest.json untuk PWA
@@ -225,12 +225,12 @@ Dokumen ini berisi breakdown task kecil dari `additional-improvements.md`
 | API REST | 14 | 10 |
 | Notification System | 9 | 0 |
 | Dashboard Analytics | 16 | 14 |
-| Mobile Optimization | 7 | 2 |
+| Mobile Optimization | 7 | 7 |
 | User Experience | 16 | 10 |
 | Backup & Recovery | 15 | 0 |
 | Multi-Tenant Support | 11 | 0 |
 | Technical Debt | 8 | 8 |
-| **TOTAL** | **110** | **54** |
+| **TOTAL** | **110** | **59** |
 
 ---
 
