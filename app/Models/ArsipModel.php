@@ -65,6 +65,48 @@ class ArsipModel extends Model
     }
 
     /**
+     * Cursor-based pagination for search results.
+     * Returns records after the given cursor (id) with optional limit.
+     *
+     * @param int|null $cursor    Last seen ID (exclusive - get records after this)
+     * @param string   $keywords
+     * @param array    $filters
+     * @param int      $limit
+     * @return array{records: array, next_cursor: int|null, has_more: bool}
+     */
+    public function searchWithCursor(?int $cursor = null, string $keywords = '', array $filters = [], int $limit = 20): array
+    {
+        $builder = $this->buildSearchQuery($keywords, $filters);
+
+        // Cursor-based: get records with id > cursor
+        if ($cursor !== null) {
+            $builder->where('a.id >', $cursor);
+        }
+
+        // Order by id for consistent cursor behavior
+        $builder->orderBy('a.id', 'ASC');
+        $builder->limit($limit + 1); // Fetch one extra to check if there's more
+
+        $records = $builder->get()->getResultArray();
+        $hasMore = count($records) > $limit;
+
+        if ($hasMore) {
+            array_pop($records); // Remove the extra record
+        }
+
+        $nextCursor = null;
+        if (! empty($records)) {
+            $nextCursor = (int) end($records)['id'];
+        }
+
+        return [
+            'records'     => $records,
+            'next_cursor' => $nextCursor,
+            'has_more'    => $hasMore,
+        ];
+    }
+
+    /**
      * Get a single archive record with all master table joins.
      *
      * @param int|string $id

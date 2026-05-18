@@ -127,3 +127,33 @@ $routes->get('audit/detail/(:num)', 'AuditLog::detail/$1');
 $routes->get('import', 'Import::index');
 $routes->post('import', 'Import::doImport');
 $routes->get('export', 'Export::index');
+
+// REST API (v1)
+$routes->group('api/v1', function ($routes) {
+    // Auth
+    $routes->post('auth/login', 'Api\AuthController::login');
+    $routes->post('auth/logout', 'Api\AuthController::logout');
+    $routes->get('auth/me', 'Api\AuthController::me');
+
+    // Arsip
+    $routes->get('arsip', 'Api\ArsipController::index');
+    $routes->get('arsip/(:num)', 'Api\ArsipController::show/$1');
+    $routes->post('arsip', 'Api\ArsipController::create');
+    $routes->put('arsip/(:num)', 'Api\ArsipController::update/$1');
+    $routes->delete('arsip/(:num)', 'Api\ArsipController::delete/$1');
+
+    // Sirkulasi
+    $routes->get('sirkulasi', 'Api\SirkulasiController::index');
+    $routes->get('sirkulasi/(:num)', 'Api\SirkulasiController::show/$1');
+    $routes->post('sirkulasi', 'Api\SirkulasiController::create');
+    $routes->put('sirkulasi/(:num)', 'Api\SirkulasiController::update/$1');
+    $routes->post('sirkulasi/(:num)/kembali', 'Api\SirkulasiController::kembali/$1');
+
+    // Master Data
+    $routes->get('master/klasifikasi', 'Api\MasterDataController::klasifikasi');
+    $routes->get('master/pencipta', 'Api\MasterDataController::pencipta');
+    $routes->get('master/pengolah', 'Api\MasterDataController::pengolah');
+    $routes->get('master/lokasi', 'Api\MasterDataController::lokasi');
+    $routes->get('master/media', 'Api\MasterDataController::media');
+    $routes->get('master/autocomplete/(:any)', 'Api\MasterDataController::autocomplete/$1');
+});
