@@ -44,15 +44,15 @@ Dokumen ini berisi breakdown task kecil dari `additional-improvements.md`
 - [x] **2a-6**: Buat `Api\AuthController` untuk login/logout ✓ (AuthController.php)
 - [x] **2a-7**: Update Routes.php dengan API routes ✓ (Routes.php api/v1 group)
 - [x] **2a-8**: Buat API response formatter helper ✓ (api_response_helper.php)
-- [ ] **2a-9**: Buat API documentation (Swagger/OpenAPI)
+- [x] **2a-9**: Buat API documentation (Swagger/OpenAPI) ✓ (docs/openapi.yaml + Swagger UI view di app/Views/api/docs.php, route /api/v1/docs)
 
 ### 2b. API Authentication
 - [x] **2b-1**: Pilih dan implementasikan JWT atau API Key based auth ✓ (API Key via X-API-Key header)
 - [x] **2b-2**: Buat middleware/filter untuk API authentication ✓ (validateApiKey di BaseApiController)
-- [x] **2b-3**: Implementasi rate limiting per API key ✓ (todo: implement rate limiting)
-- [ ] **2b-4**: Buat endpoint untuk generate/revoke API key
-- [ ] **2b-5**: Buat database table untuk API keys ( jika belum ada)
-- [ ] **2b-6**: Test API authentication flow
+- [x] **2b-3**: Implementasi rate limiting per API key ✓ (CodeIgniter Throttler, BaseApiController.php:119-128)
+- [x] **2b-4**: Buat endpoint untuk generate/revoke API key ✓ (ApiKeyController: index/create/revoke)
+- [x] **2b-5**: Buat database table untuk API keys ✓ (2026-05-19-000001_CreateApiKeys migration + ApiKeyModel)
+- [x] **2b-6**: Test API authentication flow ✓ (ApiAuthenticationTest, ApiKeyControllerTest, SirkulasiApiTest, MasterDataApiTest)
 
 ---
 
@@ -222,7 +222,7 @@ Dokumen ini berisi breakdown task kecil dari `additional-improvements.md`
 | Category | Total Tasks | Completed |
 |----------|-------------|-----------|
 | Performance Optimization | 14 | 10 |
-| API REST | 14 | 10 |
+| API REST | 14 | 14 |
 | Notification System | 9 | 0 |
 | Dashboard Analytics | 16 | 14 |
 | Mobile Optimization | 7 | 7 |
@@ -230,7 +230,7 @@ Dokumen ini berisi breakdown task kecil dari `additional-improvements.md`
 | Backup & Recovery | 15 | 0 |
 | Multi-Tenant Support | 11 | 0 |
 | Technical Debt | 8 | 8 |
-| **TOTAL** | **110** | **63** |
+| **TOTAL** | **110** | **67** |
 
 ---
 

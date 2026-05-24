@@ -146,14 +146,22 @@ $routes->group('api/v1', function ($routes) {
     $routes->get('sirkulasi', 'Api\SirkulasiController::index');
     $routes->get('sirkulasi/(:num)', 'Api\SirkulasiController::show/$1');
     $routes->post('sirkulasi', 'Api\SirkulasiController::create');
-    $routes->put('sirkulasi/(:num)', 'Api\SirkulasiController::update/$1');
+    $routes->delete('sirkulasi/(:num)', 'Api\SirkulasiController::delete/$1');
     $routes->post('sirkulasi/(:num)/kembali', 'Api\SirkulasiController::kembali/$1');
 
-    // Master Data
-    $routes->get('master/klasifikasi', 'Api\MasterDataController::klasifikasi');
-    $routes->get('master/pencipta', 'Api\MasterDataController::pencipta');
-    $routes->get('master/pengolah', 'Api\MasterDataController::pengolah');
-    $routes->get('master/lokasi', 'Api\MasterDataController::lokasi');
-    $routes->get('master/media', 'Api\MasterDataController::media');
-    $routes->get('master/autocomplete/(:any)', 'Api\MasterDataController::autocomplete/$1');
+    // Master Data (generic by type: kode, pencipta, pengolah, lokasi, media)
+    $routes->get('master/(:segment)', 'Api\MasterDataController::index/$1');
+    $routes->get('master/(:segment)/(:num)', 'Api\MasterDataController::show/$1/$2');
+    $routes->post('master/(:segment)', 'Api\MasterDataController::create/$1');
+    $routes->put('master/(:segment)/(:num)', 'Api\MasterDataController::update/$1/$2');
+    $routes->delete('master/(:segment)/(:num)', 'Api\MasterDataController::delete/$1/$2');
+
+    // API key management (admin session)
+    $routes->get('admin/api-keys', 'Api\ApiKeyController::index');
+    $routes->post('admin/api-keys', 'Api\ApiKeyController::create');
+    $routes->delete('admin/api-keys/(:num)', 'Api\ApiKeyController::revoke/$1');
+
+    // OpenAPI spec & Swagger UI
+    $routes->get('openapi.json', 'Api\DocsController::openapi');
+    $routes->get('docs', 'Api\DocsController::ui');
 });

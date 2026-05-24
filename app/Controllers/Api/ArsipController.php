@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers\Api;
 
 use App\Models\ArsipModel;
+use CodeIgniter\HTTP\ResponseInterface;
 
 /**
  * REST API Controller for Arsip (Archive) operations.

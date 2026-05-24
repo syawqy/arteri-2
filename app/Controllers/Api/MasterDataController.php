@@ -9,6 +9,7 @@ use App\Models\MasterPenciptaModel;
 use App\Models\MasterPengolahModel;
 use App\Models\MasterLokasiModel;
 use App\Models\MasterMediaModel;
+use CodeIgniter\HTTP\ResponseInterface;
 
 /**
  * REST API Controller for Master Data operations.

@@ -1,0 +1,438 @@
+openapi: 3.0.3
+info:
+  title: Arteri REST API
+  description: REST API v1 for arsip, sirkulasi, and master data integration.
+  version: 1.0.0
+servers:
+  - url: /api/v1
+    description: API base path
+security:
+  - ApiKeyAuth: []
+tags:
+  - name: Auth
+  - name: Arsip
+  - name: Sirkulasi
+  - name: Master
+  - name: Admin
+  - name: Docs
+paths:
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login with username and password
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password]
+              properties:
+                username: { type: string }
+                password: { type: string, format: password }
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SuccessResponse' }
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Destroy session
+      security: []
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SuccessResponse' }
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Current session user
+      security: []
+      responses:
+        '200':
+          description: User profile
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SuccessResponse' }
+        '401':
+          description: Not authenticated
+  /arsip:
+    get:
+      tags: [Arsip]
+      summary: List arsip (cursor pagination)
+      parameters:
+        - { name: cursor, in: query, schema: { type: integer } }
+        - { name: limit, in: query, schema: { type: integer, default: 20, maximum: 100 } }
+        - { name: katakunci, in: query, schema: { type: string } }
+      responses:
+        '200':
+          description: Paginated arsip list
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaginatedResponse' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+    post:
+      tags: [Arsip]
+      summary: Create arsip record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ArsipInput' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SuccessResponse' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /arsip/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: integer } }
+    get:
+      tags: [Arsip]
+      summary: Get arsip by ID
+      responses:
+        '200':
+          description: Arsip detail
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SuccessResponse' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Arsip]
+      summary: Update arsip
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ArsipInput' }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SuccessResponse' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [Arsip]
+      summary: Delete arsip
+      responses:
+        '200':
+          description: Deleted
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SuccessResponse' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /sirkulasi:
+    get:
+      tags: [Sirkulasi]
+      summary: List sirkulasi records
+      parameters:
+        - { name: cursor, in: query, schema: { type: integer } }
+        - { name: limit, in: query, schema: { type: integer, default: 20, maximum: 100 } }
+        - { name: katakunci, in: query, schema: { type: string } }
+      responses:
+        '200':
+          description: Paginated sirkulasi list
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaginatedResponse' }
+    post:
+      tags: [Sirkulasi]
+      summary: Create peminjaman
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [noarsip, username_peminjam, tgl_haruskembali]
+              properties:
+                noarsip: { type: string }
+                username_peminjam: { type: string }
+                tgl_haruskembali: { type: string, format: date }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SuccessResponse' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /sirkulasi/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: integer } }
+    get:
+      tags: [Sirkulasi]
+      summary: Get sirkulasi record by ID
+      responses:
+        '200':
+          description: Sirkulasi detail
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SuccessResponse' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [Sirkulasi]
+      summary: Delete sirkulasi record
+      responses:
+        '200':
+          description: Deleted
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SuccessResponse' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /sirkulasi/{id}/kembali:
+    post:
+      tags: [Sirkulasi]
+      summary: Mark arsip as returned
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        '200':
+          description: Returned
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SuccessResponse' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422':
+          description: Already returned
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+  /master/{type}:
+    parameters:
+      - name: type
+        in: path
+        required: true
+        description: Master data type
+        schema:
+          type: string
+          enum: [kode, pencipta, pengolah, lokasi, media]
+    get:
+      tags: [Master]
+      summary: List master data records by type
+      responses:
+        '200':
+          description: List of records
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SuccessResponse' }
+        '400':
+          description: Invalid master data type
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+    post:
+      tags: [Master]
+      summary: Create master data record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Fields vary by type (e.g. kode/nama for type=kode, nama_pencipta for type=pencipta)
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SuccessResponse' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /master/{type}/{id}:
+    parameters:
+      - { name: type, in: path, required: true, schema: { type: string, enum: [kode, pencipta, pengolah, lokasi, media] } }
+      - { name: id, in: path, required: true, schema: { type: integer } }
+    get:
+      tags: [Master]
+      summary: Get master data record by ID
+      responses:
+        '200':
+          description: Record
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SuccessResponse' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Master]
+      summary: Update master data record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SuccessResponse' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [Master]
+      summary: Delete master data record
+      responses:
+        '200':
+          description: Deleted
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SuccessResponse' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /admin/api-keys:
+    get:
+      tags: [Admin]
+      summary: List API keys (admin session)
+      security: []
+      responses:
+        '200':
+          description: Key list (without key_hash)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SuccessResponse' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [Admin]
+      summary: Generate API key (admin session). Plain key returned ONCE.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string }
+                rate_limit: { type: integer, default: 60 }
+                expires_at: { type: string, format: date-time, nullable: true }
+      responses:
+        '201':
+          description: Key created; plain key returned once
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          id: { type: integer }
+                          name: { type: string }
+                          key_prefix: { type: string }
+                          api_key: { type: string, description: Plain key, store securely. Not retrievable later. }
+                          rate_limit: { type: integer }
+                          expires_at: { type: string, nullable: true }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /admin/api-keys/{id}:
+    delete:
+      tags: [Admin]
+      summary: Revoke API key (admin session)
+      security: []
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        '200':
+          description: Revoked
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SuccessResponse' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /openapi.json:
+    get:
+      tags: [Docs]
+      summary: OpenAPI specification (JSON)
+      security: []
+      responses:
+        '200':
+          description: OpenAPI document
+  /docs:
+    get:
+      tags: [Docs]
+      summary: Swagger UI for browsing this API
+      security: []
+      responses:
+        '200':
+          description: HTML page with embedded Swagger UI
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+  schemas:
+    SuccessResponse:
+      type: object
+      properties:
+        success: { type: boolean, example: true }
+        message: { type: string }
+        data: { type: object, nullable: true }
+    ErrorResponse:
+      type: object
+      properties:
+        success: { type: boolean, example: false }
+        message: { type: string }
+        errors:
+          type: array
+          items: { type: string }
+    PaginatedResponse:
+      type: object
+      properties:
+        success: { type: boolean, example: true }
+        message: { type: string }
+        data:
+          type: array
+          items: { type: object }
+        pagination:
+          type: object
+          properties:
+            next_cursor: { type: integer, nullable: true }
+            has_more: { type: boolean }
+    ArsipInput:
+      type: object
+      description: Field requirements vary; refer to ArsipModel allowedFields.
+      properties:
+        noarsip: { type: string }
+        kode: { type: string }
+        judul: { type: string }
+  responses:
+    Unauthorized:
+      description: Missing, invalid, or expired API key
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    Forbidden:
+      description: Insufficient permissions
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    ValidationError:
+      description: Validation failure
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    RateLimited:
+      description: Too many requests
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }

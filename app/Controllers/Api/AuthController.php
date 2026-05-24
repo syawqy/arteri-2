@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers\Api;
 
 use App\Models\UserModel;
+use CodeIgniter\HTTP\ResponseInterface;
 
 /**
  * REST API Controller for Authentication operations.

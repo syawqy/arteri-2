@@ -19,12 +19,6 @@ trait MasterCacheTrait
     protected static ?CacheManager $cacheManager = null;
 
     /**
-     * Cache key prefix - should be overridden in child class
-     * @var string
-     */
-    protected string $cachePrefix = 'master_';
-
-    /**
      * Get cache manager instance
      *
      * @return CacheManager
@@ -160,13 +154,13 @@ trait MasterCacheTrait
     /**
      * Insert record and invalidate cache
      *
-     * @param array $data
+     * @param array|object|null $row
      * @param bool $returnID
-     * @return array|int|string|null
+     * @return array|int|string|null|bool
      */
-    public function insert($data, bool $returnID = false)
+    public function insert($row = null, bool $returnID = true)
     {
-        $result = parent::insert($data, $returnID);
+        $result = parent::insert($row, $returnID);
         $this->invalidateCache();
         return $result;
     }
@@ -174,14 +168,14 @@ trait MasterCacheTrait
     /**
      * Update record and invalidate cache
      *
-     * @param int|string $id
-     * @param array $data
+     * @param int|string|array|null $id
+     * @param array|object|null $row
      * @return bool
      */
-    public function update($id, $data): bool
+    public function update($id = null, $row = null): bool
     {
-        $result = parent::update($id, $data);
-        
+        $result = parent::update($id, $row);
+
         if ($result) {
             // Invalidate specific item cache
             $cacheKey = $this->getItemCacheKey($id);
@@ -189,20 +183,21 @@ trait MasterCacheTrait
             // Invalidate all cache as well (data may appear in lists)
             $this->invalidateCache();
         }
-        
+
         return $result;
     }
 
     /**
      * Delete record and invalidate cache
      *
-     * @param int|string $id
-     * @return bool
+     * @param int|string|array|null $id
+     * @param bool $purge
+     * @return BaseResult|bool
      */
-    public function delete($id): bool
+    public function delete($id = null, bool $purge = false)
     {
-        $result = parent::delete($id);
-        
+        $result = parent::delete($id, $purge);
+
         if ($result) {
             // Invalidate specific item cache
             $cacheKey = $this->getItemCacheKey($id);
@@ -210,7 +205,7 @@ trait MasterCacheTrait
             // Invalidate all cache as well
             $this->invalidateCache();
         }
-        
+
         return $result;
     }
 }

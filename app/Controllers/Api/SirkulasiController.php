@@ -6,6 +6,7 @@ namespace App\Controllers\Api;
 
 use App\Models\SirkulasiModel;
 use App\Models\ArsipModel;
+use CodeIgniter\HTTP\ResponseInterface;
 
 /**
  * REST API Controller for Sirkulasi (Circulation) operations.
@@ -152,10 +153,10 @@ class SirkulasiController extends BaseApiController
     }
 
     /**
-     * POST /api/sirkulasi/{id}/return
+     * POST /api/sirkulasi/{id}/kembali
      * Mark a circulation record as returned.
      */
-    public function return(int $id): ResponseInterface
+    public function kembali(int $id): ResponseInterface
     {
         if ($error = $this->validateApiKey()) {
             return $error;

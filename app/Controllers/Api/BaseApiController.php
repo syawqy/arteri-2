@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Controllers\Api;
 
 use App\Controllers\BaseController;
+use App\Services\ApiKeyService;
 use CodeIgniter\HTTP\ResponseInterface;
+use CodeIgniter\Throttle\Throttler;
 
 /**
  * Base controller for REST API endpoints.
@@ -22,8 +24,13 @@ class BaseApiController extends BaseController
     protected const HTTP_UNAUTHORIZED = 401;
     protected const HTTP_FORBIDDEN = 403;
     protected const HTTP_NOT_FOUND = 404;
+    protected const HTTP_TOO_MANY_REQUESTS = 429;
     protected const HTTP_UNPROCESSABLE_ENTITY = 422;
     protected const HTTP_INTERNAL_ERROR = 500;
+
+    protected ?array $apiKeyRecord = null;
+
+    private ?ApiKeyService $apiKeyService = null;
 
     /**
      * Return a success response with data.
@@ -87,7 +94,7 @@ class BaseApiController extends BaseController
     }
 
     /**
-     * Validate that the request contains required API key header.
+     * Validate X-API-Key header against database and apply rate limiting.
      */
     protected function validateApiKey(): ?ResponseInterface
     {
@@ -100,15 +107,58 @@ class BaseApiController extends BaseController
             );
         }
 
-        // Validate against stored API keys (implement based on your security requirements)
-        // For now, we accept any non-empty key
-        // TODO: Implement full API key validation against database
+        $record = $this->getApiKeyService()->validate($apiKey);
 
-        return null; // Valid
+        if ($record === null) {
+            return $this->errorResponse(
+                'Invalid or expired API key',
+                self::HTTP_UNAUTHORIZED
+            );
+        }
+
+        $throttler = service('throttler');
+        $limit     = (int) ($record['rate_limit'] ?? 60);
+        $key       = 'api_key_' . $record['id'];
+
+        if (! $throttler->check($key, $limit, MINUTE)) {
+            return $this->errorResponse(
+                'Rate limit exceeded. Try again in ' . $throttler->getTokenTime() . ' seconds.',
+                self::HTTP_TOO_MANY_REQUESTS
+            );
+        }
+
+        $this->apiKeyRecord = $record;
+        $this->getApiKeyService()->touchLastUsed((int) $record['id']);
+
+        return null;
     }
 
     /**
-     * Get the authenticated user from session/token.
+     * Require admin web session for key management endpoints.
+     */
+    protected function validateAdminSession(): ?ResponseInterface
+    {
+        $user = $this->getAuthenticatedUser();
+
+        if ($user === null) {
+            return $this->errorResponse(
+                'Authentication required',
+                self::HTTP_UNAUTHORIZED
+            );
+        }
+
+        if (($user['tipe'] ?? '') !== 'admin') {
+            return $this->errorResponse(
+                'Admin access required',
+                self::HTTP_FORBIDDEN
+            );
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the authenticated user from session.
      */
     protected function getAuthenticatedUser(): ?array
     {
@@ -120,7 +170,16 @@ class BaseApiController extends BaseController
 
         return [
             'username' => $username,
-            'role'     => session('role'),
+            'tipe'     => session('tipe'),
         ];
+    }
+
+    protected function getApiKeyService(): ApiKeyService
+    {
+        if ($this->apiKeyService === null) {
+            $this->apiKeyService = new ApiKeyService();
+        }
+
+        return $this->apiKeyService;
     }
 }

@@ -73,7 +73,7 @@ class Filters extends BaseFilters
      */
     public array $globals = [
         'before' => [
-            'auth' => ['except' => ['login*', 'auth*']],
+            'auth' => ['except' => ['login*', 'auth*', 'api/*']],
         ],
         'after' => [
             'secureheaders',
@@ -85,7 +85,7 @@ class Filters extends BaseFilters
         parent::__construct();
 
         if (ENVIRONMENT !== 'testing') {
-            $this->globals['before']['csrf'] = ['except' => []];
+            $this->globals['before']['csrf'] = ['except' => ['api/*']];
         }
     }
     /**
