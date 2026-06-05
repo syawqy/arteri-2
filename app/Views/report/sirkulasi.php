@@ -66,10 +66,15 @@
         <div class="panel panel-default">
             <div class="panel-body text-right">
                 <?php
-                $exportUrl = site_url('report/sirkulasi/export-excel?' . http_build_query($filters));
+                $query     = http_build_query($filters);
+                $exportUrl = site_url('report/sirkulasi/export-excel?' . $query);
+                $printUrl  = site_url('report/sirkulasi/print?' . $query);
                 ?>
-                <a href="<?= $exportUrl ?>" class="btn btn-success">
+                <a href="<?= $exportUrl ?>" class="btn btn-success js-export">
                     <i class="glyphicon glyphicon-file"></i> Export Excel
+                </a>
+                <a href="<?= $printUrl ?>" class="btn btn-danger" target="_blank">
+                    <i class="glyphicon glyphicon-print"></i> Export PDF
                 </a>
                 <a href="<?= site_url('report') ?>" class="btn btn-default">
                     <i class="glyphicon glyphicon-arrow-left"></i> Kembali

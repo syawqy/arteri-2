@@ -306,4 +306,95 @@ class Report extends BaseController
             ->setHeader('Content-Length', (string) strlen($body))
             ->setHeader('Cache-Control', 'max-age=0');
     }
+
+    /**
+     * Versi cetak (print-to-PDF) laporan arsip.
+     * Render halaman print-friendly yang otomatis memanggil window.print()
+     * sehingga user dapat menyimpan sebagai PDF lewat dialog browser.
+     * GET /report/arsip/print
+     */
+    public function printArsip()
+    {
+        $this->logAction('EXPORT', 'report_arsip_pdf', null);
+
+        $keywords     = $this->request->getGet('katakunci') ?? '';
+        $kode         = $this->request->getGet('kode') ?? '';
+        $tanggal_from = $this->request->getGet('tanggal_from') ?? '';
+        $tanggal_to   = $this->request->getGet('tanggal_to') ?? '';
+        $ket          = $this->request->getGet('ket') ?? '';
+
+        $arsipModel = new ArsipModel();
+        $filters = [
+            'noarsip' => '', 'tanggal' => '', 'uraian' => $keywords, 'ket' => $ket,
+            'kode' => $kode, 'retensi' => '', 'penc' => '', 'peng' => '', 'lok' => '',
+            'med' => '', 'nobox' => '',
+        ];
+
+        $results = $arsipModel->search($keywords, $filters, 0, 0);
+
+        $headers = ['No.', 'No.Arsip', 'Tanggal', 'Klasifikasi', 'Uraian', 'Pencipta',
+                    'Pengolah', 'Media', 'Lokasi', 'Ket', 'Jumlah', 'No.Box', 'Retensi'];
+        $rows = [];
+        $no = 1;
+        foreach ($results as $d) {
+            $rows[] = [
+                $no++, $d['noarsip'] ?? '-', $d['tanggal'] ?? '-', $d['nama_kode'] ?? '-',
+                $d['uraian'] ?? '-', $d['nama_pencipta'] ?? '-', $d['nama_pengolah'] ?? '-',
+                $d['nama_media'] ?? '-', $d['nama_lokasi'] ?? '-', $d['ket'] ?: '-',
+                $d['jumlah'] ?? '-', $d['nobox'] ?? '-', $d['b'] ?? '-',
+            ];
+        }
+
+        return view('report/print', [
+            'title'   => 'Laporan Arsip',
+            'headers' => $headers,
+            'rows'    => $rows,
+            'total'   => count($rows),
+        ]);
+    }
+
+    /**
+     * Versi cetak (print-to-PDF) laporan sirkulasi.
+     * GET /report/sirkulasi/print
+     */
+    public function printSirkulasi()
+    {
+        $this->logAction('EXPORT', 'report_sirkulasi_pdf', null);
+
+        $username     = $this->request->getGet('username') ?? '';
+        $status       = $this->request->getGet('status') ?? '';
+        $tanggal_from = $this->request->getGet('tanggal_from') ?? '';
+        $tanggal_to   = $this->request->getGet('tanggal_to') ?? '';
+
+        $sirkulasiModel = new SirkulasiModel();
+        $filters = [
+            'username' => $username, 'status' => $status,
+            'tanggal_from' => $tanggal_from, 'tanggal_to' => $tanggal_to,
+        ];
+
+        $results = $sirkulasiModel->search($username, $filters, 0, 0);
+
+        $headers = ['No.', 'No.Arsip', 'Uraian', 'Peminjam', 'Tgl Pinjam', 'Tgl Harus Kembali',
+                    'Tgl Kembali', 'Status', 'Keterangan'];
+        $rows = [];
+        $no = 1;
+        foreach ($results as $d) {
+            $rowStatus = is_null($d['tgl_pengembalian']) ? 'Dipinjam' : 'Dikembalikan';
+            if (is_null($d['tgl_pengembalian']) && $d['tgl_haruskembali'] < date('Y-m-d H:i:s')) {
+                $rowStatus = 'Overdue';
+            }
+            $rows[] = [
+                $no++, $d['noarsip'] ?? '-', $d['uraian'] ?? '-', $d['username'] ?? '-',
+                $d['tgl_pinjam'] ?? '-', $d['tgl_haruskembali'] ?? '-',
+                $d['tgl_pengembalian'] ?? '-', $rowStatus, $d['ket'] ?? '-',
+            ];
+        }
+
+        return view('report/print', [
+            'title'   => 'Laporan Sirkulasi',
+            'headers' => $headers,
+            'rows'    => $rows,
+            'total'   => count($rows),
+        ]);
+    }
 }

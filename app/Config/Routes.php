@@ -32,8 +32,10 @@ $routes->get('dashboard/api/by-pencipta', 'Dashboard::apiByPencipta');
 $routes->get('report', 'Report::index');
 $routes->get('report/arsip', 'Report::arsip');
 $routes->get('report/arsip/export-excel', 'Report::exportArsipExcel');
+$routes->get('report/arsip/print', 'Report::printArsip');
 $routes->get('report/sirkulasi', 'Report::sirkulasi');
 $routes->get('report/sirkulasi/export-excel', 'Report::exportSirkulasiExcel');
+$routes->get('report/sirkulasi/print', 'Report::printSirkulasi');
 
 // Arsip (CRUD)
 $routes->get('arsip/new', 'Arsip::new');

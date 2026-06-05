@@ -142,6 +142,7 @@
     <script src="<?= base_url('/js/chosen.jquery.min.js') ?>"></script>
     <script src="<?= base_url('/js/jquery.auto-complete.min.js') ?>"></script>
     <script src="<?= base_url('/js/custom.js') ?>"></script>
+    <script src="<?= base_url('/js/ux-enhancements.js') ?>"></script>
 
 </body>
 </html>

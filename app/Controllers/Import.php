@@ -42,14 +42,12 @@ class Import extends BaseController
 
         $file = $this->request->getFile('up_file');
         if (!$file || !$file->isValid()) {
-            session()->setFlashdata('error', 'Tidak ada file yang diupload.');
-            return redirect()->to('/import');
+            return $this->importResult(false, 'Tidak ada file yang diupload.');
         }
 
         $ext = strtolower($file->getClientExtension());
         if (!in_array($ext, ['xls', 'xlsx'], true)) {
-            session()->setFlashdata('error', 'Format file tidak didukung. Gunakan .xls atau .xlsx.');
-            return redirect()->to('/import');
+            return $this->importResult(false, 'Format file tidak didukung. Gunakan .xls atau .xlsx.');
         }
 
         try {
@@ -144,11 +142,29 @@ class Import extends BaseController
                 'errors'   => count($errors),
             ]);
 
-            session()->setFlashdata('message', $message);
+            return $this->importResult(true, $message);
         } catch (\Exception $e) {
             $this->logAction('IMPORT_FAILED', 'data_arsip', null, ['error' => $e->getMessage()]);
-            session()->setFlashdata('error', 'Gagal import: ' . $e->getMessage());
+            return $this->importResult(false, 'Gagal import: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Kembalikan hasil import: JSON untuk request AJAX (progress upload),
+     * atau redirect + flashdata untuk submit form biasa (fallback).
+     */
+    private function importResult(bool $success, string $message)
+    {
+        if ($this->request->isAJAX()) {
+            return $this->response
+                ->setStatusCode($success ? 200 : 422)
+                ->setJSON([
+                    'status'  => $success ? 'success' : 'error',
+                    'message' => $message,
+                ]);
+        }
+
+        session()->setFlashdata($success ? 'message' : 'error', $message);
         return redirect()->to('/import');
     }
 

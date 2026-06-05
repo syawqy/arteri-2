@@ -239,8 +239,8 @@ $fileVal     = $isEdit ? ($file ?? '') : '';
     <?php else: ?>
         <div id="uplodfile">
     <?php endif; ?>
-        <input type="file" id="file" name="file" accept=".doc,.docx,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/pdf">
-        <p class="help-block">Ukuran Maksimal <?= number_format(ceil(_max_file_upload_in_bytes() / 1000)) ?> KB</p>
+        <input type="file" id="file" name="file" data-dropzone accept=".doc,.docx,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/pdf">
+        <p class="help-block">Format: PDF/DOC/DOCX. Ukuran Maksimal <?= number_format(ceil(_max_file_upload_in_bytes() / 1000)) ?> KB</p>
         </div>
     </div>
 </div>
