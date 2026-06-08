@@ -13,13 +13,16 @@ class MasterKodeModel extends Model
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
     protected $returnType       = 'array';
-    protected $useSoftDeletes   = false;
+    protected $useSoftDeletes   = true;
+    protected $deletedField     = 'deleted_at';
     protected $allowedFields    = [
         'kode',
         'nama',
         'retensi',
+        'deleted_at',
     ];
     protected $useTimestamps = false;
+    protected $dateFormat    = 'datetime';
 
     /**
      * Cache prefix for this model
@@ -36,6 +39,7 @@ class MasterKodeModel extends Model
     public function search(string $keyword = ''): array
     {
         $builder = $this->builder();
+        $builder->where('deleted_at', null);
 
         if ($keyword !== '') {
             $builder->groupStart()

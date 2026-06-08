@@ -173,13 +173,13 @@ Dokumen ini berisi breakdown task kecil dari `additional-improvements.md`
 - [ ] **7a-8**: Test backup restoration
 
 ### 7b. Data Recovery
-- [ ] **7b-1**: Audit semua soft delete implementation
-- [ ] **7b-2**: Tambah `deleted_at` column jika belum ada
-- [ ] **7b-3**: Setup trash/bin functionality
-- [ ] **7b-4**: Implementasi recovery period (30 hari)
-- [ ] **7b-5**: Buat endpoint/UI untuk restore deleted items
-- [ ] **7b-6**: Setup scheduled task untuk permanent delete after 30 days
-- [ ] **7b-7**: Test recovery flow
+- [x] **7b-1**: Audit semua soft delete implementation ✓ (sebelumnya tidak ada — semua model useSoftDeletes=false)
+- [x] **7b-2**: Tambah `deleted_at` column jika belum ada ✓ (migration 2026-06-06-000001_AddSoftDeletes, 8 tabel)
+- [x] **7b-3**: Setup trash/bin functionality ✓ (Trash controller + view, soft delete di 9 model)
+- [x] **7b-4**: Implementasi recovery period (30 hari) ✓ (Config\Trash::$recoveryDays)
+- [x] **7b-5**: Buat endpoint/UI untuk restore deleted items ✓ (trash/restore + trash/purge + Views/trash/index.php, admin only)
+- [x] **7b-6**: Setup scheduled task untuk permanent delete after 30 days ✓ (command trash:purge + tombol Hapus Permanen)
+- [x] **7b-7**: Test recovery flow ✓ (TrashControllerTest, PurgeTrashTest, MasterKodeModelTest soft-delete, MasterDataControllerTest revive)
 
 ---
 
@@ -227,10 +227,10 @@ Dokumen ini berisi breakdown task kecil dari `additional-improvements.md`
 | Dashboard Analytics | 16 | 16 |
 | Mobile Optimization | 7 | 7 |
 | User Experience | 16 | 16 |
-| Backup & Recovery | 15 | 0 |
+| Backup & Recovery | 15 | 7 |
 | Multi-Tenant Support | 11 | 0 |
 | Technical Debt | 8 | 8 |
-| **TOTAL** | **110** | **71** |
+| **TOTAL** | **110** | **78** |
 
 ---
 

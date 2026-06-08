@@ -19,7 +19,8 @@ class DashboardModel extends Model
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
     protected $returnType       = 'array';
-    protected $useSoftDeletes   = false;
+    protected $useSoftDeletes   = true;
+    protected $deletedField     = 'deleted_at';
     protected $allowedFields    = [];
 
     /**
@@ -39,7 +40,8 @@ class DashboardModel extends Model
         $builder = $db->table('sirkulasi s');
         $builder->select('COUNT(DISTINCT s.noarsip) as total');
         $builder->where('s.tgl_pengembalian IS NULL');
-        
+        $builder->where('s.deleted_at', null);
+
         $result = $builder->get()->getRowArray();
         return (int) ($result['total'] ?? 0);
     }
@@ -54,6 +56,7 @@ class DashboardModel extends Model
         $builder->select('COUNT(DISTINCT s.noarsip) as total');
         $builder->where('s.tgl_pengembalian IS NULL');
         $builder->where('s.tgl_haruskembali <', date('Y-m-d H:i:s'));
+        $builder->where('s.deleted_at', null);
         
         $result = $builder->get()->getRowArray();
         return (int) ($result['total'] ?? 0);
@@ -68,6 +71,7 @@ class DashboardModel extends Model
         $builder = $db->table('data_arsip a');
         $builder->select('k.kode, k.nama, COUNT(a.id) as total');
         $builder->join('master_kode k', 'k.id = a.kode', 'left');
+        $builder->where('a.deleted_at', null);
         $builder->groupBy('a.kode');
         $builder->orderBy('total', 'DESC');
         
@@ -85,6 +89,7 @@ class DashboardModel extends Model
         $builder = $db->table('sirkulasi s');
         $builder->select('DATE_FORMAT(s.tgl_pinjam, "%Y-%m") as bulan, COUNT(*) as total');
         $builder->where('s.tgl_pinjam >=', date('Y-m-d', strtotime("-{$months} months")));
+        $builder->where('s.deleted_at', null);
         $builder->groupBy('DATE_FORMAT(s.tgl_pinjam, "%Y-%m")');
         $builder->orderBy('bulan', 'ASC');
         
@@ -100,6 +105,7 @@ class DashboardModel extends Model
         $builder = $db->table('data_arsip a');
         $builder->select('l.nama_lokasi, COUNT(a.id) as total');
         $builder->join('master_lokasi l', 'l.id = a.lokasi', 'left');
+        $builder->where('a.deleted_at', null);
         $builder->groupBy('a.lokasi');
         $builder->orderBy('total', 'DESC');
         
@@ -115,6 +121,7 @@ class DashboardModel extends Model
         $builder = $db->table('data_arsip a');
         $builder->select('m.nama_media, COUNT(a.id) as total');
         $builder->join('master_media m', 'm.id = a.media', 'left');
+        $builder->where('a.deleted_at', null);
         $builder->groupBy('a.media');
         $builder->orderBy('total', 'DESC');
         
@@ -130,6 +137,7 @@ class DashboardModel extends Model
         $builder = $db->table('data_arsip a');
         $builder->select('p.nama_pencipta, COUNT(a.id) as total');
         $builder->join('master_pencipta p', 'p.id = a.pencipta', 'left');
+        $builder->where('a.deleted_at', null);
         $builder->groupBy('a.pencipta');
         $builder->orderBy('total', 'DESC');
         
@@ -144,6 +152,7 @@ class DashboardModel extends Model
         $db = \Config\Database::connect();
         $builder = $db->table('data_arsip a');
         $builder->select('a.ket, COUNT(a.id) as total');
+        $builder->where('a.deleted_at', null);
         $builder->groupBy('a.ket');
         $builder->orderBy('total', 'DESC');
         

@@ -10,7 +10,9 @@ class SirkulasiModel extends Model
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
     protected $returnType       = 'array';
-    protected $useSoftDeletes   = false;
+    protected $useSoftDeletes   = true;
+    protected $deletedField     = 'deleted_at';
+    protected $dateFormat       = 'datetime';
     protected $allowedFields    = [
         'noarsip',
         'username_peminjam',
@@ -19,6 +21,7 @@ class SirkulasiModel extends Model
         'tgl_haruskembali',
         'tgl_pengembalian',
         'tgl_transaksi',
+        'deleted_at',
     ];
     protected $useTimestamps = false;
 
@@ -117,6 +120,10 @@ class SirkulasiModel extends Model
         $builder->select('s.*, u.username, (IF(CURDATE() > s.tgl_haruskembali, \'Terlambat\', \'Dipinjam\')) as status');
         $builder->join('data_arsip a', 'a.noarsip = s.noarsip');
         $builder->join('master_user u', 's.username_peminjam = u.username');
+
+        // Exclude soft-deleted circulation rows and rows whose arsip was trashed.
+        $builder->where('s.deleted_at', null);
+        $builder->where('a.deleted_at', null);
 
         if ($keywords !== '') {
             $builder->groupStart()

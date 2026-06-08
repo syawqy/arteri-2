@@ -249,6 +249,7 @@ class Sirkulasi extends BaseController
         $db = \Config\Database::connect();
         $builder = $db->table('data_arsip');
         $builder->select('noarsip, kode, nobox');
+        $builder->where('deleted_at', null);
         $builder->groupStart()
             ->like('noarsip', $keywords)
             ->orLike('kode', $keywords)
@@ -271,6 +272,7 @@ class Sirkulasi extends BaseController
         $db = \Config\Database::connect();
         $builder = $db->table('master_user');
         $builder->select('username, id, tipe, akses_klas');
+        $builder->where('deleted_at', null);
         $builder->like('username', $keywords);
         $builder->limit(10);
 

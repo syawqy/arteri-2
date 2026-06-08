@@ -10,7 +10,8 @@ class ArsipModel extends Model
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
     protected $returnType       = 'array';
-    protected $useSoftDeletes   = false;
+    protected $useSoftDeletes   = true;
+    protected $deletedField     = 'deleted_at';
     protected $allowedFields    = [
         'noarsip',
         'pencipta',
@@ -25,6 +26,7 @@ class ArsipModel extends Model
         'media',
         'file',
         'username',
+        'deleted_at',
     ];
     protected $useTimestamps = true;
     protected $createdField  = 'tgl_input';
@@ -122,6 +124,7 @@ class ArsipModel extends Model
             ->join('master_lokasi l', 'l.id = a.lokasi', 'left')
             ->join('master_media m', 'm.id = a.media', 'left')
             ->where('a.id', $id)
+            ->where('a.deleted_at', null)
             ->get()
             ->getRowArray();
     }
@@ -143,6 +146,9 @@ class ArsipModel extends Model
         $builder->join('master_media m', 'm.id = a.media');
         $builder->join('master_pencipta p', 'p.id = a.pencipta');
         $builder->join('master_pengolah pn', 'pn.id = a.unit_pengolah');
+
+        // Exclude soft-deleted records (raw builder bypasses model scoping).
+        $builder->where('a.deleted_at', null);
 
         if ($keywords !== '') {
             // Simple search: OR conditions

@@ -262,13 +262,8 @@ class Arsip extends BaseController
             return $this->response->setJSON(['status' => 'error', 'message' => 'Arsip tidak ditemukan.']);
         }
 
-        if (! empty($row['file'])) {
-            $filePath = WRITEPATH . 'uploads' . DIRECTORY_SEPARATOR . 'arsip' . DIRECTORY_SEPARATOR . $row['file'];
-            if (is_file($filePath)) {
-                unlink($filePath);
-            }
-        }
-
+        // Soft delete: pertahankan file fisik agar bisa dipulihkan dari Sampah.
+        // File baru dihapus permanen saat purge (Trash::purge / command trash:purge).
         $arsipModel->delete($id);
 
         $this->logAction('DELETE', 'data_arsip', $id);

@@ -107,6 +107,7 @@
                     <?php if (session('username')): ?>
                         <?php if (isAdmin()): ?>
                             <li><a href="<?= site_url('audit') ?>"><span class="glyphicon glyphicon-list-alt"></span> Audit Log</a></li>
+                            <li><a href="<?= site_url('trash') ?>"><span class="glyphicon glyphicon-trash"></span> Sampah</a></li>
                         <?php endif; ?>
                         <li><a href="#"><span class="glyphicon glyphicon-user"></span> <?= esc(session('username')) ?></a></li>
                         <li><a href="<?= site_url('logout') ?>"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>

@@ -158,6 +158,9 @@ class MasterData extends BaseController
         $config  = $this->entities[$type];
         $builder = $model->builder();
 
+        // Raw builder bypasses soft-delete scoping — exclude trashed rows.
+        $builder->where('deleted_at', null);
+
         if ($keyword !== '') {
             $builder->groupStart();
             foreach ($config['search_cols'] as $i => $col) {
@@ -216,12 +219,27 @@ class MasterData extends BaseController
             return $this->response->setJSON(['status' => 'error', 'errors' => $this->validator->getErrors()]);
         }
 
-        (new MasterKodeModel())->insert([
-            'kode'    => $this->request->getPost('kode'),
-            'nama'    => $this->request->getPost('nama'),
-            'retensi' => $this->request->getPost('retensi'),
+        $kode    = $this->request->getPost('kode');
+        $nama    = $this->request->getPost('nama');
+        $retensi = $this->request->getPost('retensi');
+
+        // Revive soft-deleted row dengan kode yang sama (hindari konflik unique key).
+        $model = new MasterKodeModel();
+        $revived = $model->onlyDeleted()->where('kode', $kode)->first();
+        if ($revived !== null) {
+            $model->update($revived['id'], [
+                'kode' => $kode, 'nama' => $nama, 'retensi' => $retensi, 'deleted_at' => null,
+            ]);
+            $this->logAction('RESTORE', 'master_kode', (int) $revived['id']);
+            return $this->response->setJSON(['status' => 'success']);
+        }
+
+        $model->insert([
+            'kode'    => $kode,
+            'nama'    => $nama,
+            'retensi' => $retensi,
         ]);
-        $insertId = (new MasterKodeModel())->getInsertID();
+        $insertId = $model->getInsertID();
         $this->logAction('CREATE', 'master_kode', $insertId);
 
         return $this->response->setJSON(['status' => 'success']);
@@ -309,8 +327,17 @@ class MasterData extends BaseController
         }
 
         $model = new MasterPenciptaModel();
+        $nama  = $this->request->getPost('nama');
+
+        $revived = $model->onlyDeleted()->where('nama_pencipta', $nama)->first();
+        if ($revived !== null) {
+            $model->update($revived['id'], ['nama_pencipta' => $nama, 'deleted_at' => null]);
+            $this->logAction('RESTORE', 'master_pencipta', (int) $revived['id']);
+            return $this->response->setJSON(['status' => 'success']);
+        }
+
         $model->insert([
-            'nama_pencipta' => $this->request->getPost('nama'),
+            'nama_pencipta' => $nama,
         ]);
         $insertId = $model->getInsertID();
         $this->logAction('CREATE', 'master_pencipta', $insertId);
@@ -398,8 +425,17 @@ class MasterData extends BaseController
         }
 
         $model = new MasterPengolahModel();
+        $nama  = $this->request->getPost('nama');
+
+        $revived = $model->onlyDeleted()->where('nama_pengolah', $nama)->first();
+        if ($revived !== null) {
+            $model->update($revived['id'], ['nama_pengolah' => $nama, 'deleted_at' => null]);
+            $this->logAction('RESTORE', 'master_pengolah', (int) $revived['id']);
+            return $this->response->setJSON(['status' => 'success']);
+        }
+
         $model->insert([
-            'nama_pengolah' => $this->request->getPost('nama'),
+            'nama_pengolah' => $nama,
         ]);
         $insertId = $model->getInsertID();
         $this->logAction('CREATE', 'master_pengolah', $insertId);
@@ -487,8 +523,17 @@ class MasterData extends BaseController
         }
 
         $model = new MasterLokasiModel();
+        $nama  = $this->request->getPost('nama');
+
+        $revived = $model->onlyDeleted()->where('nama_lokasi', $nama)->first();
+        if ($revived !== null) {
+            $model->update($revived['id'], ['nama_lokasi' => $nama, 'deleted_at' => null]);
+            $this->logAction('RESTORE', 'master_lokasi', (int) $revived['id']);
+            return $this->response->setJSON(['status' => 'success']);
+        }
+
         $model->insert([
-            'nama_lokasi' => $this->request->getPost('nama'),
+            'nama_lokasi' => $nama,
         ]);
         $insertId = $model->getInsertID();
         $this->logAction('CREATE', 'master_lokasi', $insertId);
@@ -576,8 +621,17 @@ class MasterData extends BaseController
         }
 
         $model = new MasterMediaModel();
+        $nama  = $this->request->getPost('nama');
+
+        $revived = $model->onlyDeleted()->where('nama_media', $nama)->first();
+        if ($revived !== null) {
+            $model->update($revived['id'], ['nama_media' => $nama, 'deleted_at' => null]);
+            $this->logAction('RESTORE', 'master_media', (int) $revived['id']);
+            return $this->response->setJSON(['status' => 'success']);
+        }
+
         $model->insert([
-            'nama_media' => $this->request->getPost('nama'),
+            'nama_media' => $nama,
         ]);
         $insertId = $model->getInsertID();
         $this->logAction('CREATE', 'master_media', $insertId);

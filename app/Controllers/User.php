@@ -25,6 +25,7 @@ class User extends BaseController
 
         $model = new UserModel();
         $builder = $model->builder();
+        $builder->where('deleted_at', null);
 
         if ($katakunci !== '') {
             $builder->groupStart()
@@ -68,13 +69,23 @@ class User extends BaseController
             return $this->response->setJSON(['status' => 'error', 'message' => 'Username sudah digunakan.']);
         }
 
-        $model->insert([
+        $userData = [
             'username'     => $this->request->getPost('username'),
             'password'     => password_hash($this->request->getPost('password'), PASSWORD_BCRYPT),
             'tipe'         => $this->request->getPost('tipe'),
             'akses_klas'   => $this->request->getPost('akses_klas') ?? '',
             'akses_modul'  => json_encode($this->request->getPost('modul') ?? []),
-        ]);
+        ];
+
+        // Revive soft-deleted user dengan username sama (hindari konflik unique key).
+        $revived = $model->onlyDeleted()->where('username', $this->request->getPost('username'))->first();
+        if ($revived !== null) {
+            $model->update($revived['id'], $userData + ['deleted_at' => null]);
+            $this->logAction('RESTORE', 'master_user', (int) $revived['id']);
+            return $this->response->setJSON(['status' => 'success', 'message' => 'User berhasil dibuat.']);
+        }
+
+        $model->insert($userData);
         $insertId = $model->getInsertID();
 
         $this->logAction('CREATE', 'master_user', $insertId);
@@ -204,6 +215,7 @@ class User extends BaseController
 
         $model = new UserModel();
         $builder = $model->builder();
+        $builder->where('deleted_at', null);
 
         if ($katakunci !== '') {
             $builder->groupStart()

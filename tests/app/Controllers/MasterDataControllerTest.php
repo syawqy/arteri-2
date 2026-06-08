@@ -331,4 +331,50 @@ final class MasterDataControllerTest extends CIUnitTestCase
     {
         $this->get('master/' . $routeKey . '/reload')->assertRedirectTo('/login');
     }
+
+    // ====================================================================
+    //  Soft delete + revive-on-create (task 7b)
+    // ====================================================================
+
+    public function testDeleteIsSoftAndHiddenFromList(): void
+    {
+        $db = \Config\Database::connect();
+        $db->table('master_kode')->insert(['kode' => 'SD.01', 'nama' => 'Soft Delete Klas', 'retensi' => 1]);
+        $id = $db->insertID();
+
+        $this->withSession($this->getAdminSession());
+        $this->post('master/klas/delete', ['id' => (string) $id]);
+
+        // Baris masih ada di DB tapi deleted_at terisi.
+        $row = $db->table('master_kode')->where('id', $id)->get()->getRowArray();
+        $this->assertNotNull($row);
+        $this->assertNotNull($row['deleted_at']);
+
+        // Tidak muncul di reload list.
+        $body = (string) $this->get('master/klas/reload')->getBody();
+        $this->assertStringNotContainsString('SD.01', $body);
+    }
+
+    public function testRecreateAfterSoftDeleteRevivesRow(): void
+    {
+        $db = \Config\Database::connect();
+        $this->withSession($this->getAdminSession());
+
+        // Create → soft delete.
+        $this->post('master/klas/create', ['kode' => 'RV.01', 'nama' => 'Revive Test', 'retensi' => '2']);
+        $created = $db->table('master_kode')->where('kode', 'RV.01')->get()->getRowArray();
+        $this->post('master/klas/delete', ['id' => (string) $created['id']]);
+
+        // Re-create dengan kode sama harus sukses (revive, bukan duplicate / unique error).
+        $response = $this->post('master/klas/create', ['kode' => 'RV.01', 'nama' => 'Revived', 'retensi' => '4']);
+        $this->assertStringContainsString('success', (string) $response->getBody());
+
+        // Hanya ada satu baris dengan kode RV.01 dan sudah aktif kembali.
+        $count = $db->table('master_kode')->where('kode', 'RV.01')->countAllResults();
+        $this->assertSame(1, $count);
+
+        $row = $db->table('master_kode')->where('kode', 'RV.01')->get()->getRowArray();
+        $this->assertNull($row['deleted_at']);
+        $this->assertSame((int) $created['id'], (int) $row['id']); // PK lama dipakai ulang
+    }
 }

@@ -14,6 +14,7 @@ class FileController extends BaseController
             ->select('a.*, k.kode as kode_klasifikasi')
             ->join('master_kode k', 'k.id = a.kode', 'left')
             ->where('a.file', $filename)
+            ->where('a.deleted_at', null)
             ->get()
             ->getRowArray();
 

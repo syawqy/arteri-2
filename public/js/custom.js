@@ -505,4 +505,29 @@ $(document).ready(function() {
 	$('<style>')
 		.text('.autocomplete-loader { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; border: 2px solid #f3f3f3; border-top: 2px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite; } @keyframes spin { 0% { transform: translateY(-50%) rotate(0deg); } 100% { transform: translateY(-50%) rotate(360deg); } } .autocomplete-suggestion .text-muted { color: #999; font-size: 0.9em; }')
 		.appendTo('head');
+
+	/** TRASH / Recycle Bin: restore & purge */
+	$(document).on("click", ".trash-restore", function() {
+		$("#restoreType").val($(this).data("type"));
+		$("#restoreId").val($(this).data("id"));
+		$("#restoreModal").modal("show");
+	});
+	$("#restoreGo").on("click", function() { $("#formRestore").submit(); });
+	$("#formRestore").ajaxForm({ success: function(o) {
+		var resp = parseAjaxResponse(o);
+		if (resp.status === 'success') { showToast(resp.message || 'Data berhasil dipulihkan'); $("#restoreModal").modal("hide"); setTimeout(function(){ window.location.reload(true); }, 600); }
+		else { $("#restoreModal").modal("hide"); showToast(resp.message || 'Gagal memulihkan data', 'error'); }
+	}});
+
+	$(document).on("click", ".trash-purge", function() {
+		$("#purgeType").val($(this).data("type"));
+		$("#purgeId").val($(this).data("id"));
+		$("#purgeModal").modal("show");
+	});
+	$("#purgeGo").on("click", function() { $("#formPurge").submit(); });
+	$("#formPurge").ajaxForm({ success: function(o) {
+		var resp = parseAjaxResponse(o);
+		if (resp.status === 'success') { showToast(resp.message || 'Data dihapus permanen'); $("#purgeModal").modal("hide"); setTimeout(function(){ window.location.reload(true); }, 600); }
+		else { $("#purgeModal").modal("hide"); showToast(resp.message || 'Gagal menghapus data', 'error'); }
+	}});
 });

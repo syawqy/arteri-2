@@ -10,15 +10,18 @@ class UserModel extends Model
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
     protected $returnType       = 'array';
-    protected $useSoftDeletes   = false;
+    protected $useSoftDeletes   = true;
+    protected $deletedField     = 'deleted_at';
     protected $allowedFields    = [
         'username',
         'password',
         'tipe',
         'akses_klas',
         'akses_modul',
+        'deleted_at',
     ];
     protected $useTimestamps = false;
+    protected $dateFormat    = 'datetime';
 
     /**
      * Attempt to authenticate a user.

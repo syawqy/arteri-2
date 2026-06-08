@@ -75,4 +75,53 @@ final class MasterKodeModelTest extends CIUnitTestCase
         $results = $this->model->search('ZZZZNOTEXIST');
         $this->assertEmpty($results);
     }
+
+    public function testDeleteIsSoft(): void
+    {
+        $id = $this->model->insert([
+            'kode'    => 'TST.SD',
+            'nama'    => 'Soft Delete',
+            'retensi' => 2,
+        ], true);
+
+        $this->model->delete($id);
+
+        // Hilang dari query normal, tapi masih ada sebagai soft-deleted.
+        $this->assertNull($this->model->find($id));
+        $deleted = $this->model->onlyDeleted()->find($id);
+        $this->assertNotNull($deleted);
+        $this->assertNotNull($deleted['deleted_at']);
+    }
+
+    public function testRestoreViaUpdate(): void
+    {
+        $id = $this->model->insert([
+            'kode'    => 'TST.RS',
+            'nama'    => 'To Restore',
+            'retensi' => 3,
+        ], true);
+
+        $this->model->delete($id);
+        $this->assertNull($this->model->find($id));
+
+        // Restore = set deleted_at null.
+        $this->model->update($id, ['deleted_at' => null]);
+        $row = $this->model->find($id);
+        $this->assertNotNull($row);
+        $this->assertSame('TST.RS', $row['kode']);
+    }
+
+    public function testSearchExcludesSoftDeleted(): void
+    {
+        $id = $this->model->insert([
+            'kode'    => 'TST.EX',
+            'nama'    => 'Excluded Search',
+            'retensi' => 1,
+        ], true);
+
+        $this->assertNotEmpty($this->model->search('Excluded Search'));
+
+        $this->model->delete($id);
+        $this->assertEmpty($this->model->search('Excluded Search'));
+    }
 }

@@ -125,6 +125,11 @@ $routes->get('file/(:segment)', 'FileController::serve/$1');
 $routes->get('audit', 'AuditLog::index');
 $routes->get('audit/detail/(:num)', 'AuditLog::detail/$1');
 
+// Trash / Recycle Bin (admin only)
+$routes->get('trash', 'Trash::index');
+$routes->post('trash/restore', 'Trash::restore');
+$routes->post('trash/purge', 'Trash::purge');
+
 // Import/Export
 $routes->get('import', 'Import::index');
 $routes->post('import', 'Import::doImport');
