@@ -292,12 +292,24 @@ Custom keep count:
 php spark backup:database --keep=14
 ```
 
+Offsite copy (mounted network drive, external storage):
+```bash
+php spark backup:database --offsite=/mnt/backup-storage
+```
+
 **Setup Cron untuk Daily Backup:**
 
 Edit crontab (`crontab -e`):
 ```cron
-# Backup database setiap hari jam 2 pagi, keep 14 backup
-0 2 * * * cd /path/to/arteri-ci4 && php spark backup:database --keep=14 >> writable/logs/backup.log 2>&1
+# Backup database setiap hari jam 2 pagi, keep 14 backup, copy to network drive
+0 2 * * * cd /path/to/arteri-ci4 && php spark backup:database --keep=14 --offsite=/mnt/backup-nas >> writable/logs/backup.log 2>&1
+```
+
+**Monitoring:**
+
+Cek system_log table untuk monitor backup execution:
+```sql
+SELECT * FROM system_log WHERE aksi = 'DATABASE_BACKUP' ORDER BY tgl_transaksi DESC LIMIT 10;
 ```
 
 **Restore dari Backup:**

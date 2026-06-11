@@ -19,8 +19,11 @@ class DatabaseBackup extends BaseCommand
     protected $group       = 'Maintenance';
     protected $name        = 'backup:database';
     protected $description = 'Backup database ke writable/backups/ (compressed .sql.gz)';
-    protected $usage       = 'backup:database [--keep N]';
-    protected $options     = ['--keep' => 'Jumlah backup yang disimpan (rotation). Default: 7'];
+    protected $usage       = 'backup:database [--keep N] [--offsite PATH]';
+    protected $options     = [
+        '--keep'    => 'Jumlah backup yang disimpan (rotation). Default: 7',
+        '--offsite' => 'Copy backup ke lokasi offsite (network drive, mounted storage, dll)',
+    ];
 
     private string $backupDir;
 
@@ -135,12 +138,26 @@ class DatabaseBackup extends BaseCommand
         }
         CLI::write('Verification passed.', 'green');
 
+        // Copy to offsite location if specified
+        if (isset($params['offsite']) && ! empty($params['offsite'])) {
+            $offsitePath = rtrim($params['offsite'], DIRECTORY_SEPARATOR);
+            if ($this->copyToOffsite($finalPath, $offsitePath, $gzFilename)) {
+                CLI::write("Offsite copy: {$offsitePath}/{$gzFilename}", 'green');
+            } else {
+                CLI::error("Offsite copy gagal ke: {$offsitePath}");
+                // Don't fail the whole backup if offsite fails
+            }
+        }
+
         // Rotation: keep last N backups
         $keepCount = isset($params['keep']) ? max(1, (int) $params['keep']) : 7;
         $this->rotateBackups($keepCount);
 
         CLI::write("Backup selesai: {$gzFilename}", 'green');
         CLI::write("Lokasi: {$finalPath}", 'white');
+
+        // Log to system_log for monitoring
+        $this->logBackup($gzFilename, $gzSize, isset($params['offsite']) ? $params['offsite'] : null);
 
         return 0;
     }
@@ -198,6 +215,62 @@ class DatabaseBackup extends BaseCommand
         if ($deleted > 0) {
             CLI::write("Rotasi selesai: {$deleted} backup lama dihapus.", 'yellow');
         }
+    }
+
+    /**
+     * Log backup to system_log for monitoring.
+     */
+    private function logBackup(string $filename, int $filesize, ?string $offsitePath): void
+    {
+        $systemLog = new \App\Models\SystemLogModel();
+
+        $detail = [
+            'filename'     => $filename,
+            'filesize'     => $filesize,
+            'human_size'   => $this->formatBytes($filesize),
+            'offsite'      => $offsitePath !== null ? $offsitePath : 'none',
+        ];
+
+        $systemLog->insert([
+            'kode_transaksi'     => 'BACKUP',
+            'username_transaksi' => 'system',
+            'tgl_transaksi'      => date('Y-m-d H:i:s'),
+            'aksi'               => 'DATABASE_BACKUP',
+            'tabel'              => 'database',
+            'record_id'          => null,
+            'detail'             => json_encode($detail),
+            'ip_address'         => null,
+        ], false);
+    }
+
+    /**
+     * Copy backup to offsite location.
+     */
+    private function copyToOffsite(string $sourcePath, string $offsiteDir, string $filename): bool
+    {
+        if (! is_dir($offsiteDir)) {
+            CLI::write("Offsite directory tidak ditemukan: {$offsiteDir}", 'yellow');
+            return false;
+        }
+
+        if (! is_writable($offsiteDir)) {
+            CLI::write("Offsite directory tidak writable: {$offsiteDir}", 'yellow');
+            return false;
+        }
+
+        $destPath = $offsiteDir . DIRECTORY_SEPARATOR . $filename;
+
+        if (! copy($sourcePath, $destPath)) {
+            return false;
+        }
+
+        // Verify offsite copy
+        if (! is_file($destPath) || filesize($destPath) !== filesize($sourcePath)) {
+            @unlink($destPath);
+            return false;
+        }
+
+        return true;
     }
 
     /**
