@@ -49,7 +49,7 @@ Dokumen ini berisi breakdown task kecil dari `additional-improvements.md`
 ### 2b. API Authentication
 - [x] **2b-1**: Pilih dan implementasikan JWT atau API Key based auth ✓ (API Key via X-API-Key header)
 - [x] **2b-2**: Buat middleware/filter untuk API authentication ✓ (validateApiKey di BaseApiController)
-- [x] **2b-3**: Implementasi rate limiting per API key ✓ (CodeIgniter Throttler, BaseApiController.php:119-128)
+- [x] **2b-3**: Implementasi rate limiting per API key ✓ (CodeIgniter Throttler via validateApiKey, BaseApiController.php:119-128)
 - [x] **2b-4**: Buat endpoint untuk generate/revoke API key ✓ (ApiKeyController: index/create/revoke)
 - [x] **2b-5**: Buat database table untuk API keys ✓ (2026-05-19-000001_CreateApiKeys migration + ApiKeyModel)
 - [x] **2b-6**: Test API authentication flow ✓ (ApiAuthenticationTest, ApiKeyControllerTest, SirkulasiApiTest, MasterDataApiTest)
