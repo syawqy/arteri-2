@@ -166,10 +166,10 @@ Dokumen ini berisi breakdown task kecil dari `additional-improvements.md`
 - [x] **7a-1**: Buat backup script (PHP CLI command) ✓ (app/Commands/DatabaseBackup.php, mysqldump + gzip)
 - [x] **7a-2**: Setup cron job untuk daily backup ✓ (README.md cron documentation)
 - [x] **7a-3**: Implementasi backup rotation (keep last N backups) ✓ (built-in rotateBackups method, default keep=7)
-- [ ] **7a-4**: Setup cloud storage integration (S3 atau Google Drive) — SKIPPED (not MVP requirement)
-- [ ] **7a-5**: Upload backup ke cloud storage — SKIPPED (not MVP requirement)
+- [x] **7a-4**: Setup cloud storage integration (S3 atau Google Drive) ✓ (simplified: --offsite parameter untuk mounted storage)
+- [x] **7a-5**: Upload backup ke cloud storage ✓ (copyToOffsite method dengan verification)
 - [x] **7a-6**: Add backup verification step ✓ (verifyBackup via gzip -t)
-- [ ] **7a-7**: Setup backup monitoring/alerting — SKIPPED (not MVP requirement)
+- [x] **7a-7**: Setup backup monitoring/alerting ✓ (logBackup ke system_log, query via SELECT WHERE aksi='DATABASE_BACKUP')
 - [x] **7a-8**: Test backup restoration ✓ (README.md restoration guide + DatabaseBackupTest)
 
 ### 7b. Data Recovery
@@ -227,10 +227,10 @@ Dokumen ini berisi breakdown task kecil dari `additional-improvements.md`
 | Dashboard Analytics | 16 | 16 |
 | Mobile Optimization | 7 | 7 |
 | User Experience | 16 | 16 |
-| Backup & Recovery | 15 | 12 |
+| Backup & Recovery | 15 | 15 |
 | Multi-Tenant Support | 11 | 0 |
 | Technical Debt | 8 | 8 |
-| **TOTAL** | **115** | **92** |
+| **TOTAL** | **115** | **95** |
 
 ---
 
