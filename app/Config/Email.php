@@ -4,6 +4,19 @@ namespace Config;
 
 use CodeIgniter\Config\BaseConfig;
 
+/**
+ * Email Configuration
+ *
+ * Configure via .env:
+ *   email.fromEmail = noreply@example.com
+ *   email.fromName = Arteri System
+ *   email.protocol = smtp
+ *   email.SMTPHost = smtp.gmail.com
+ *   email.SMTPUser = your-email@gmail.com
+ *   email.SMTPPass = your-app-password
+ *   email.SMTPPort = 587
+ *   email.SMTPCrypto = tls
+ */
 class Email extends BaseConfig
 {
     public string $fromEmail  = '';
@@ -11,7 +24,7 @@ class Email extends BaseConfig
     public string $recipients = '';
 
     /**
-     * The "user agent"
+     * The “user agent”
      */
     public string $userAgent = 'CodeIgniter';
 
@@ -82,7 +95,7 @@ class Email extends BaseConfig
     /**
      * Type of mail, either 'text' or 'html'
      */
-    public string $mailType = 'text';
+    public string $mailType = 'html';
 
     /**
      * Character set (utf-8, iso-8859-1, etc.)
@@ -102,12 +115,12 @@ class Email extends BaseConfig
     /**
      * Newline character. (Use “\r\n” to comply with RFC 822)
      */
-    public string $CRLF = "\r\n";
+    public string $CRLF = “\r\n”;
 
     /**
      * Newline character. (Use “\r\n” to comply with RFC 822)
      */
-    public string $newline = "\r\n";
+    public string $newline = “\r\n”;
 
     /**
      * Enable BCC Batch Mode.

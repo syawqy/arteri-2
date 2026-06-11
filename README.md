@@ -336,6 +336,39 @@ Setup cron mingguan:
 0 3 * * 0 cd /path/to/arteri-ci4 && php spark trash:purge >> writable/logs/purge.log 2>&1
 ```
 
+### Email Notifications
+
+**Setup Email Configuration:**
+
+Tambahkan ke `.env`:
+```ini
+email.fromEmail = noreply@example.com
+email.fromName = Arteri System
+email.protocol = smtp
+email.SMTPHost = smtp.gmail.com
+email.SMTPUser = your-email@gmail.com
+email.SMTPPass = your-app-password
+email.SMTPPort = 587
+email.SMTPCrypto = tls
+```
+
+**Overdue Notifications:**
+
+Send email ke peminjam untuk arsip yang melewati batas pengembalian:
+
+```bash
+php spark notify:overdue
+php spark notify:overdue --dry-run  # Simulate tanpa send
+```
+
+Setup cron daily:
+```cron
+# Check overdue arsip setiap hari jam 9 pagi
+0 9 * * * cd /path/to/arteri-ci4 && php spark notify:overdue >> writable/logs/notify.log 2>&1
+```
+
+**Note:** User harus punya field `email` di table `master_user` untuk menerima notifikasi.
+
 ## Pengembangan
 
 Perintah yang umum dipakai:
