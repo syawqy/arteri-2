@@ -371,6 +371,52 @@ Setup cron daily:
 
 ## Pengembangan
 
+### Testing
+
+**Unit Tests (PHPUnit):**
+```bash
+composer test                    # Run all unit tests
+php vendor/bin/phpunit tests/app/Controllers/Api/  # API tests only
+```
+
+**E2E Tests (Playwright):**
+
+Requirements: Node.js 18+ and Playwright installed.
+
+```bash
+npm install                      # Install dependencies
+npx playwright install          # Install browsers
+
+# Run all E2E tests
+npm run test:e2e
+
+# Run specific test file
+npx playwright test trash-recovery.spec.ts --project=chromium
+
+# Run with UI mode (interactive)
+npx playwright test --ui
+
+# Generate report
+npx playwright show-report
+```
+
+**E2E Test Coverage:**
+- Authentication & access control
+- CRUD operations (arsip, master data, users, sirkulasi)
+- Search, filters, pagination, sorting
+- File upload & import
+- Dashboard analytics & charts
+- Reports generation & export (Excel, print)
+- Trash & recovery flow
+- Security (OWASP, CSRF, XSS)
+- Responsive design
+- Edge cases
+
+**Security Audit:**
+```bash
+npm run audit:security
+```
+
 Perintah yang umum dipakai:
 
 ```bash
