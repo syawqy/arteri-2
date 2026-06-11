@@ -4,6 +4,21 @@ Arteri 2 adalah aplikasi pengelola arsip digital berbasis CodeIgniter 4 untuk pe
 
 Proyek ini adalah kelanjutan dari [Arteri](https://github.com/dicarve/arteri), dengan target runtime PHP yang lebih baru, basis aplikasi yang lebih stabil, dan praktik keamanan yang lebih kuat untuk penggunaan publik.
 
+## 📸 Screenshots & Feature Demo
+
+**[Lihat FEATURES.md untuk screenshot lengkap dan demo fitur](FEATURES.md)**
+
+Demo mencakup:
+- Dashboard analytics dengan charts
+- Master data management
+- CRUD arsip dengan file upload
+- Search & advanced filters
+- Sirkulasi peminjaman
+- Reports & export
+- Trash & recovery
+- Mobile responsive
+- REST API documentation
+
 ## Fitur Utama
 
 - Manajemen arsip digital beserta metadata arsip.
