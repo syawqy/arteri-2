@@ -273,7 +273,56 @@ Strategi release yang disarankan:
 - Gunakan HTTPS di deployment publik.
 - Pastikan permission folder `writable/` hanya dibuka sesuai kebutuhan aplikasi.
 - Jalankan migrasi database sebelum aplikasi digunakan.
-- Buat backup database dan file upload secara rutin.
+- Buat backup database dan file upload secara rutin (lihat section Maintenance & Backup).
+
+## Maintenance & Backup
+
+### Database Backup
+
+Command untuk backup database (otomatis compress .sql.gz):
+
+```bash
+php spark backup:database
+```
+
+Backup disimpan di `writable/backups/` dengan format `backup-YYYYMMDD-HHMMSS.sql.gz`. Default keep 7 backup terakhir (rotation otomatis).
+
+Custom keep count:
+```bash
+php spark backup:database --keep=14
+```
+
+**Setup Cron untuk Daily Backup:**
+
+Edit crontab (`crontab -e`):
+```cron
+# Backup database setiap hari jam 2 pagi, keep 14 backup
+0 2 * * * cd /path/to/arteri-ci4 && php spark backup:database --keep=14 >> writable/logs/backup.log 2>&1
+```
+
+**Restore dari Backup:**
+
+```bash
+# Ekstrak .gz
+gunzip writable/backups/backup-20260611-020000.sql.gz
+
+# Restore ke database
+mysql -u username -p database_name < writable/backups/backup-20260611-020000.sql
+```
+
+### Trash Purge
+
+Hapus permanen data soft-deleted yang lebih lama dari 30 hari:
+
+```bash
+php spark trash:purge
+```
+
+Setup cron mingguan:
+```cron
+# Purge trash setiap Minggu jam 3 pagi
+0 3 * * 0 cd /path/to/arteri-ci4 && php spark trash:purge >> writable/logs/purge.log 2>&1
+```
 
 ## Pengembangan
 
