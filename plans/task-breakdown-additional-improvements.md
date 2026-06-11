@@ -59,15 +59,15 @@ Dokumen ini berisi breakdown task kecil dari `additional-improvements.md`
 ## 3. Notification System
 
 ### 3a. Email Notification
-- [ ] **3a-1**: Konfigurasi email service di Config\Email
-- [ ] **3a-2**: Buat email template untuk overdue notification
-- [ ] **3a-3**: Buat email template untuk requested notification
-- [ ] **3a-4**: Buat `EmailNotificationService` class
-- [ ] **3a-5**: Implementasi send email saat arsip overdue (cron job / event)
-- [ ] **3a-6**: Implementasi send email saat arsip requested
-- [ ] **3a-7**: Buat email queue untuk async sending
-- [ ] **3a-8**: Buat logging untuk sent emails
-- [ ] **3a-9**: Test email sending functionality
+- [x] **3a-1**: Konfigurasi email service di Config\Email ✓ (documented SMTP setup via .env, mailType='html')
+- [x] **3a-2**: Buat email template untuk overdue notification ✓ (app/Views/emails/overdue.php)
+- [x] **3a-3**: Buat email template untuk requested notification ✓ (app/Views/emails/requested.php)
+- [x] **3a-4**: Buat `EmailNotificationService` class ✓ (app/Services/EmailNotificationService.php)
+- [x] **3a-5**: Implementasi send email saat arsip overdue (cron job / event) ✓ (app/Commands/NotifyOverdue.php, cron daily)
+- [ ] **3a-6**: Implementasi send email saat arsip requested — SKIPPED (no request feature in current system)
+- [ ] **3a-7**: Buat email queue untuk async sending — SKIPPED (direct send sufficient for MVP)
+- [x] **3a-8**: Buat logging untuk sent emails ✓ (built-in logEmail() ke system_log)
+- [x] **3a-9**: Test email sending functionality ✓ (tests/app/Services/EmailNotificationServiceTest.php)
 
 ### 3b. Push Notification (Optional)
 - [ ] **3b-1**: Evaluasi Web Push API vs WhatsApp API
@@ -223,14 +223,14 @@ Dokumen ini berisi breakdown task kecil dari `additional-improvements.md`
 |----------|-------------|-----------|
 | Performance Optimization | 19 | 19 |
 | API REST | 14 | 14 |
-| Notification System | 9 | 0 |
+| Notification System | 9 | 7 |
 | Dashboard Analytics | 16 | 16 |
 | Mobile Optimization | 7 | 7 |
 | User Experience | 16 | 16 |
 | Backup & Recovery | 15 | 15 |
 | Multi-Tenant Support | 11 | 0 |
 | Technical Debt | 8 | 8 |
-| **TOTAL** | **115** | **95** |
+| **TOTAL** | **115** | **102** |
 
 ---
 
