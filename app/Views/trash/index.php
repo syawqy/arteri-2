@@ -4,8 +4,9 @@
 /**
  * Halaman Sampah / Recycle Bin (admin only).
  *
- * @var array $groups        Daftar grup per entitas: [type => [label, type, items[], count]]
- * @var int   $recoveryDays  Masa pemulihan (hari)
+ * @var array  $groups        Daftar grup per entitas: [type => [label, type, items[], count, pager, pages]]
+ * @var int    $recoveryDays  Masa pemulihan (hari)
+ * @var string $activeTab     Tab yang sedang aktif
  */
 ?>
 
@@ -25,22 +26,25 @@
 
 <!-- Tabs per entitas -->
 <ul class="nav nav-tabs" role="tablist">
-    <?php $first = true; foreach ($groups as $g): ?>
-        <li role="presentation" class="<?= $first ? 'active' : '' ?>">
-            <a href="#tab-<?= esc($g['type'], 'attr') ?>" aria-controls="tab-<?= esc($g['type'], 'attr') ?>" role="tab" data-toggle="tab">
+    <?php foreach ($groups as $g): ?>
+        <li role="presentation" class="<?= ($g['type'] === $activeTab) ? 'active' : '' ?>">
+            <a href="<?= site_url('trash?tab=' . urlencode($g['type'])) ?>" 
+               data-tab="<?= esc($g['type'], 'attr') ?>"
+               aria-controls="tab-<?= esc($g['type'], 'attr') ?>" 
+               role="tab">
                 <?= esc($g['label']) ?>
                 <span class="badge"><?= esc($g['count']) ?></span>
             </a>
         </li>
-    <?php $first = false; endforeach; ?>
+    <?php endforeach; ?>
 </ul>
 
 <div class="tab-content" style="margin-top: 15px;">
-    <?php $first = true; foreach ($groups as $g): ?>
-        <div role="tabpanel" class="tab-pane fade <?= $first ? 'in active' : '' ?>" id="tab-<?= esc($g['type'], 'attr') ?>">
+    <?php foreach ($groups as $g): ?>
+        <div role="tabpanel" class="tab-pane fade <?= ($g['type'] === $activeTab) ? 'in active' : '' ?>" id="tab-<?= esc($g['type'], 'attr') ?>">
             <div class="panel panel-default">
                 <div class="panel-body">
-                    <?php if (! empty($g['items'])): ?>
+                    <?php if ($g['type'] === $activeTab && ! empty($g['items'])): ?>
                         <div class="table-responsive">
                             <table class="table table-bordered table-hover">
                                 <thead>
@@ -53,7 +57,13 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php $no = 1; foreach ($g['items'] as $item): ?>
+                                    <?php 
+                                    $currentPage = max(1, (int) ($_GET['page'] ?? 1));
+                                    $perPage = 20;
+                                    $startNo = ($currentPage - 1) * $perPage + 1;
+                                    $no = $startNo;
+                                    foreach ($g['items'] as $item): 
+                                    ?>
                                         <tr>
                                             <td><?= $no++ ?></td>
                                             <td><?= esc($item['display']) ?></td>
@@ -81,13 +91,26 @@
                                 </tbody>
                             </table>
                         </div>
-                    <?php else: ?>
+                        
+                        <!-- Pagination -->
+                        <?php if (! empty($g['pages'])): ?>
+                            <div class="text-center">
+                                <?= $g['pages'] ?>
+                            </div>
+                        <?php endif; ?>
+                        
+                    <?php elseif ($g['type'] === $activeTab): ?>
                         <p class="text-muted" style="margin: 0;">Tidak ada data di sampah.</p>
+                    <?php else: ?>
+                        <p class="text-muted" style="margin: 0;">
+                            <i class="glyphicon glyphicon-info-sign"></i>
+                            Klik tab untuk memuat data.
+                        </p>
                     <?php endif; ?>
                 </div>
             </div>
         </div>
-    <?php $first = false; endforeach; ?>
+    <?php endforeach; ?>
 </div>
 
 <!-- Restore confirm modal -->

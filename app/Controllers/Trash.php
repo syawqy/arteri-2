@@ -17,6 +17,8 @@ use App\Models\UserModel;
  */
 class Trash extends BaseController
 {
+    private int $perPage = 20;
+
     /**
      * Registry entitas yang mendukung soft-delete.
      * `unique` = kolom unik untuk pengecekan konflik saat restore (null = tidak ada).
@@ -41,34 +43,70 @@ class Trash extends BaseController
         $recoveryDays = config('Trash')->recoveryDays;
         $now = time();
 
+        // Get active tab from query string (default: first entity)
+        $activeTab = $this->request->getGet('tab') ?? array_key_first($this->entities);
+        if (! isset($this->entities[$activeTab])) {
+            $activeTab = array_key_first($this->entities);
+        }
+
+        // Get page number for active tab
+        $page = max(1, (int) ($this->request->getGet('page') ?? 1));
+
         $groups = [];
         foreach ($this->entities as $type => $cfg) {
             $model = new $cfg['model']();
-            $rows  = $model->onlyDeleted()->orderBy('deleted_at', 'DESC')->findAll();
+            
+            // Get total count for this entity
+            $totalCount = $model->onlyDeleted()->countAllResults(false);
 
-            $items = [];
-            foreach ($rows as $row) {
-                $deletedAt = $row['deleted_at'] ?? null;
-                $daysLeft  = null;
-                if ($deletedAt !== null) {
-                    $elapsed  = (int) floor(($now - strtotime($deletedAt)) / 86400);
-                    $daysLeft = max(0, $recoveryDays - $elapsed);
+            // Only paginate the active tab, others just get count
+            if ($type === $activeTab) {
+                $offset = ($page - 1) * $this->perPage;
+                $rows = $model->onlyDeleted()
+                    ->orderBy('deleted_at', 'DESC')
+                    ->findAll($this->perPage, $offset);
+
+                $items = [];
+                foreach ($rows as $row) {
+                    $deletedAt = $row['deleted_at'] ?? null;
+                    $daysLeft  = null;
+                    if ($deletedAt !== null) {
+                        $elapsed  = (int) floor(($now - strtotime($deletedAt)) / 86400);
+                        $daysLeft = max(0, $recoveryDays - $elapsed);
+                    }
+
+                    $items[] = [
+                        'id'         => $row['id'],
+                        'display'    => $this->displayFor($type, $row),
+                        'deleted_at' => $deletedAt,
+                        'days_left'  => $daysLeft,
+                    ];
                 }
 
-                $items[] = [
-                    'id'         => $row['id'],
-                    'display'    => $this->displayFor($type, $row),
-                    'deleted_at' => $deletedAt,
-                    'days_left'  => $daysLeft,
+                // Create pager for active tab with tab parameter
+                $pager = service('pager');
+                $pager->setPath('trash', '?tab=' . urlencode($type));
+                $pager->makeLinks($page, $this->perPage, $totalCount, 'bootstrap3');
+
+                $groups[$type] = [
+                    'label'  => $cfg['label'],
+                    'type'   => $type,
+                    'items'  => $items,
+                    'count'  => $totalCount,
+                    'pager'  => $pager,
+                    'pages'  => $pager->links('default', 'bootstrap3'),
+                ];
+            } else {
+                // For non-active tabs, just store count
+                $groups[$type] = [
+                    'label'  => $cfg['label'],
+                    'type'   => $type,
+                    'items'  => [],
+                    'count'  => $totalCount,
+                    'pager'  => null,
+                    'pages'  => '',
                 ];
             }
-
-            $groups[$type] = [
-                'label' => $cfg['label'],
-                'type'  => $type,
-                'items' => $items,
-                'count' => count($items),
-            ];
         }
 
         $this->logPageView('admin/trash');
@@ -77,6 +115,7 @@ class Trash extends BaseController
             'title'        => 'Sampah',
             'groups'       => $groups,
             'recoveryDays' => $recoveryDays,
+            'activeTab'    => $activeTab,
         ]);
     }
 
