@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arteri MCP Tester</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #0f1117;
+            --bg2: #161822;
+            --bg3: #1c1f2e;
+            --border: #2a2d3e;
+            --text: #e1e4ed;
+            --text2: #8b8fa3;
+            --accent: #6c63ff;
+            --accent2: #4ecdc4;
+            --success: #2ecc71;
+            --error: #e74c3c;
+            --warn: #f39c12;
+            --code-bg: #1a1d2b;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── Header ───────────────────────────────── */
+        .header {
+            background: var(--bg2);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-shrink: 0;
+        }
+
+        .header h1 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        .header h1 span { color: var(--text2); font-weight: 400; }
+
+        .connect-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: auto;
+        }
+
+        .connect-bar input {
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            width: 280px;
+        }
+
+        .connect-bar input:focus { outline: none; border-color: var(--accent); }
+
+        .btn {
+            padding: 6px 16px;
+            border-radius: 6px;
+            border: none;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .btn-primary { background: var(--accent); color: #fff; }
+        .btn-primary:hover { background: #5a52e0; }
+        .btn-primary:disabled { opacity: 0.4; cursor: default; }
+
+        .btn-success { background: var(--success); color: #fff; }
+        .btn-success:hover { background: #27ae60; }
+
+        .btn-secondary { background: var(--bg3); color: var(--text); border: 1px solid var(--border); }
+        .btn-secondary:hover { background: var(--border); }
+
+        .status-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: var(--error);
+            flex-shrink: 0;
+        }
+
+        .status-dot.connected { background: var(--success); }
+        .status-dot.connecting { background: var(--warn); animation: pulse 1s infinite; }
+
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+        .status-text { font-size: 12px; color: var(--text2); }
+
+        /* ── Layout ───────────────────────────────── */
+        .main {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* ── Sidebar ──────────────────────────────── */
+        .sidebar {
+            width: 320px;
+            min-width: 320px;
+            background: var(--bg2);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .sidebar-header h2 {
+            font-size: 13px;
+            color: var(--text2);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar-search {
+            padding: 8px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .sidebar-search input {
+            width: 100%;
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+
+        .sidebar-search input:focus { outline: none; border-color: var(--accent); }
+
+        .tool-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px 0;
+        }
+
+        .tool-group-label {
+            padding: 8px 16px 4px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text2);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .tool-item {
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 13px;
+            color: var(--text);
+            border-left: 3px solid transparent;
+            transition: all 0.1s;
+        }
+
+        .tool-item:hover { background: var(--bg3); }
+        .tool-item.active { background: var(--bg3); border-left-color: var(--accent); color: var(--accent); }
+
+        .tool-item .tool-name { font-weight: 500; }
+        .tool-item .tool-desc {
+            font-size: 11px;
+            color: var(--text2);
+            margin-top: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .tool-badge {
+            display: inline-block;
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            margin-left: 4px;
+        }
+
+        .badge-tool { background: rgba(108, 99, 255, 0.2); color: var(--accent); }
+        .badge-resource { background: rgba(78, 205, 196, 0.2); color: var(--accent2); }
+        .badge-prompt { background: rgba(243, 156, 18, 0.2); color: var(--warn); }
+
+        /* ── Content ──────────────────────────────── */
+        .content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .tab-bar {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg2);
+            flex-shrink: 0;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            font-size: 13px;
+            color: var(--text2);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.15s;
+        }
+
+        .tab:hover { color: var(--text); }
+        .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+        .tab-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+        }
+
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        /* ── Form ─────────────────────────────────── */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text2);
+            margin-bottom: 4px;
+        }
+
+        .form-group label .required { color: var(--error); }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-family: inherit;
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+            font-family: 'Cascadia Code', 'Fira Code', monospace;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .param-hint {
+            font-size: 11px;
+            color: var(--text2);
+            margin-top: 2px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 20px;
+        }
+
+        /* ── JSON Editor ──────────────────────────── */
+        .json-editor {
+            width: 100%;
+            min-height: 200px;
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            color: var(--accent2);
+            padding: 12px;
+            border-radius: 6px;
+            font-family: 'Cascadia Code', 'Fira Code', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            resize: vertical;
+        }
+
+        .json-editor:focus { outline: none; border-color: var(--accent); }
+
+        /* ── Results ──────────────────────────────── */
+        .result-box {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .result-header h3 {
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .result-time {
+            font-size: 11px;
+            color: var(--text2);
+            margin-left: auto;
+        }
+
+        .result-status {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .status-ok { background: rgba(46, 204, 113, 0.2); color: var(--success); }
+        .status-err { background: rgba(231, 76, 60, 0.2); color: var(--error); }
+
+        .result-json {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 12px;
+            overflow-x: auto;
+            font-family: 'Cascadia Code', 'Fira Code', monospace;
+            font-size: 12px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-break: break-word;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        /* ── History ──────────────────────────────── */
+        .history-item {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: border-color 0.15s;
+        }
+
+        .history-item:hover { border-color: var(--accent); }
+
+        .history-item-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .history-item-meta {
+            font-size: 11px;
+            color: var(--text2);
+            margin-top: 4px;
+        }
+
+        /* ── Welcome ──────────────────────────────── */
+        .welcome {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text2);
+            text-align: center;
+        }
+
+        .welcome-icon { font-size: 48px; margin-bottom: 16px; }
+        .welcome h2 { font-size: 18px; color: var(--text); margin-bottom: 8px; }
+        .welcome p { font-size: 13px; max-width: 400px; line-height: 1.6; }
+
+        /* ── Scrollbar ────────────────────────────── */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text2); }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+    <h1>Arteri <span>MCP Tester</span></h1>
+    <div class="connect-bar">
+        <div class="status-dot" id="statusDot"></div>
+        <input type="text" id="serverUrl" value="http://127.0.0.1:8090/mcp" placeholder="MCP Server URL">
+        <button class="btn btn-primary" id="connectBtn" onclick="toggleConnection()">Connect</button>
+        <span class="status-text" id="statusText">Disconnected</span>
+    </div>
+</div>
+
+<!-- Main -->
+<div class="main">
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>Tools & Elements</h2>
+        </div>
+        <div class="sidebar-search">
+            <input type="text" id="searchInput" placeholder="Search tools..." oninput="filterTools()">
+        </div>
+        <div class="tool-list" id="toolList">
+            <div class="welcome" style="padding: 40px 16px;">
+                <p>Connect to MCP server to see available tools</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+        <div class="tab-bar">
+            <div class="tab active" onclick="switchTab('execute')">Execute</div>
+            <div class="tab" onclick="switchTab('json')">Raw JSON</div>
+            <div class="tab" onclick="switchTab('history')">History</div>
+        </div>
+
+        <div class="tab-content">
+            <!-- Execute Tab -->
+            <div class="tab-panel active" id="panel-execute">
+                <div id="executePanel">
+                    <div class="welcome">
+                        <div class="welcome-icon">&#128295;</div>
+                        <h2>Select a Tool</h2>
+                        <p>Choose a tool from the sidebar to test it. Fill in parameters and click Execute.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Raw JSON Tab -->
+            <div class="tab-panel" id="panel-json">
+                <p style="font-size: 13px; color: var(--text2); margin-bottom: 12px;">
+                    Send raw JSON-RPC requests to the MCP server.
+                </p>
+                <textarea class="json-editor" id="rawJsonInput" rows="8" spellcheck="false">{
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "tools/list",
+    "params": {}
+}</textarea>
+                <div class="form-actions">
+                    <button class="btn btn-primary" onclick="sendRawJson()">Send Request</button>
+                    <button class="btn btn-secondary" onclick="clearRawResult()">Clear</button>
+                </div>
+                <div id="rawResult"></div>
+            </div>
+
+            <!-- History Tab -->
+            <div class="tab-panel" id="panel-history">
+                <div id="historyList">
+                    <div class="welcome">
+                        <p>No requests yet. Execute a tool to see history.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ── State ──────────────────────────────────────
+let connected = false;
+let sessionId = null;
+let tools = [];
+let resources = [];
+let prompts = [];
+let selectedTool = null;
+let requestHistory = [];
+let rpcId = 0;
+
+// ── Agent Groups ───────────────────────────────
+const AGENT_GROUPS = {
+    'Agent 1 — Ingestion': [
+        'ingest_document', 'extract_metadata', 'detect_duplicates',
+        'detect_scan_quality', 'suggest_metadata', 'group_related_documents',
+        'get_verification_queue'
+    ],
+    'Agent 2 — Classification': [
+        'suggest_classification', 'match_classification_scheme',
+        'suggest_series', 'get_retention_schedule', 'explain_recommendation'
+    ],
+    'Agent 3 — Search': [
+        'natural_language_search', 'get_search_results_with_sources',
+        'list_accessible_archives'
+    ],
+    'Agent 4 — Retention': [
+        'get_retention_candidates', 'get_disposition_proposals',
+        'prepare_disposition_docs', 'check_legal_hold'
+    ],
+    'Agent 5 — Compliance': [
+        'check_metadata_completeness', 'detect_unauthorized_changes',
+        'find_unclassified_archives', 'monitor_access_overreach',
+        'trace_access_history', 'generate_compliance_report'
+    ],
+    'Agent 6 — Migration': [
+        'analyze_source', 'preview_migration', 'start_migration',
+        'get_migration_status', 'map_source_fields'
+    ]
+};
+
+// ── Connection ─────────────────────────────────
+async function toggleConnection() {
+    if (connected) {
+        disconnect();
+        return;
+    }
+
+    const url = document.getElementById('serverUrl').value;
+    if (!url) return;
+
+    setStatus('connecting', 'Connecting...');
+
+    try {
+        // Initialize
+        const initResult = await mcpRequest('initialize', {
+            protocolVersion: '2025-03-26',
+            capabilities: {},
+            clientInfo: { name: 'Arteri MCP Tester', version: '1.0.0' }
+        }, true);
+
+        if (initResult.error) {
+            throw new Error(initResult.error.message);
+        }
+
+        // Send initialized notification
+        await mcpNotification('notifications/initialized', {});
+
+        // Fetch elements
+        const toolsResult = await mcpRequest('tools/list', {});
+        tools = toolsResult.result?.tools || [];
+
+        const resResult = await mcpRequest('resources/list', {});
+        resources = resResult.result?.resources || [];
+
+        const tplResult = await mcpRequest('resources/templates/list', {});
+        const templates = tplResult.result?.resourceTemplates || [];
+        resources = [...resources, ...templates.map(t => ({...t, _template: true}))];
+
+        const promptsResult = await mcpRequest('prompts/list', {});
+        prompts = promptsResult.result?.prompts || [];
+
+        connected = true;
+        setStatus('connected', `Connected — ${tools.length} tools, ${resources.length} resources, ${prompts.length} prompts`);
+        document.getElementById('connectBtn').textContent = 'Disconnect';
+        document.getElementById('connectBtn').className = 'btn btn-secondary';
+        renderToolList();
+
+    } catch (err) {
+        setStatus('error', `Error: ${err.message}`);
+        console.error(err);
+    }
+}
+
+function disconnect() {
+    connected = false;
+    sessionId = null;
+    tools = [];
+    resources = [];
+    prompts = [];
+    selectedTool = null;
+    setStatus('', 'Disconnected');
+    document.getElementById('connectBtn').textContent = 'Connect';
+    document.getElementById('connectBtn').className = 'btn btn-primary';
+    document.getElementById('toolList').innerHTML = '<div class="welcome" style="padding:40px 16px;"><p>Connect to MCP server to see available tools</p></div>';
+    document.getElementById('executePanel').innerHTML = '<div class="welcome"><div class="welcome-icon">&#128295;</div><h2>Select a Tool</h2><p>Choose a tool from the sidebar to test it.</p></div>';
+}
+
+// ── MCP Request ────────────────────────────────
+async function mcpRequest(method, params, isInit = false) {
+    const url = document.getElementById('serverUrl').value;
+    const headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json, text/event-stream'
+    };
+
+    if (!isInit && sessionId) {
+        headers['Mcp-Session-Id'] = sessionId;
+    }
+
+    const response = await fetch(url, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+            jsonrpc: '2.0',
+            id: ++rpcId,
+            method,
+            params
+        })
+    });
+
+    // Capture session ID from initialize response
+    if (isInit) {
+        const sid = response.headers.get('Mcp-Session-Id');
+        if (sid) sessionId = sid;
+    }
+
+    // Handle SSE response
+    const contentType = response.headers.get('Content-Type') || '';
+    if (contentType.includes('text/event-stream')) {
+        const text = await response.text();
+        // Parse SSE to extract last JSON-RPC response
+        const lines = text.split('\n');
+        for (const line of lines) {
+            if (line.startsWith('data: ')) {
+                try {
+                    return JSON.parse(line.slice(6));
+                } catch {}
+            }
+        }
+        return { error: { message: 'No valid JSON in SSE response' } };
+    }
+
+    return await response.json();
+}
+
+async function mcpNotification(method, params) {
+    const url = document.getElementById('serverUrl').value;
+    await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json, text/event-stream',
+            ...(sessionId ? { 'Mcp-Session-Id': sessionId } : {})
+        },
+        body: JSON.stringify({ jsonrpc: '2.0', method, params })
+    });
+}
+
+// ── Render Tool List ───────────────────────────
+function renderToolList() {
+    const list = document.getElementById('toolList');
+    let html = '';
+
+    // Tools grouped by agent
+    for (const [group, toolNames] of Object.entries(AGENT_GROUPS)) {
+        const groupTools = toolNames
+            .map(name => tools.find(t => t.name === name))
+            .filter(Boolean);
+
+        if (groupTools.length === 0) continue;
+
+        html += `<div class="tool-group-label">${group}</div>`;
+        for (const tool of groupTools) {
+            html += `
+                <div class="tool-item" onclick="selectTool('${tool.name}')" id="tool-${tool.name}">
+                    <div class="tool-name">${tool.name} <span class="tool-badge badge-tool">tool</span></div>
+                    <div class="tool-desc">${tool.description || ''}</div>
+                </div>`;
+        }
+    }
+
+    // Uncategorized tools
+    const allGrouped = Object.values(AGENT_GROUPS).flat();
+    const uncategorized = tools.filter(t => !allGrouped.includes(t.name));
+    if (uncategorized.length > 0) {
+        html += `<div class="tool-group-label">Other Tools</div>`;
+        for (const tool of uncategorized) {
+            html += `
+                <div class="tool-item" onclick="selectTool('${tool.name}')" id="tool-${tool.name}">
+                    <div class="tool-name">${tool.name} <span class="tool-badge badge-tool">tool</span></div>
+                    <div class="tool-desc">${tool.description || ''}</div>
+                </div>`;
+        }
+    }
+
+    // Resources
+    if (resources.length > 0) {
+        html += `<div class="tool-group-label">Resources</div>`;
+        for (const res of resources) {
+            const name = res.uri || res.uriTemplate || res.name;
+            const isTemplate = res._template;
+            html += `
+                <div class="tool-item" onclick="selectResource('${name}', ${isTemplate})" id="res-${name}">
+                    <div class="tool-name">${res.name || name} <span class="tool-badge badge-resource">resource${isTemplate ? ' template' : ''}</span></div>
+                    <div class="tool-desc">${res.description || name}</div>
+                </div>`;
+        }
+    }
+
+    // Prompts
+    if (prompts.length > 0) {
+        html += `<div class="tool-group-label">Prompts</div>`;
+        for (const prompt of prompts) {
+            html += `
+                <div class="tool-item" onclick="selectPrompt('${prompt.name}')" id="prompt-${prompt.name}">
+                    <div class="tool-name">${prompt.name} <span class="tool-badge badge-prompt">prompt</span></div>
+                    <div class="tool-desc">${prompt.description || ''}</div>
+                </div>`;
+        }
+    }
+
+    list.innerHTML = html || '<div class="welcome" style="padding:40px 16px;"><p>No elements found</p></div>';
+}
+
+// ── Select Tool ────────────────────────────────
+function selectTool(name) {
+    const tool = tools.find(t => t.name === name);
+    if (!tool) return;
+
+    selectedTool = tool;
+    highlightItem(`tool-${name}`);
+    switchTab('execute');
+
+    const panel = document.getElementById('executePanel');
+    const schema = tool.inputSchema || {};
+    const props = schema.properties || {};
+    const required = schema.required || [];
+
+    let formHtml = `
+        <h3 style="font-size: 15px; margin-bottom: 4px;">${tool.name}</h3>
+        <p style="font-size: 12px; color: var(--text2); margin-bottom: 20px;">${tool.description || ''}</p>
+    `;
+
+    if (Object.keys(props).length === 0) {
+        formHtml += '<p style="color: var(--text2); font-size: 13px;">No parameters required.</p>';
+    } else {
+        for (const [key, prop] of Object.entries(props)) {
+            const isRequired = required.includes(key);
+            const type = prop.type || 'string';
+            const desc = prop.description || '';
+
+            formHtml += `<div class="form-group">`;
+            formHtml += `<label>${key} ${isRequired ? '<span class="required">*</span>' : ''}</label>`;
+            formHtml += `<div class="param-hint">${desc} (type: ${type})</div>`;
+
+            if (type === 'integer' || type === 'number') {
+                formHtml += `<input type="number" id="param-${key}" data-param="${key}" ${isRequired ? 'required' : ''} placeholder="${prop.minimum !== undefined ? 'min: ' + prop.minimum : ''} ${prop.maximum !== undefined ? 'max: ' + prop.maximum : ''}">`;
+            } else if (type === 'boolean') {
+                formHtml += `<select id="param-${key}" data-param="${key}"><option value="true">true</option><option value="false">false</option></select>`;
+            } else if (type === 'array') {
+                formHtml += `<textarea id="param-${key}" data-param="${key}" rows="2" placeholder='JSON array, e.g. [1, 2, 3]'></textarea>`;
+            } else if (type === 'object') {
+                formHtml += `<textarea id="param-${key}" data-param="${key}" rows="4" placeholder='JSON object, e.g. {"key": "value"}'></textarea>`;
+            } else {
+                formHtml += `<input type="text" id="param-${key}" data-param="${key}" ${isRequired ? 'required' : ''}>`;
+            }
+
+            formHtml += `</div>`;
+        }
+    }
+
+    formHtml += `
+        <div class="form-actions">
+            <button class="btn btn-success" onclick="executeTool()">Execute</button>
+            <button class="btn btn-secondary" onclick="clearResult()">Clear</button>
+        </div>
+        <div id="toolResult"></div>
+    `;
+
+    panel.innerHTML = formHtml;
+}
+
+// ── Select Resource ────────────────────────────
+function selectResource(name, isTemplate) {
+    highlightItem(`res-${name}`);
+    switchTab('execute');
+
+    const panel = document.getElementById('executePanel');
+    const res = isTemplate
+        ? resources.find(r => r.uriTemplate === name)
+        : resources.find(r => r.uri === name);
+
+    panel.innerHTML = `
+        <h3 style="font-size: 15px; margin-bottom: 4px;">${res?.name || name}</h3>
+        <p style="font-size: 12px; color: var(--text2); margin-bottom: 12px;">
+            ${isTemplate ? 'Resource Template' : 'Resource'}: <code>${name}</code>
+        </p>
+        <p style="font-size: 13px; margin-bottom: 16px;">${res?.description || ''}</p>
+        <div class="form-group">
+            <label>URI ${isTemplate ? '(fill in template params)' : ''}</label>
+            <input type="text" id="resourceUri" value="${res?.uri || res?.uriTemplate || ''}">
+        </div>
+        <div class="form-actions">
+            <button class="btn btn-success" onclick="readResource()">Read Resource</button>
+        </div>
+        <div id="toolResult"></div>
+    `;
+}
+
+// ── Select Prompt ──────────────────────────────
+function selectPrompt(name) {
+    const prompt = prompts.find(p => p.name === name);
+    if (!prompt) return;
+
+    highlightItem(`prompt-${name}`);
+    switchTab('execute');
+
+    const panel = document.getElementById('executePanel');
+    const args = prompt.arguments || [];
+
+    let formHtml = `
+        <h3 style="font-size: 15px; margin-bottom: 4px;">${prompt.name}</h3>
+        <p style="font-size: 12px; color: var(--text2); margin-bottom: 20px;">
+            Prompt: ${prompt.description || ''}
+        </p>
+    `;
+
+    for (const arg of args) {
+        const isRequired = arg.required || false;
+        formHtml += `
+            <div class="form-group">
+                <label>${arg.name} ${isRequired ? '<span class="required">*</span>' : ''}</label>
+                <div class="param-hint">${arg.description || ''}</div>
+                <input type="text" id="prompt-arg-${arg.name}" data-arg="${arg.name}">
+            </div>
+        `;
+    }
+
+    formHtml += `
+        <div class="form-actions">
+            <button class="btn btn-success" onclick="getPrompt()">Get Prompt</button>
+        </div>
+        <div id="toolResult"></div>
+    `;
+
+    panel.innerHTML = formHtml;
+}
+
+// ── Execute Tool ───────────────────────────────
+async function executeTool() {
+    if (!selectedTool) return;
+
+    const params = {};
+    document.querySelectorAll('[data-param]').forEach(el => {
+        const key = el.dataset.param;
+        let val = el.value.trim();
+        if (!val) return;
+
+        const prop = selectedTool.inputSchema?.properties?.[key];
+        const type = prop?.type;
+
+        if (type === 'integer' || type === 'number') {
+            params[key] = Number(val);
+        } else if (type === 'boolean') {
+            params[key] = val === 'true';
+        } else if (type === 'array' || type === 'object') {
+            try { params[key] = JSON.parse(val); }
+            catch { params[key] = val; }
+        } else {
+            params[key] = val;
+        }
+    });
+
+    const startTime = performance.now();
+    document.getElementById('toolResult').innerHTML = '<p style="color: var(--text2);">Executing...</p>';
+
+    try {
+        const result = await mcpRequest('tools/call', {
+            name: selectedTool.name,
+            arguments: params
+        });
+
+        const elapsed = Math.round(performance.now() - startTime);
+        showResult(result, elapsed, selectedTool.name, params);
+        addHistory(selectedTool.name, 'tool', params, result, elapsed);
+    } catch (err) {
+        const elapsed = Math.round(performance.now() - startTime);
+        const result = { error: { message: err.message } };
+        showResult(result, elapsed, selectedTool.name, params);
+        addHistory(selectedTool.name, 'tool', params, result, elapsed);
+    }
+}
+
+// ── Read Resource ──────────────────────────────
+async function readResource() {
+    const uri = document.getElementById('resourceUri').value.trim();
+    if (!uri) return;
+
+    const startTime = performance.now();
+    document.getElementById('toolResult').innerHTML = '<p style="color: var(--text2);">Reading...</p>';
+
+    try {
+        const result = await mcpRequest('resources/read', { uri });
+        const elapsed = Math.round(performance.now() - startTime);
+        showResult(result, elapsed, `read: ${uri}`, {});
+        addHistory(`read: ${uri}`, 'resource', { uri }, result, elapsed);
+    } catch (err) {
+        const elapsed = Math.round(performance.now() - startTime);
+        showResult({ error: { message: err.message } }, elapsed, `read: ${uri}`, {});
+    }
+}
+
+// ── Get Prompt ─────────────────────────────────
+async function getPrompt() {
+    const args = {};
+    document.querySelectorAll('[data-arg]').forEach(el => {
+        const val = el.value.trim();
+        if (val) args[el.dataset.arg] = val;
+    });
+
+    const startTime = performance.now();
+    document.getElementById('toolResult').innerHTML = '<p style="color: var(--text2);">Getting prompt...</p>';
+
+    try {
+        const result = await mcpRequest('prompts/get', { name: selectedTool?.name || 'unknown', arguments: args });
+        const elapsed = Math.round(performance.now() - startTime);
+        showResult(result, elapsed, `prompt: ${selectedTool?.name}`, args);
+        addHistory(`prompt: ${selectedTool?.name}`, 'prompt', args, result, elapsed);
+    } catch (err) {
+        const elapsed = Math.round(performance.now() - startTime);
+        showResult({ error: { message: err.message } }, elapsed, `prompt`, args);
+    }
+}
+
+// ── Raw JSON ───────────────────────────────────
+async function sendRawJson() {
+    const input = document.getElementById('rawJsonInput').value.trim();
+    let parsed;
+    try { parsed = JSON.parse(input); }
+    catch (e) { alert('Invalid JSON: ' + e.message); return; }
+
+    const startTime = performance.now();
+    document.getElementById('rawResult').innerHTML = '<p style="color: var(--text2);">Sending...</p>';
+
+    try {
+        const url = document.getElementById('serverUrl').value;
+        const headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json, text/event-stream'
+        };
+        if (sessionId) headers['Mcp-Session-Id'] = sessionId;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers,
+            body: input
+        });
+
+        const contentType = response.headers.get('Content-Type') || '';
+        let result;
+        if (contentType.includes('text/event-stream')) {
+            const text = await response.text();
+            const lines = text.split('\n');
+            for (const line of lines) {
+                if (line.startsWith('data: ')) {
+                    try { result = JSON.parse(line.slice(6)); } catch {}
+                }
+            }
+        } else {
+            result = await response.json();
+        }
+
+        const elapsed = Math.round(performance.now() - startTime);
+        showRawResult(result || { note: 'No response body' }, elapsed);
+    } catch (err) {
+        const elapsed = Math.round(performance.now() - startTime);
+        showRawResult({ error: { message: err.message } }, elapsed);
+    }
+}
+
+// ── Result Display ─────────────────────────────
+function showResult(result, elapsed, toolName, params) {
+    const isError = result.error || result.isError;
+    const statusClass = isError ? 'status-err' : 'status-ok';
+    const statusText = isError ? 'Error' : 'OK';
+
+    // Format tool result content
+    let content = '';
+    if (result.result?.content) {
+        for (const block of result.result.content) {
+            if (block.type === 'text') {
+                try {
+                    const parsed = JSON.parse(block.text);
+                    content += JSON.stringify(parsed, null, 2);
+                } catch {
+                    content += block.text;
+                }
+            } else {
+                content += JSON.stringify(block, null, 2);
+            }
+        }
+    } else if (result.result) {
+        content = JSON.stringify(result.result, null, 2);
+    } else if (result.error) {
+        content = JSON.stringify(result.error, null, 2);
+    }
+
+    document.getElementById('toolResult').innerHTML = `
+        <div class="result-box">
+            <div class="result-header">
+                <span class="result-status ${statusClass}">${statusText}</span>
+                <h3>${toolName}</h3>
+                <span class="result-time">${elapsed}ms</span>
+            </div>
+            <div class="result-json">${escapeHtml(content || 'Empty response')}</div>
+        </div>
+    `;
+}
+
+function showRawResult(result, elapsed) {
+    const isError = !!result.error;
+    document.getElementById('rawResult').innerHTML = `
+        <div class="result-box">
+            <div class="result-header">
+                <span class="result-status ${isError ? 'status-err' : 'status-ok'}">${isError ? 'Error' : 'OK'}</span>
+                <span class="result-time">${elapsed}ms</span>
+            </div>
+            <div class="result-json">${escapeHtml(JSON.stringify(result, null, 2))}</div>
+        </div>
+    `;
+}
+
+function clearResult() {
+    const el = document.getElementById('toolResult');
+    if (el) el.innerHTML = '';
+}
+
+function clearRawResult() {
+    document.getElementById('rawResult').innerHTML = '';
+}
+
+// ── History ────────────────────────────────────
+function addHistory(name, type, params, result, elapsed) {
+    requestHistory.unshift({
+        name, type, params, result, elapsed,
+        time: new Date().toLocaleTimeString()
+    });
+
+    const list = document.getElementById('historyList');
+    let html = '';
+
+    for (const item of requestHistory) {
+        const isError = item.result?.error;
+        html += `
+            <div class="history-item" onclick="replayHistory(${requestHistory.indexOf(item)})">
+                <div class="history-item-header">
+                    <span class="result-status ${isError ? 'status-err' : 'status-ok'}" style="font-size:10px">
+                        ${isError ? 'ERR' : 'OK'}
+                    </span>
+                    ${item.name}
+                </div>
+                <div class="history-item-meta">${item.type} &middot; ${item.elapsed}ms &middot; ${item.time}</div>
+            </div>
+        `;
+    }
+
+    list.innerHTML = html || '<div class="welcome"><p>No requests yet.</p></div>';
+}
+
+function replayHistory(index) {
+    const item = requestHistory[index];
+    if (!item) return;
+    showResult(item.result, item.elapsed, item.name, item.params);
+    switchTab('execute');
+}
+
+// ── Helpers ────────────────────────────────────
+function setStatus(state, text) {
+    const dot = document.getElementById('statusDot');
+    const label = document.getElementById('statusText');
+    dot.className = 'status-dot ' + (state === 'connected' ? 'connected' : state === 'connecting' ? 'connecting' : '');
+    label.textContent = text;
+}
+
+function highlightItem(id) {
+    document.querySelectorAll('.tool-item').forEach(el => el.classList.remove('active'));
+    const el = document.getElementById(id);
+    if (el) el.classList.add('active');
+}
+
+function switchTab(name) {
+    document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(el => el.classList.remove('active'));
+    event?.target?.classList.add('active') ||
+        document.querySelector(`.tab:nth-child(${name === 'execute' ? 1 : name === 'json' ? 2 : 3})`).classList.add('active');
+    document.getElementById(`panel-${name}`).classList.add('active');
+}
+
+function filterTools() {
+    const query = document.getElementById('searchInput').value.toLowerCase();
+    document.querySelectorAll('.tool-item').forEach(el => {
+        const text = el.textContent.toLowerCase();
+        el.style.display = text.includes(query) ? '' : 'none';
+    });
+    document.querySelectorAll('.tool-group-label').forEach(el => {
+        const next = el.nextElementSibling;
+        if (next && next.classList.contains('tool-group-label')) return;
+        // Show group if any visible child
+        let sibling = el.nextElementSibling;
+        let hasVisible = false;
+        while (sibling && !sibling.classList.contains('tool-group-label')) {
+            if (sibling.style.display !== 'none') hasVisible = true;
+            sibling = sibling.nextElementSibling;
+        }
+        el.style.display = hasVisible ? '' : 'none';
+    });
+}
+
+function escapeHtml(str) {
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// ── Init ───────────────────────────────────────
+document.getElementById('serverUrl').addEventListener('keydown', e => {
+    if (e.key === 'Enter') toggleConnection();
+});
+</script>
+
+</body>
+</html>
