@@ -23,8 +23,18 @@ class McpServe extends BaseCommand
 
     public function run(array $params)
     {
-        $transport = $params['transport'] ?? 'stdio';
-        $port      = (int) ($params['port'] ?? 8090);
+        // CI4 CLI passes params as {"transport=http":null} not {"transport":"http"}
+        $transport = 'stdio';
+        $port      = 8090;
+
+        foreach ($params as $key => $value) {
+            if (str_starts_with($key, 'transport')) {
+                $transport = $value ?? str_replace('transport=', '', $key);
+            }
+            if (str_starts_with($key, 'port')) {
+                $port = (int) ($value ?? str_replace('port=', '', $key));
+            }
+        }
 
         if (!McpConfig::isValidTransport($transport)) {
             CLI::error("Invalid transport: {$transport}. Use 'stdio' or 'http'.");
