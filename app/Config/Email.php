@@ -24,7 +24,7 @@ class Email extends BaseConfig
     public string $recipients = '';
 
     /**
-     * The “user agent”
+     * The "user agent"
      */
     public string $userAgent = 'CodeIgniter';
 
@@ -113,14 +113,14 @@ class Email extends BaseConfig
     public int $priority = 3;
 
     /**
-     * Newline character. (Use “\r\n” to comply with RFC 822)
+     * Newline character. (Use "\r\n" to comply with RFC 822)
      */
-    public string $CRLF = “\r\n”;
+    public string $CRLF = "\r\n";
 
     /**
-     * Newline character. (Use “\r\n” to comply with RFC 822)
+     * Newline character. (Use "\r\n" to comply with RFC 822)
      */
-    public string $newline = “\r\n”;
+    public string $newline = "\r\n";
 
     /**
      * Enable BCC Batch Mode.

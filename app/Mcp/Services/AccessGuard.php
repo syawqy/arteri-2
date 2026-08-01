@@ -63,8 +63,23 @@ class AccessGuard
         if ($this->currentUser['tipe'] === 'admin') {
             return true;
         }
-        $aksesKlas = json_decode($this->currentUser['akses_klas'], true) ?? [];
-        return in_array($kode, $aksesKlas, true);
+        $raw = $this->currentUser['akses_klas'] ?? '';
+        $decoded = json_decode($raw, true);
+        if (is_array($decoded)) {
+            $aksesKlas = $decoded;
+        } elseif (is_string($raw) && trim($raw) !== '') {
+            $aksesKlas = array_map('trim', explode(',', $raw));
+        } else {
+            $aksesKlas = [];
+        }
+        $kodeUpper = strtoupper($kode);
+        foreach ($aksesKlas as $klas) {
+            $klasUpper = strtoupper(trim((string) $klas));
+            if ($klasUpper !== '' && (strtoupper($kode) === $klasUpper || str_starts_with($kodeUpper, $klasUpper . '.'))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public function canAccessModule(string $module): bool
@@ -76,7 +91,7 @@ class AccessGuard
             return true;
         }
         $aksesModul = json_decode($this->currentUser['akses_modul'], true) ?? [];
-        return in_array($module, $aksesModul, true);
+        return ($aksesModul[$module] ?? 'off') === 'on';
     }
 
     public function filterArsip(array $records): array

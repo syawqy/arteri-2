@@ -82,7 +82,7 @@ class Chat extends BaseController
                 'Content-Type: application/json',
                 'Accept: application/json, text/event-stream',
                 'X-Username: ' . $username,
-                ($input['sessionId'] ? 'Mcp-Session-Id: ' . $input['sessionId'] : ''),
+                (!empty($input['sessionId']) ? 'Mcp-Session-Id: ' . $input['sessionId'] : ''),
             ],
         ]);
 
@@ -146,7 +146,7 @@ class Chat extends BaseController
         $mcpTools = $input['mcpTools'] ?? [];
         $mcpSessionId = $input['mcpSessionId'] ?? '';
 
-        if (empty($messages)) {
+        if (! is_array($messages) || empty($messages)) {
             return $this->response->setStatusCode(400)->setJSON(['error' => 'No messages']);
         }
 
@@ -189,7 +189,7 @@ class Chat extends BaseController
             $tools[] = [
                 'type' => 'function',
                 'function' => [
-                    'name' => $tool['name'],
+                    'name' => $tool['name'] ?? 'unknown',
                     'description' => $tool['description'] ?? '',
                     'parameters' => $schema,
                 ],
