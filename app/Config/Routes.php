@@ -28,6 +28,11 @@ $routes->get('dashboard/api/by-lokasi', 'Dashboard::apiByLokasi');
 $routes->get('dashboard/api/by-media', 'Dashboard::apiByMedia');
 $routes->get('dashboard/api/by-pencipta', 'Dashboard::apiByPencipta');
 
+// Chat (AI Assistant)
+$routes->get('chat', 'Chat::index');
+$routes->post('chat/api', 'Chat::api');
+$routes->post('chat/mcp-tool', 'Chat::mcpToolCall');
+
 // Report
 $routes->get('report', 'Report::index');
 $routes->get('report/arsip', 'Report::arsip');

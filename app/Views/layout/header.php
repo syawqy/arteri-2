@@ -57,6 +57,7 @@
                 <ul class="nav navbar-nav">
                     <li><a href="<?= site_url('/dashboard') ?>"><i class="glyphicon glyphicon-dashboard"></i> Dashboard</a></li>
                     <li><a href="<?= site_url('/report') ?>"><i class="glyphicon glyphicon-print"></i> Laporan</a></li>
+                    <li><a href="<?= site_url('/chat') ?>"><i class="glyphicon glyphicon-comment"></i> AI Assistant</a></li>
                     <?php if (hasModuleAccess('entridata')): ?>
                         <li><a href="<?= site_url('/arsip/new') ?>"><i class="glyphicon glyphicon-plus"></i> Entri Data Baru</a></li>
                     <?php endif; ?>

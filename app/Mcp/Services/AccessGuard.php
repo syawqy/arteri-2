@@ -22,7 +22,7 @@ class AccessGuard
     {
         if ($sessionUser !== null) {
             $user = $this->userModel->where('username', $sessionUser)->first();
-            if ($user && $user['tipe'] === 'admin') {
+            if ($user) {
                 $this->currentUser = $user;
                 return $user;
             }
