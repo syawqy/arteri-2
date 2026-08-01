@@ -42,6 +42,16 @@ class AccessGuard
             }
         }
 
+        // Fallback: auto-login as MCP_TEST_USERNAME for dev/testing
+        $testUser = env('MCP_TEST_USERNAME', null);
+        if ($testUser !== null) {
+            $user = $this->userModel->where('username', $testUser)->first();
+            if ($user) {
+                $this->currentUser = $user;
+                return $user;
+            }
+        }
+
         return null;
     }
 
@@ -83,6 +93,9 @@ class AccessGuard
 
     public function requireAuth(): void
     {
+        if ($this->currentUser === null) {
+            $this->authenticate();
+        }
         if ($this->currentUser === null) {
             throw new \RuntimeException('Authentication required. Provide a valid API key or session.');
         }

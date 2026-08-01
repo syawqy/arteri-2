@@ -504,6 +504,7 @@ let tools = [];
 let resources = [];
 let prompts = [];
 let selectedTool = null;
+let selectedPrompt = null;
 let requestHistory = [];
 let rpcId = 0;
 
@@ -594,9 +595,9 @@ function disconnect() {
     connected = false;
     sessionId = null;
     tools = [];
-    resources = [];
-    prompts = [];
     selectedTool = null;
+    selectedPrompt = null;
+    requestHistory = [];
     setStatus('', 'Disconnected');
     document.getElementById('connectBtn').textContent = 'Connect';
     document.getElementById('connectBtn').className = 'btn btn-primary';
@@ -737,6 +738,7 @@ function selectTool(name) {
     if (!tool) return;
 
     selectedTool = tool;
+    selectedPrompt = null;
     highlightItem(`tool-${name}`);
     switchTab('execute');
 
@@ -816,10 +818,11 @@ function selectResource(name, isTemplate) {
     `;
 }
 
-// ── Select Prompt ──────────────────────────────
 function selectPrompt(name) {
     const prompt = prompts.find(p => p.name === name);
     if (!prompt) return;
+    selectedPrompt = name;
+    selectedTool = null;
 
     highlightItem(`prompt-${name}`);
     switchTab('execute');
@@ -931,13 +934,13 @@ async function getPrompt() {
     document.getElementById('toolResult').innerHTML = '<p style="color: var(--text2);">Getting prompt...</p>';
 
     try {
-        const result = await mcpRequest('prompts/get', { name: selectedTool?.name || 'unknown', arguments: args });
+        const result = await mcpRequest('prompts/get', { name: selectedPrompt, arguments: args });
         const elapsed = Math.round(performance.now() - startTime);
-        showResult(result, elapsed, `prompt: ${selectedTool?.name}`, args);
-        addHistory(`prompt: ${selectedTool?.name}`, 'prompt', args, result, elapsed);
+        showResult(result, elapsed, `prompt: ${selectedPrompt}`, args);
+        addHistory(`prompt: ${selectedPrompt}`, 'prompt', args, result, elapsed);
     } catch (err) {
         const elapsed = Math.round(performance.now() - startTime);
-        showResult({ error: { message: err.message } }, elapsed, `prompt`, args);
+        showResult({ error: { message: err.message } }, elapsed, `prompt: ${selectedPrompt}`, args);
     }
 }
 
