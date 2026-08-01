@@ -365,7 +365,7 @@
     <div class="config-grid" style="grid-template-columns: 1fr 1fr;">
         <div class="config-field">
             <label>MCP Server URL</label>
-            <input type="text" id="cfgMcpUrl" value="http://127.0.0.1:8090/mcp">
+            <input type="text" id="cfgMcpUrl" value="/mcp-api">
         </div>
         <div class="config-field">
             <label>Chat API Endpoint (backend)</label>
@@ -421,6 +421,11 @@ function loadConfig() {
     const saved = localStorage.getItem('arteri-mcp-chat-config');
     if (saved) {
         const c = JSON.parse(saved);
+        // Reset old cross-origin URLs to same-origin proxy
+        const oldUrl = c.mcpUrl;
+        if (oldUrl && (oldUrl.includes('arteri-mcp.syawqy.my.id') || oldUrl.startsWith('http'))) {
+            c.mcpUrl = '/mcp-api';
+        }
         if (c.mcpUrl) document.getElementById('cfgMcpUrl').value = c.mcpUrl;
         if (c.chatApi) document.getElementById('cfgChatApi').value = c.chatApi;
     }
@@ -575,12 +580,12 @@ async function callLlm(messages) {
 
     abortController = new AbortController();
 
+    // Send full chatHistory as messages — backend builds system prompt + message array
     const resp = await fetch(cfg.chatApi, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            message: messages[messages.length - 1]?.content || '',
-            history: messages.slice(0, -1),
+            messages: messages,
             mcpTools: mcpTools.map(t => ({
                 name: t.name,
                 description: t.description || '',

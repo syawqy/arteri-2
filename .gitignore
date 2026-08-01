@@ -17,3 +17,8 @@ public/uploads/*.pdf
 public/uploads/*.docx
 public/uploads/*.doc
 tests/_support/_generated/
+
+# Local database and backups
+writable/database.db
+*.bak
+.env.*
