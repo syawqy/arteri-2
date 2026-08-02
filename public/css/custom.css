@@ -41,6 +41,18 @@ body
     background-color: #931313;
     border-color: #6b0505;
 }
+/* Compact navbar - single row */
+.navbar-inverse .navbar-nav > li > a {
+    padding: 10px 12px;
+    font-size: 13px;
+    white-space: nowrap;
+}
+.navbar-inverse .navbar-brand {
+    padding: 10px 15px;
+}
+.navbar-inverse .navbar-brand img {
+    height: 30px;
+}
 .btn {
 	border-radius: 10px;
 }
