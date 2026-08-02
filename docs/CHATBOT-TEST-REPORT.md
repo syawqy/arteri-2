@@ -44,6 +44,47 @@
 
 ---
 
+## DB Verification (Actual MySQL Data)
+
+All chatbot responses were verified against the actual database:
+
+| Test | Chatbot Says | DB Actual | Match |
+|------|-------------|-----------|-------|
+| Total archives | 100 (via list_accessible_archives) | `SELECT COUNT(*) FROM data_arsip` = 100 | ✅ |
+| "Penghapusan" search | Found matching records | `WHERE uraian LIKE '%Penghapusan%'` = 9 records | ✅ |
+| Kode 44 count | 33 archives | `WHERE kode='44'` = 33 | ✅ |
+| Klasifikasi keamanan NULL | 1 archive without classification | `WHERE klasifikasi_keamanan IS NULL` = 1 | ✅ |
+| noarsip=10 exists | Found: "Usul Penghapusan BMN..." | DB confirms noarsip=10, kode=24, uraian matches | ✅ |
+| Terbatas archives | 3 archives with Terbatas | `WHERE klasifikasi_keamanan='Terbatas'` = 3 | ✅ |
+| Biasa/Terbuka archives | 96 archives | `WHERE klasifikasi_keamanan='Biasa/Terbuka'` = 96 | ✅ |
+
+### Failed Tools (Missing DB Tables)
+
+5 tools failed because their backing tables don't exist yet:
+
+| Tool | Missing Table | Status |
+|------|--------------|--------|
+| get_retention_schedule | `retention_schedules` | Table not created |
+| check_legal_hold | `legal_holds` | Table not created |
+| get_verification_queue | `ai_verification_queue` | Table not created |
+| get_disposition_proposals | `retention_actions` | Table not created |
+| get_migration_status | `migration_jobs` | Table not created |
+
+---
+
+## Browser Screenshots
+
+### Login Page
+![Login Page](chatbot-test-screenshots/01-login-page.png)
+
+### Dashboard (After Login)
+![Dashboard](chatbot-test-screenshots/02-dashboard.png)
+
+### Chat Page (MCP Connected)
+![Chat Page](chatbot-test-screenshots/03-chat-page.png)
+
+---
+
 ## Test Results Summary
 
 | # | Test | Status | Model | Time | Tokens | Tool Calls | DB Check |
