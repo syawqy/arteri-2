@@ -286,6 +286,118 @@
     }
 
     .chat-welcome .example-btn:hover { border-color: #3498db; color: #3498db; }
+
+    /* Sidebar */
+    .chat-layout {
+        display: flex;
+        flex: 1;
+        overflow: hidden;
+    }
+
+    .chat-sidebar {
+        width: 260px;
+        background: #fff;
+        border-right: 1px solid #dee2e6;
+        display: flex;
+        flex-direction: column;
+        flex-shrink: 0;
+    }
+
+    .sidebar-header {
+        padding: 12px;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .btn-new-chat {
+        width: 100%;
+        padding: 8px 12px;
+        background: #3498db;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        justify-content: center;
+    }
+
+    .btn-new-chat:hover { background: #2980b9; }
+
+    .sidebar-sessions {
+        flex: 1;
+        overflow-y: auto;
+        padding: 8px;
+    }
+
+    .session-item {
+        padding: 10px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        margin-bottom: 2px;
+        transition: background 0.15s;
+        position: relative;
+    }
+
+    .session-item:hover { background: #f1f3f5; }
+    .session-item.active { background: #e8f4fd; border-left: 3px solid #3498db; }
+
+    .session-item .session-title {
+        font-size: 13px;
+        font-weight: 500;
+        color: #2c3e50;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .session-item .session-preview {
+        font-size: 11px;
+        color: #95a5a6;
+        margin-top: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .session-item .session-date {
+        font-size: 10px;
+        color: #bdc3c7;
+        margin-top: 2px;
+    }
+
+    .session-item .session-delete {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: none;
+        border: none;
+        color: #bdc3c7;
+        font-size: 14px;
+        cursor: pointer;
+        padding: 2px 4px;
+        border-radius: 4px;
+        display: none;
+    }
+
+    .session-item:hover .session-delete { display: block; }
+    .session-item .session-delete:hover { color: #e74c3c; background: rgba(231,76,60,0.1); }
+
+    .chat-main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    .sidebar-empty {
+        padding: 20px 12px;
+        text-align: center;
+        color: #bdc3c7;
+        font-size: 12px;
+    }
 </style>
 
 <div class="chat-wrapper">
@@ -298,31 +410,48 @@
         </div>
     </div>
 
-    <!-- Messages -->
-    <div class="chat-messages" id="chatMessages">
-        <div class="chat-welcome" id="chatWelcome">
-            <div class="icon">🏛️</div>
-            <h3>Arteri AI Assistant</h3>
-            <p>Chat dengan AI yang terhubung ke sistem pengelola arsip digital. AI dapat menggunakan 30 tools untuk mengelola arsip, klasifikasi, pencarian, retensi, compliance, dan migrasi.</p>
-            <div class="examples">
-                <button class="example-btn" onclick="sendExample(this)">Cari arsip surat masuk tahun 2026</button>
-                <button class="example-btn" onclick="sendExample(this)">Tunjukkan arsip yang perlu diverifikasi</button>
-                <button class="example-btn" onclick="sendExample(this)">Buat laporan compliance bulan ini</button>
-                <button class="example-btn" onclick="sendExample(this)">Cek jadwal retensi untuk klasifikasi SM</button>
+    <div class="chat-layout">
+        <!-- Sidebar -->
+        <div class="chat-sidebar">
+            <div class="sidebar-header">
+                <button class="btn-new-chat" onclick="newSession()">
+                    <span>＋</span> New Chat
+                </button>
+            </div>
+            <div class="sidebar-sessions" id="sidebarSessions">
+                <div class="sidebar-empty">Loading...</div>
             </div>
         </div>
-    </div>
 
-    <!-- Input -->
-    <div class="chat-input">
-        <div class="chat-input-inner">
-            <textarea id="userInput" rows="1" placeholder="Ketik pesan..."
-                      onkeydown="handleKeydown(event)"
-                      oninput="autoResize(this)"></textarea>
-            <button class="btn-send" id="sendBtn" onclick="sendMessage()">▲</button>
-        </div>
-        <div class="hint">
-            Enter = kirim · Shift+Enter = baris baru · LLM akan gunakan MCP tools yang relevan
+        <!-- Main Chat Area -->
+        <div class="chat-main">
+            <!-- Messages -->
+            <div class="chat-messages" id="chatMessages">
+                <div class="chat-welcome" id="chatWelcome">
+                    <div class="icon">🏛️</div>
+                    <h3>Arteri AI Assistant</h3>
+                    <p>Chat dengan AI yang terhubung ke sistem pengelola arsip digital. AI dapat menggunakan 30 tools untuk mengelola arsip, klasifikasi, pencarian, retensi, compliance, dan migrasi.</p>
+                    <div class="examples">
+                        <button class="example-btn" onclick="sendExample(this)">Cari arsip surat masuk tahun 2026</button>
+                        <button class="example-btn" onclick="sendExample(this)">Tunjukkan arsip yang perlu diverifikasi</button>
+                        <button class="example-btn" onclick="sendExample(this)">Buat laporan compliance bulan ini</button>
+                        <button class="example-btn" onclick="sendExample(this)">Cek jadwal retensi untuk klasifikasi SM</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input -->
+            <div class="chat-input">
+                <div class="chat-input-inner">
+                    <textarea id="userInput" rows="1" placeholder="Ketik pesan..."
+                              onkeydown="handleKeydown(event)"
+                              oninput="autoResize(this)"></textarea>
+                    <button class="btn-send" id="sendBtn" onclick="sendMessage()">▲</button>
+                </div>
+                <div class="hint">
+                    Enter = kirim · Shift+Enter = baris baru · LLM akan gunakan MCP tools yang relevan
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -339,6 +468,8 @@ let mcpTools = [];
 let mcpRpcId = 0;
 let chatHistory = [];
 let isGenerating = false;
+let currentSessionId = null;
+let sessions = [];
 
 // ── CSRF helper ────────────────────────────────
 function csrfHeaders() {
@@ -407,7 +538,7 @@ async function fetchMcp(payload, isNotification = false) {
     return data;
 }
 
-async function mcpRequest(method, params) {
+async function mcpRequest(method, params, extra = {}) {
     const resp = await fetch('/chat/api', {
         method: 'POST',
         headers: csrfHeaders(),
@@ -415,6 +546,9 @@ async function mcpRequest(method, params) {
             action: 'mcp',
             payload: { jsonrpc: '2.0', id: ++mcpRpcId, method, params },
             sessionId: mcpSessionId,
+            chatSessionId: currentSessionId,
+            toolCallId: extra.toolCallId || null,
+            toolName: extra.toolName || null,
         })
     });
 
@@ -422,10 +556,10 @@ async function mcpRequest(method, params) {
     return await resp.json();
 }
 
-async function mcpToolCall(name, args) {
+async function mcpToolCall(name, args, toolCallId = null) {
     const startTime = performance.now();
     try {
-        const result = await mcpRequest('tools/call', { name, arguments: args });
+        const result = await mcpRequest('tools/call', { name, arguments: args }, { toolName: name, toolCallId });
         const elapsed = Math.round(performance.now() - startTime);
 
         if (result.error) {
@@ -457,6 +591,7 @@ async function callLlm(messages) {
                 inputSchema: t.inputSchema || { type: 'object', properties: {} }
             })),
             mcpSessionId: mcpSessionId,
+            chatSessionId: currentSessionId,
         })
     });
 
@@ -479,11 +614,199 @@ async function callLlm(messages) {
     };
 }
 
+// ── Session Management ─────────────────────────
+async function loadSessions() {
+    try {
+        const resp = await fetch('/chat/sessions', { headers: csrfHeaders() });
+        if (!resp.ok) return;
+        const data = await resp.json();
+        sessions = data.sessions || [];
+        renderSidebar();
+    } catch (err) {
+        console.error('Failed to load sessions:', err);
+    }
+}
+
+function renderSidebar() {
+    const container = document.getElementById('sidebarSessions');
+    if (!sessions.length) {
+        container.innerHTML = '<div class="sidebar-empty">Belum ada percakapan</div>';
+        return;
+    }
+
+    container.innerHTML = sessions.map(s => {
+        const isActive = s.id === currentSessionId;
+        const date = new Date(s.updated_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+        return `
+            <div class="session-item ${isActive ? 'active' : ''}" onclick="loadSession(${s.id})">
+                <div class="session-title">${escapeHtml(s.title)}</div>
+                <div class="session-preview">${escapeHtml(s.preview || '')}</div>
+                <div class="session-date">${date}</div>
+                <button class="session-delete" onclick="event.stopPropagation(); deleteSession(${s.id})" title="Hapus">✕</button>
+            </div>
+        `;
+    }).join('');
+}
+
+async function newSession() {
+    try {
+        const resp = await fetch('/chat/sessions', {
+            method: 'POST',
+            headers: csrfHeaders(),
+            body: JSON.stringify({ title: 'New Chat' })
+        });
+        if (!resp.ok) return;
+        const data = await resp.json();
+
+        currentSessionId = data.id;
+        chatHistory = [];
+
+        // Clear messages
+        const container = document.getElementById('chatMessages');
+        container.innerHTML = `
+            <div class="chat-welcome" id="chatWelcome">
+                <div class="icon">🏛️</div>
+                <h3>Arteri AI Assistant</h3>
+                <p>Chat dengan AI yang terhubung ke sistem pengelola arsip digital.</p>
+                <div class="examples">
+                    <button class="example-btn" onclick="sendExample(this)">Cari arsip surat masuk tahun 2026</button>
+                    <button class="example-btn" onclick="sendExample(this)">Tunjukkan arsip yang perlu diverifikasi</button>
+                    <button class="example-btn" onclick="sendExample(this)">Buat laporan compliance bulan ini</button>
+                    <button class="example-btn" onclick="sendExample(this)">Cek jadwal retensi untuk klasifikasi SM</button>
+                </div>
+            </div>`;
+
+        // Add to sessions list and re-render
+        sessions.unshift({
+            id: data.id,
+            title: data.title,
+            preview: '',
+            updated_at: data.created_at,
+            message_count: 0
+        });
+        renderSidebar();
+
+        document.getElementById('userInput').focus();
+    } catch (err) {
+        console.error('Failed to create session:', err);
+    }
+}
+
+async function loadSession(id) {
+    if (id === currentSessionId) return;
+
+    try {
+        const resp = await fetch(`/chat/sessions/${id}`, { headers: csrfHeaders() });
+        if (!resp.ok) return;
+        const data = await resp.json();
+
+        currentSessionId = id;
+        chatHistory = [];
+
+        const container = document.getElementById('chatMessages');
+        container.innerHTML = '';
+
+        // Render messages from DB
+        for (const msg of data.messages) {
+            if (msg.role === 'user') {
+                addMsg('user', msg.content);
+                chatHistory.push({ role: 'user', content: msg.content });
+            } else if (msg.role === 'assistant') {
+                if (msg.tool_calls) {
+                    // Assistant with tool calls
+                    chatHistory.push({
+                        role: 'assistant',
+                        content: msg.content || null,
+                        tool_calls: msg.tool_calls
+                    });
+                    // Show tool call boxes
+                    for (const tc of msg.tool_calls) {
+                        addToolBox(tc.function?.name || 'tool', 'call', tc.function?.arguments || '{}');
+                    }
+                } else if (msg.content) {
+                    addMsg('assistant', msg.content);
+                    chatHistory.push({ role: 'assistant', content: msg.content });
+                }
+            } else if (msg.role === 'tool') {
+                const name = msg.tool_name || 'tool';
+                const preview = msg.content ? msg.content.substring(0, 200) : '';
+                addToolBox(name, 'result', preview);
+                chatHistory.push({
+                    role: 'tool',
+                    tool_call_id: msg.tool_call_id,
+                    content: msg.content
+                });
+            }
+        }
+
+        renderSidebar();
+        document.getElementById('userInput').focus();
+    } catch (err) {
+        console.error('Failed to load session:', err);
+    }
+}
+
+async function deleteSession(id) {
+    if (!confirm('Hapus percakapan ini?')) return;
+
+    try {
+        await fetch(`/chat/sessions/${id}`, {
+            method: 'DELETE',
+            headers: csrfHeaders()
+        });
+
+        sessions = sessions.filter(s => s.id !== id);
+
+        if (currentSessionId === id) {
+            currentSessionId = null;
+            chatHistory = [];
+            // Reset to welcome
+            const container = document.getElementById('chatMessages');
+            container.innerHTML = `
+                <div class="chat-welcome" id="chatWelcome">
+                    <div class="icon">🏛️</div>
+                    <h3>Arteri AI Assistant</h3>
+                    <p>Chat dengan AI yang terhubung ke sistem pengelola arsip digital.</p>
+                    <div class="examples">
+                        <button class="example-btn" onclick="sendExample(this)">Cari arsip surat masuk tahun 2026</button>
+                        <button class="example-btn" onclick="sendExample(this)">Tunjukkan arsip yang perlu diverifikasi</button>
+                        <button class="example-btn" onclick="sendExample(this)">Buat laporan compliance bulan ini</button>
+                        <button class="example-btn" onclick="sendExample(this)">Cek jadwal retensi untuk klasifikasi SM</button>
+                    </div>
+                </div>`;
+        }
+
+        renderSidebar();
+    } catch (err) {
+        console.error('Failed to delete session:', err);
+    }
+}
+
 // ── Main Chat Flow ─────────────────────────────
 async function sendMessage(text) {
     text = text || document.getElementById('userInput').value.trim();
     if (!text || isGenerating) return;
     if (!mcpConnected) { addMsg('system', 'MCP belum terhubung. Silakan refresh halaman.'); return; }
+
+    // Auto-create session if none
+    if (!currentSessionId) {
+        try {
+            const resp = await fetch('/chat/sessions', {
+                method: 'POST',
+                headers: csrfHeaders(),
+                body: JSON.stringify({ title: 'New Chat' })
+            });
+            if (resp.ok) {
+                const data = await resp.json();
+                currentSessionId = data.id;
+                sessions.unshift({
+                    id: data.id, title: data.title, preview: '',
+                    updated_at: data.created_at, message_count: 0
+                });
+                renderSidebar();
+            }
+        } catch (e) { /* continue without session */ }
+    }
 
     document.getElementById('userInput').value = '';
     autoResize(document.getElementById('userInput'));
@@ -521,7 +844,7 @@ async function sendMessage(text) {
 
                     updateToolBox(thinkEl, tc.function.name, 'call', args);
 
-                    const result = await mcpToolCall(tc.function.name, args);
+                    const result = await mcpToolCall(tc.function.name, args, tc.id);
                     const resultText = result.content.map(c => c.text || JSON.stringify(c)).join('\n');
 
                     addToolBox(tc.function.name, result.isError ? 'error' : 'result', resultText);
@@ -546,6 +869,7 @@ async function sendMessage(text) {
         addMsg('system', `Error: ${err.message}`);
     } finally {
         setGenerating(false);
+        loadSessions(); // refresh sidebar with updated titles/previews
     }
 }
 
@@ -767,6 +1091,7 @@ function sendExample(btn) {
 
 // ── Init ───────────────────────────────────────
 connectMcp();
+loadSessions();
 </script>
 
 <?= $this->endSection() ?>

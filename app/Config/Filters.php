@@ -85,7 +85,7 @@ class Filters extends BaseFilters
         parent::__construct();
 
         if (ENVIRONMENT !== 'testing') {
-            $this->globals['before']['csrf'] = ['except' => ['api/*']];
+            $this->globals['before']['csrf'] = ['except' => ['api/*', 'chat/sessions*']];
         }
     }
     /**

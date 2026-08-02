@@ -4,30 +4,38 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Models\ChatSessionModel;
+use App\Models\ChatMessageModel;
 use CodeIgniter\HTTP\ResponseInterface;
 
 class Chat extends BaseController
 {
+    private ChatSessionModel $sessionModel;
+    private ChatMessageModel $messageModel;
+
+    public function __construct()
+    {
+        $this->sessionModel  = new ChatSessionModel();
+        $this->messageModel  = new ChatMessageModel();
+    }
+
     /**
      * Chat page — requires login
      */
-    public function index(): string
+    public function index(): \CodeIgniter\HTTP\RedirectResponse|string
     {
         if (! session('username')) {
             return redirect()->to('/login');
         }
 
         return view('chat/index', [
-            'title' => 'AI Assistant',
+            'title'    => 'AI Assistant',
             'username' => session('username'),
         ]);
     }
 
     /**
      * Chat API — proxies MCP + LLM with user identity
-     * 
-     * POST /chat/api
-     * Body: { action: 'chat'|'mcp'|'user', ... }
      */
     public function api(): ResponseInterface
     {
@@ -36,7 +44,7 @@ class Chat extends BaseController
         }
 
         $username = session('username');
-        $input = $this->request->getJSON(true);
+        $input    = $this->request->getJSON(true);
 
         if (! $input) {
             return $this->response->setStatusCode(400)->setJSON(['error' => 'Invalid JSON']);
@@ -48,7 +56,7 @@ class Chat extends BaseController
             case 'user':
                 return $this->response->setJSON([
                     'username' => $username,
-                    'tipe' => session('tipe') ?? 'user',
+                    'tipe'     => session('tipe') ?? 'user',
                 ]);
 
             case 'mcp':
@@ -62,43 +70,143 @@ class Chat extends BaseController
         }
     }
 
+    // ═══════════════════════════════════════════════
+    //  SESSION MANAGEMENT
+    // ═══════════════════════════════════════════════
+
     /**
-     * Proxy MCP requests with user identity
+     * List all sessions for current user
+     * GET /chat/sessions
      */
+    public function sessions(): ResponseInterface
+    {
+        if (! session('username')) {
+            return $this->response->setStatusCode(401)->setJSON(['error' => 'Unauthorized']);
+        }
+
+        $sessions = $this->sessionModel->getSessionsForUser(session('username'));
+        return $this->response->setJSON(['sessions' => $sessions]);
+    }
+
+    /**
+     * Create a new session
+     * POST /chat/sessions
+     * Body: { title?: string }
+     */
+    public function createSession(): ResponseInterface
+    {
+        if (! session('username')) {
+            return $this->response->setStatusCode(401)->setJSON(['error' => 'Unauthorized']);
+        }
+
+        $input = $this->request->getJSON(true);
+        $title = ($input['title'] ?? 'New Chat') ?: 'New Chat';
+
+        $id = $this->sessionModel->createSession(session('username'), $title);
+
+        return $this->response->setJSON([
+            'id'        => $id,
+            'title'     => $title,
+            'user_id'   => session('username'),
+            'created_at' => date('Y-m-d H:i:s'),
+        ]);
+    }
+
+    /**
+     * Load messages for a session
+     * GET /chat/sessions/{id}
+     */
+    public function loadSession(int $id): ResponseInterface
+    {
+        if (! session('username')) {
+            return $this->response->setStatusCode(401)->setJSON(['error' => 'Unauthorized']);
+        }
+
+        if (! $this->sessionModel->userOwns($id, session('username'))) {
+            return $this->response->setStatusCode(404)->setJSON(['error' => 'Session not found']);
+        }
+
+        $session  = $this->sessionModel->find($id);
+        $messages = $this->messageModel->getMessages($id);
+
+        // Convert to frontend format
+        $formatted = [];
+        foreach ($messages as $msg) {
+            $entry = [
+                'id'        => $msg['id'],
+                'role'      => $msg['role'],
+                'content'   => $msg['content'],
+                'created_at' => $msg['created_at'],
+            ];
+
+            if ($msg['tool_calls']) {
+                $entry['tool_calls'] = json_decode($msg['tool_calls'], true);
+            }
+            if ($msg['tool_call_id']) {
+                $entry['tool_call_id'] = $msg['tool_call_id'];
+            }
+            if ($msg['tool_name']) {
+                $entry['tool_name'] = $msg['tool_name'];
+            }
+
+            $formatted[] = $entry;
+        }
+
+        return $this->response->setJSON([
+            'session'  => $session,
+            'messages' => $formatted,
+        ]);
+    }
+
+    /**
+     * Delete a session
+     * DELETE /chat/sessions/{id}
+     */
+    public function deleteSession(int $id): ResponseInterface
+    {
+        if (! session('username')) {
+            return $this->response->setStatusCode(401)->setJSON(['error' => 'Unauthorized']);
+        }
+
+        $deleted = $this->sessionModel->deleteSession($id, session('username'));
+
+        return $this->response->setJSON([
+            'deleted' => $deleted,
+        ]);
+    }
+
+    /**
+     * Update session title
+     * PUT /chat/sessions/{id}
+     * Body: { title: string }
+     */
+    public function updateSession(int $id): ResponseInterface
+    {
+        if (! session('username')) {
+            return $this->response->setStatusCode(401)->setJSON(['error' => 'Unauthorized']);
+        }
+
+        if (! $this->sessionModel->userOwns($id, session('username'))) {
+            return $this->response->setStatusCode(404)->setJSON(['error' => 'Session not found']);
+        }
+
+        $input = $this->request->getJSON(true);
+        $title = $input['title'] ?? 'Untitled';
+
+        $this->sessionModel->updateTitle($id, $title);
+
+        return $this->response->setJSON(['updated' => true, 'title' => $title]);
+    }
+
+    // ═══════════════════════════════════════════════
+    //  MCP PROXY
+    // ═══════════════════════════════════════════════
+
     private function mcpProxy(array $input, string $username): ResponseInterface
     {
         $mcpUrl = env('MCP_HTTP_URL', 'http://127.0.0.1:8090') . '/mcp';
-
         $payload = $input['payload'] ?? [];
 
-        $ch = curl_init();
-        curl_setopt_array($ch, [
-            CURLOPT_URL            => $mcpUrl,
-            CURLOPT_POST           => true,
-            CURLOPT_POSTFIELDS     => json_encode($payload),
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_TIMEOUT        => 30,
-            CURLOPT_HTTPHEADER     => [
-                'Content-Type: application/json',
-                'Accept: application/json, text/event-stream',
-                'X-Username: ' . $username,
-                (!empty($input['sessionId']) ? 'Mcp-Session-Id: ' . $input['sessionId'] : ''),
-            ],
-        ]);
-
-        $response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $headers = curl_getinfo($ch, CURLINFO_HEADER_OUT);
-        $respHeaders = [];
-        
-        // Parse response headers for Mcp-Session-Id
-        if (preg_match('/Mcp-Session-Id:\s*(\S+)/i', curl_exec($ch) ?? '', $matches)) {
-            $respHeaders['Mcp-Session-Id'] = $matches[1];
-        }
-        
-        // Re-execute to get proper headers
-        curl_close($ch);
-        
         $ch = curl_init();
         curl_setopt_array($ch, [
             CURLOPT_URL            => $mcpUrl,
@@ -119,17 +227,26 @@ class Chat extends BaseController
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
 
-        // Split headers and body
-        $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE) ?? 0;
-        // Re-parse from full response
         $parts = explode("\r\n\r\n", $fullResponse, 2);
         $headerBlock = $parts[0] ?? '';
         $body = $parts[1] ?? '';
 
-        // Extract Mcp-Session-Id
         $sessionId = null;
         if (preg_match('/Mcp-Session-Id:\s*(\S+)/i', $headerBlock, $m)) {
             $sessionId = $m[1];
+        }
+
+        // Save tool result to DB if chatSessionId provided
+        $chatSessionId = $input['chatSessionId'] ?? null;
+        $toolName     = $input['toolName'] ?? null;
+        $toolCallId   = $input['toolCallId'] ?? null;
+        if ($chatSessionId && $toolName && $toolCallId && ($payload['method'] ?? '') === 'tools/call') {
+            $this->messageModel->saveToolResult(
+                (int) $chatSessionId,
+                $toolCallId,
+                $toolName,
+                $body
+            );
         }
 
         return $this->response->setStatusCode($httpCode)
@@ -137,17 +254,53 @@ class Chat extends BaseController
             ->setJSON(json_decode($body, true));
     }
 
+    // ═══════════════════════════════════════════════
+    //  LLM CHAT API (with DB persistence)
+    // ═══════════════════════════════════════════════
+
     /**
-     * Chat API — call LLM with MCP tools
+     * Chat API — call LLM with MCP tools, optionally save to DB
      */
     private function chatApi(array $input, string $username): ResponseInterface
     {
-        $messages = $input['messages'] ?? [];
-        $mcpTools = $input['mcpTools'] ?? [];
-        $mcpSessionId = $input['mcpSessionId'] ?? '';
+        $messages      = $input['messages'] ?? [];
+        $mcpTools      = $input['mcpTools'] ?? [];
+        $mcpSessionId  = $input['mcpSessionId'] ?? '';
+        $chatSessionId = $input['chatSessionId'] ?? null;
 
         if (! is_array($messages) || empty($messages)) {
             return $this->response->setStatusCode(400)->setJSON(['error' => 'No messages']);
+        }
+
+        // Save user message to DB if chatSessionId provided
+        if ($chatSessionId && $this->sessionModel->userOwns((int) $chatSessionId, $username)) {
+            $lastUserMsg = null;
+            foreach (array_reverse($messages) as $msg) {
+                if (($msg['role'] ?? '') === 'user' && ! empty($msg['content'])) {
+                    $lastUserMsg = $msg['content'];
+                    break;
+                }
+            }
+            if ($lastUserMsg) {
+                // Check if this user message was already saved (prevent duplicates)
+                $existing = $this->messageModel->where('session_id', $chatSessionId)
+                    ->where('role', 'user')
+                    ->where('content', $lastUserMsg)
+                    ->orderBy('created_at', 'DESC')
+                    ->limit(1)
+                    ->countAllResults();
+
+                if ($existing === 0) {
+                    $this->messageModel->saveUserMessage((int) $chatSessionId, $lastUserMsg);
+
+                    // Auto-title from first message
+                    $session = $this->sessionModel->find($chatSessionId);
+                    if ($session && $session['title'] === 'New Chat') {
+                        $title = mb_substr(trim($lastUserMsg), 0, 50);
+                        $this->sessionModel->updateTitle((int) $chatSessionId, $title);
+                    }
+                }
+            }
         }
 
         // Load .env for LLM config
@@ -167,7 +320,7 @@ class Chat extends BaseController
 
         foreach ($messages as $msg) {
             $entry = [
-                'role' => $msg['role'] ?? 'user',
+                'role'    => $msg['role'] ?? 'user',
                 'content' => $msg['content'] ?? '',
             ];
             if (! empty($msg['tool_calls'])) {
@@ -184,12 +337,12 @@ class Chat extends BaseController
         foreach ($mcpTools as $tool) {
             $schema = $tool['inputSchema'] ?? ['type' => 'object', 'properties' => []];
             if (isset($schema['properties']) && empty($schema['properties'])) {
-                $schema['properties'] = (object)[];
+                $schema['properties'] = (object) [];
             }
             $tools[] = [
-                'type' => 'function',
+                'type'     => 'function',
                 'function' => [
-                    'name' => $tool['name'] ?? 'unknown',
+                    'name'       => $tool['name'] ?? 'unknown',
                     'description' => $tool['description'] ?? '',
                     'parameters' => $schema,
                 ],
@@ -197,9 +350,9 @@ class Chat extends BaseController
         }
 
         $payload = [
-            'model' => $llmModel,
-            'messages' => $messagesArray,
-            'max_tokens' => $input['maxTokens'] ?? 4096,
+            'model'       => $llmModel,
+            'messages'    => $messagesArray,
+            'max_tokens'  => $input['maxTokens'] ?? 4096,
             'temperature' => $input['temperature'] ?? 0.3,
         ];
         if (! empty($tools)) {
@@ -220,8 +373,8 @@ class Chat extends BaseController
             ],
         ]);
 
-        $response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $response  = curl_exec($ch);
+        $httpCode  = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $curlError = curl_error($ch);
         curl_close($ch);
 
@@ -246,14 +399,38 @@ class Chat extends BaseController
             ]);
         }
 
-        $choice = $llmResponse['choices'][0];
+        $choice      = $llmResponse['choices'][0];
         $assistantMsg = $choice['message'];
 
+        // Save assistant response to DB
+        if ($chatSessionId && $this->sessionModel->userOwns((int) $chatSessionId, $username)) {
+            if (! empty($assistantMsg['tool_calls'])) {
+                $this->messageModel->saveAssistantToolCalls(
+                    (int) $chatSessionId,
+                    $assistantMsg['content'] ?? null,
+                    $assistantMsg['tool_calls'],
+                    $llmModel
+                );
+            } else {
+                $this->messageModel->saveAssistantMessage(
+                    (int) $chatSessionId,
+                    $assistantMsg['content'] ?? '',
+                    $llmModel,
+                    $llmResponse['usage'] ?? null
+                );
+            }
+
+            // Touch updated_at on session
+            $this->sessionModel->update((int) $chatSessionId, [
+                'updated_at' => date('Y-m-d H:i:s'),
+            ]);
+        }
+
         return $this->response->setJSON([
-            'response' => $assistantMsg['content'] ?? '',
-            'toolCalls' => $assistantMsg['tool_calls'] ?? null,
-            'usage' => $llmResponse['usage'] ?? null,
-            'model' => $llmModel,
+            'response'     => $assistantMsg['content'] ?? '',
+            'toolCalls'    => $assistantMsg['tool_calls'] ?? null,
+            'usage'        => $llmResponse['usage'] ?? null,
+            'model'        => $llmModel,
             'finishReason' => $choice['finish_reason'] ?? 'unknown',
         ]);
     }
@@ -267,10 +444,9 @@ class Chat extends BaseController
             return $this->response->setStatusCode(401)->setJSON(['error' => 'Unauthorized']);
         }
 
-        $input = $this->request->getJSON(true);
+        $input    = $this->request->getJSON(true);
         $username = session('username');
-
-        $mcpUrl = env('MCP_HTTP_URL', 'http://127.0.0.1:8090') . '/mcp';
+        $mcpUrl   = env('MCP_HTTP_URL', 'http://127.0.0.1:8090') . '/mcp';
 
         $ch = curl_init();
         curl_setopt_array($ch, [
@@ -291,13 +467,26 @@ class Chat extends BaseController
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
 
-        return $this->response->setStatusCode($httpCode)
-            ->setJSON(json_decode($response, true));
+        $result = json_decode($response, true);
+
+        // Save tool result to DB
+        $chatSessionId = $input['chatSessionId'] ?? null;
+        if ($chatSessionId && ! empty($input['toolCallId']) && ! empty($input['toolName'])) {
+            $this->messageModel->saveToolResult(
+                (int) $chatSessionId,
+                $input['toolCallId'],
+                $input['toolName'],
+                $response
+            );
+        }
+
+        return $this->response->setStatusCode($httpCode)->setJSON($result);
     }
 
-    /**
-     * Build system prompt
-     */
+    // ═══════════════════════════════════════════════
+    //  HELPERS
+    // ═══════════════════════════════════════════════
+
     private function buildSystemPrompt(array $mcpTools, string $username): string
     {
         $now = date('Y-m-d');
@@ -334,9 +523,6 @@ You have access to " . count($mcpTools) . " MCP tools for archive management.
 - Always warn users about destructive actions before suggesting them.";
     }
 
-    /**
-     * Load .env file
-     */
     private function loadEnv(): void
     {
         $envFile = ROOTPATH . '.env';
@@ -350,9 +536,9 @@ You have access to " . count($mcpTools) . " MCP tools for archive management.
             if ($line === '' || $line[0] === '#') {
                 continue;
             }
-            if (strpos($line, '=') !== false) {
+            if (str_contains($line, '=')) {
                 [$key, $value] = explode('=', $line, 2);
-                $key = trim($key);
+                $key   = trim($key);
                 $value = trim($value);
                 if (! getenv($key)) {
                     putenv("$key=$value");

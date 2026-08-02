@@ -32,6 +32,11 @@ $routes->get('dashboard/api/by-pencipta', 'Dashboard::apiByPencipta');
 $routes->get('chat', 'Chat::index');
 $routes->post('chat/api', 'Chat::api');
 $routes->post('chat/mcp-tool', 'Chat::mcpToolCall');
+$routes->get('chat/sessions', 'Chat::sessions');
+$routes->post('chat/sessions', 'Chat::createSession');
+$routes->get('chat/sessions/(:num)', 'Chat::loadSession/$1');
+$routes->delete('chat/sessions/(:num)', 'Chat::deleteSession/$1');
+$routes->put('chat/sessions/(:num)', 'Chat::updateSession/$1');
 
 // Report
 $routes->get('report', 'Report::index');
