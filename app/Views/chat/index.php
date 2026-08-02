@@ -93,6 +93,34 @@
 
     .chat-msg .content p { margin-bottom: 8px; }
     .chat-msg .content p:last-child { margin-bottom: 0; }
+    .chat-msg .content h1, .chat-msg .content h2, .chat-msg .content h3,
+    .chat-msg .content h4, .chat-msg .content h5, .chat-msg .content h6 {
+        color: #2c3e50; margin: 12px 0 6px; line-height: 1.3;
+    }
+    .chat-msg .content h1 { font-size: 18px; }
+    .chat-msg .content h2 { font-size: 16px; }
+    .chat-msg .content h3 { font-size: 15px; }
+    .chat-msg .content blockquote {
+        border-left: 3px solid #3498db; padding: 4px 12px; margin: 8px 0;
+        color: #7f8c8d; background: #f0f7ff; border-radius: 0 4px 4px 0;
+    }
+    .chat-msg .content hr { border: none; border-top: 1px solid #dee2e6; margin: 12px 0; }
+    .chat-msg .content ul, .chat-msg .content ol { margin: 8px 0; padding-left: 20px; }
+    .chat-msg .content li { margin-bottom: 4px; }
+    .chat-msg .content del { color: #95a5a6; }
+    .chat-msg .content a { color: #3498db; text-decoration: none; }
+    .chat-msg .content a:hover { text-decoration: underline; }
+    .chat-msg .content .md-table {
+        width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 13px;
+    }
+    .chat-msg .content .md-table th, .chat-msg .content .md-table td {
+        border: 1px solid #dee2e6; padding: 6px 10px; text-align: left;
+    }
+    .chat-msg .content .md-table th {
+        background: #f0f7ff; color: #2c3e50; font-weight: 600;
+    }
+    .chat-msg .content .md-table td { background: #fff; }
+    .chat-msg .content .md-table tr:hover td { background: #f8f9fa; }
     .chat-msg .content code {
         background: #f1f3f5;
         padding: 2px 6px;
@@ -574,16 +602,134 @@ function updateToolBox(el, name, type, data) {
 
 function renderMd(text) {
     if (!text) return '';
+    const codeBlocks = [];
+    text = text.replace(/```(\w*)\n?([\s\S]*?)```/g, (_, lang, code) => {
+        const ph = `\x00CB${codeBlocks.length}\x00`;
+        codeBlocks.push(`<pre><code class="lang-${lang || 'text'}">${escapeHtml(code.trimEnd())}</code></pre>`);
+        return ph;
+    });
+    const inlineCodes = [];
+    text = text.replace(/`([^`\n]+)`/g, (_, code) => {
+        const ph = `\x00IC${inlineCodes.length}\x00`;
+        inlineCodes.push(`<code>${escHtml(code)}</code>`);
+        return ph;
+    });
+
+    const lines = text.split('\n');
+    let html = '';
+    let i = 0;
+
+    while (i < lines.length) {
+        const line = lines[i];
+
+        // ── Tables ──────────────────────────────
+        if (line.includes('|') && i + 1 < lines.length && /^\|?[\s-:|]+\|/.test(lines[i + 1])) {
+            const rows = [];
+            while (i < lines.length && lines[i].includes('|')) {
+                const cells = lines[i].split('|').map(c => c.trim()).filter((c, idx, arr) => {
+                    if (idx === 0 && c === '') return false;
+                    if (idx === arr.length - 1 && c === '') return false;
+                    return true;
+                });
+                rows.push(cells);
+                i++;
+            }
+            if (rows.length >= 2) {
+                html += '<table class="md-table"><thead><tr>';
+                rows[0].forEach(c => { html += `<th>${renderInlineMd(c)}</th>`; });
+                html += '</tr></thead><tbody>';
+                for (let r = 2; r < rows.length; r++) {
+                    html += '<tr>';
+                    rows[r].forEach(c => { html += `<td>${renderInlineMd(c)}</td>`; });
+                    html += '</tr>';
+                }
+                html += '</tbody></table>';
+            }
+            continue;
+        }
+
+        // ── Headers ──────────────────────────────
+        const headerMatch = line.match(/^(#{1,6})\s+(.+)/);
+        if (headerMatch) {
+            const level = headerMatch[1].length;
+            html += `<h${level}>${renderInlineMd(headerMatch[2])}</h${level}>`;
+            i++;
+            continue;
+        }
+
+        // ── Horizontal rule ──────────────────────
+        if (/^(-{3,}|\*{3,}|_{3,})\s*$/.test(line)) {
+            html += '<hr>';
+            i++;
+            continue;
+        }
+
+        // ── Unordered list ───────────────────────
+        if (/^(\s*)[-*+]\s+(.+)/.test(line)) {
+            html += '<ul>';
+            while (i < lines.length) {
+                const m = lines[i].match(/^(\s*)[-*+]\s+(.+)/);
+                if (!m) break;
+                html += `<li>${renderInlineMd(m[2])}</li>`;
+                i++;
+            }
+            html += '</ul>';
+            continue;
+        }
+
+        // ── Ordered list ─────────────────────────
+        if (/^(\s*)\d+[.)]\s+(.+)/.test(line)) {
+            html += '<ol>';
+            while (i < lines.length) {
+                const m = lines[i].match(/^(\s*)\d+[.)]\s+(.+)/);
+                if (!m) break;
+                html += `<li>${renderInlineMd(m[2])}</li>`;
+                i++;
+            }
+            html += '</ol>';
+            continue;
+        }
+
+        // ── Blockquote ───────────────────────────
+        if (/^>\s?/.test(line)) {
+            const qLines = [];
+            while (i < lines.length && /^>\s?/.test(lines[i])) {
+                qLines.push(lines[i].replace(/^>\s?/, ''));
+                i++;
+            }
+            html += `<blockquote>${renderInlineMd(qLines.join('<br>'))}</blockquote>`;
+            continue;
+        }
+
+        // ── Blank line ───────────────────────────
+        if (line.trim() === '') { i++; continue; }
+
+        // ── Paragraph ────────────────────────────
+        const pLines = [];
+        while (i < lines.length && lines[i].trim() !== '' && !lines[i].match(/^#{1,6}\s/) && !lines[i].match(/^(-{3,}|\*{3,}|_{3,})\s*$/)) {
+            if (lines[i].includes('|') && i + 1 < lines.length && /^\|?[\s-:|]+\|/.test(lines[i + 1])) break;
+            if (/^(\s*)[-*+]\s+/.test(lines[i])) break;
+            if (/^(\s*)\d+[.)]\s+/.test(lines[i])) break;
+            if (/^>\s?/.test(lines[i])) break;
+            pLines.push(lines[i]);
+            i++;
+        }
+        if (pLines.length) {
+            html += `<p>${renderInlineMd(pLines.join('<br>'))}</p>`;
+        }
+    }
+
+    codeBlocks.forEach((block, idx) => { html = html.replace(`\x00CB${idx}\x00`, block); });
+    inlineCodes.forEach((code, idx) => { html = html.replace(`\x00IC${idx}\x00`, code); });
+    return html;
+}
+
+function renderInlineMd(text) {
     return text
-        .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>')
-        .replace(/`([^`]+)`/g, '<code>$1</code>')
         .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
         .replace(/\*(.+?)\*/g, '<em>$1</em>')
-        .replace(/\|(.+)\|/g, (match) => {
-            const cells = match.split('|').filter(c => c.trim());
-            return '<tr>' + cells.map(c => `<td>${c.trim()}</td>`).join('') + '</tr>';
-        })
-        .replace(/\n/g, '<br>');
+        .replace(/~~(.+?)~~/g, '<del>$1</del>')
+        .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
 }
 
 function escapeHtml(str) {
