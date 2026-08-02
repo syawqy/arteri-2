@@ -421,9 +421,10 @@ class Chat extends BaseController
             }
 
             // Touch updated_at on session
-            $this->sessionModel->update((int) $chatSessionId, [
-                'updated_at' => date('Y-m-d H:i:s'),
-            ]);
+            $db = \Config\Database::connect();
+            $db->table('chat_sessions')
+                ->where('id', (int) $chatSessionId)
+                ->update(['updated_at' => date('Y-m-d H:i:s')]);
         }
 
         return $this->response->setJSON([
