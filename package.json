@@ -13,6 +13,10 @@
     "test:security:phpunit": "vendor\\bin\\phpunit tests\\app\\Security\\OwaspSecurityTest.php --testdox"
   },
   "devDependencies": {
-    "@playwright/test": "^1.48.0"
+    "@playwright/test": "^1.62.1",
+    "@types/node": "^26.1.2"
+  },
+  "dependencies": {
+    "puppeteer-core": "^25.4.0"
   }
 }
