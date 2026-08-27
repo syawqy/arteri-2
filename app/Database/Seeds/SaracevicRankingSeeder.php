@@ -157,5 +157,19 @@ class SaracevicRankingSeeder extends Seeder
 
         $db->table('data_arsip')->insertBatch($rows);
         echo "Seeded " . count($rows) . " archive rows for Saracevic ranking evaluation.\n";
+
+        // Refresh stat_kode_pencipta (hybrid SQL ranking)
+        try {
+            $db->query('DELETE FROM stat_kode_pencipta');
+        } catch (\Throwable $e) {
+        }
+        try {
+            $db->query("INSERT INTO stat_kode_pencipta (kode, pencipta, cnt) SELECT kode, pencipta, COUNT(*) as cnt FROM data_arsip WHERE deleted_at IS NULL GROUP BY kode, pencipta");
+            $cnt = (int) $db->table('stat_kode_pencipta')->countAllResults();
+            echo "Refreshed stat_kode_pencipta: $cnt pairs\n";
+        } catch (\Throwable $e) {
+            // table may not exist yet (migration not run) — skip
+            echo "stat_kode_pencipta not available (run migration)\n";
+        }
     }
 }

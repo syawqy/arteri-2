@@ -94,8 +94,23 @@ class Home extends BaseController
         $data['src']      = $src;
 
         $page = (int) floor($offset / $this->perPage) + 1;
+        // Preserve query string in pagination so ?rank=1 stays across pages
+        $query = [];
+        if ($keywords !== '') {
+            $query['katakunci'] = $keywords;
+        } else {
+            foreach ($filters as $k => $v) {
+                if ($v !== '' && $v !== 'all') {
+                    $query[$k] = $v;
+                }
+            }
+        }
+        if ($ranked) {
+            $query['rank'] = '1';
+        }
+        $qs = $query !== [] ? '?' . http_build_query($query) : '';
         $pager = service('pager');
-        $pager->setPath('search');
+        $pager->setPath('search' . $qs);
         $pager->makeLinks($page, $this->perPage, $total, 'bootstrap3');
         $data['pager'] = $pager;
         $data['pages'] = $pager->links('default', 'bootstrap3');
