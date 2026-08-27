@@ -7,47 +7,51 @@
 
 ## Abstrak (250 kata)
 
-Temu kembali arsip digital di lingkungan pemerintah masih didominasi pencocokan kata kunci tanpa pemeringkatan. Setiap arsip yang mengandung kata kunci dianggap sama relevan, padahal kebutuhan pengguna bersifat situasional—jatuh tempo retensi, hak akses klasifikasi, dan tugas yang sedang dikerjakan. Penelitian Design Science Research ini mengembangkan **sistem temu kembali arsip berbasis model relevansi bertingkat Saracevic (1975; 2007) dan Stratified Model (1997)**, diadaptasi dari **Fafalios et al. (2017, arXiv:1810.11049)**. Implementasi pada **Arteri-2** (CodeIgniter 4, MySQL/SQLite, mengelola kode/retensi/pencipta/pengolah/lokasi/media) memetakan tiga komponen Fafalios ke strata Saracevic: (i) *kecocokan kata* → relevansi sistem & topikal, (ii) *urgensi waktu* (`b=tanggal+retensi`) → situasional, (iii) *kedekatan entitas* (`kode:pencipta`) → kognitif, dengan **skor = 0,5×kecocokan + 0,3×urgensi + 0,2×kedekatan**. Rumus dievaluasi langsung di query SQL sebagai `ORDER BY score` sehingga pagination konsisten global (page 2 = peringkat 21–40, bukan 160 pertama BY id). Evaluasi sintetis 120 arsip / 30 kueri: **ΔP@10 +0,186, ΔNDCG@10 +0,172**; pada 2000 arsip **ΔP@10 +0,300, ΔNDCG@10 +0,223**. Prototipe menyediakan mode A/B `?rank=0/1` untuk studi human judgment 5 level Saracevic. Kontribusi: operasionalisasi pertama relevansi bertingkat untuk kearsipan pemerintah Indonesia dengan artefak terbuka yang dapat direplikasi.
+Temu kembali arsip digital di lingkungan pemerintah masih didominasi pencocokan kata kunci tanpa pemeringkatan. Setiap arsip yang mengandung kata kunci dianggap sama relevan, padahal kebutuhan pengguna bersifat situasional—jatuh tempo retensi, hak akses klasifikasi, dan tugas yang sedang dikerjakan. Penelitian Design Science Research ini mengembangkan **sistem temu kembali arsip berbasis model relevansi bertingkat Saracevic (1975; 2007) dan Stratified Model (1997)**, diadaptasi dari **Fafalios et al. (2017, arXiv:1810.11049)**. Implementasi pada **Arteri-2** (CodeIgniter 4, MySQL/SQLite) memetakan tiga komponen Fafalios ke strata Saracevic: (i) *kecocokan kata* → relevansi sistem & topikal, (ii) *urgensi waktu* (`b=tanggal+retensi`) → situasional, (iii) *kedekatan entitas* (`kode:pencipta`) → kognitif, dengan **skor = 0,5×kecocokan + 0,3×urgensi + 0,2×kedekatan** yang dihitung langsung di query SQL sebagai `ORDER BY score` sehingga pagination konsisten global (page 2 = peringkat 21–40). Evaluasi **teknis sintetis** (gain = round(skor×3), 30 kueri): pada 120 arsip **ΔP@10 +0,186, ΔNDCG@10 +0,172**; pada 2000 arsip (deep pagination, 560 hit untuk kueri `arsip`) **ΔP@10 +0,300, ΔNDCG@10 +0,223**. Prototipe menyediakan mode A/B `?rank=0/1` yang memungkinkan replikasi. Kontribusi: operasionalisasi pertama relevansi bertingkat untuk kearsipan pemerintah Indonesia dengan artefak terbuka.
 
 ---
 
 ## 1. Pendahuluan
 
 ### 1.1 Latar belakang
-Indonesia mewajibkan pengelolaan arsip sesuai klasifikasi dan jadwal retensi (JRA). Namun, sistem temu kembali arsip di banyak instansi masih mengandalkan `LIKE '%keyword%'` tanpa ranking. Studi Fafalios dkk. pada arsip koran menunjukkan bahwa *semantic layers* (RDF/SPARQL) pun menghadapi masalah yang sama: semua hasil yang memenuhi query dianggap sama, sehingga pengguna dibanjiri dokumen.
+Indonesia mewajibkan pengelolaan arsip sesuai klasifikasi dan jadwal retensi (JRA). Namun, sistem temu kembali arsip di banyak instansi masih mengandalkan `LIKE '%keyword%'` tanpa ranking dan diurutkan `BY id` (siapa duluan input, dia di atas). Studi Fafalios dkk. pada arsip koran menunjukkan bahwa *semantic layers* (RDF/SPARQL) pun menghadapi masalah yang sama: semua hasil yang memenuhi query dianggap sama, sehingga pengguna dibanjiri dokumen. Pada Arteri-2 (`ArsipModel::buildSearchQuery`), kondisi ini persis teramati: pencarian `LIKE a.noarsip/a.uraian/a.nobox` lalu `ORDER BY a.id ASC`.
 
 ### 1.2 Kesenjangan
-Literatur kearsipan lebih banyak membahas preservasi dan klasifikasi, bukan **relevansi** sebagai konstruk bertingkat. Teori relevansi Saracevic telah mapan di ilmu informasi/perpustakaan, tetapi belum dioperasionalkan untuk arsip pemerintah yang memiliki dimensi unik: retensi sebagai *timeliness* situasional dan batas akses klasifikasi sebagai *cognitive relevance*.
+Literatur kearsipan lebih banyak membahas preservasi dan klasifikasi, bukan **relevansi** sebagai konstruk bertingkat. Teori relevansi Saracevic (1975; 2007) telah mapan di ilmu informasi/perpustakaan dengan 5 level (system→topical→cognitive→situational→motivational) dan Stratified Model (1997) yang memisahkan evaluasi per strata. Namun, belum ada operasionalisasi untuk arsip pemerintah yang memiliki dimensi unik: **retensi sebagai *timeliness* situasional** dan **batas akses klasifikasi sebagai *cognitive relevance***. Celah inilah yang diisi penelitian ini.
 
 ### 1.3 Tujuan & pertanyaan penelitian
 - **RQ1.** Bagaimana memetakan model ranking Fafalios (relativeness–timeliness–relations) ke strata Saracevic untuk domain arsip?
-- **RQ2.** Sejauh mana ranking bertingkat meningkatkan efektivitas temu kembali dibanding baseline tanpa ranking (diukur P@10 & NDCG@10)?
-- **RQ3.** Bagaimana merancang rubrik evaluasi 5 level Saracevic yang dapat dipakai asesor kearsipan?
+- **RQ2.** Sejauh mana ranking bertingkat meningkatkan efektivitas temu kembali dibanding baseline tanpa ranking, diukur secara **teknis sintetis** dengan **P@10** (presisi 10 teratas) dan **NDCG@10** (kualitas urutan 10 teratas) — lihat §5.1 untuk definisi awam?
+- **RQ3.** Bagaimana merancang artefak yang dapat direplikasi (dataset, skrip evaluasi, mode A/B) sehingga hasil teknis dapat diverifikasi pihak ketiga?
 
-### 1.4 Kontribusi
-Artefak: `RelevanceRankingService`, `ArsipModel::searchRanked`, dataset 120 arsip & 30 kueri, dan skrip evaluasi terbuka—siap direplikasi di instansi lain.
+### 1.4 Kontribusi & batasan Tahap 1
+**Kontribusi Tahap 1 (paper ini):** artefak terbuka — `RelevanceRankingService` (spesifikasi), `ArsipModel::searchRanked` (SQL hybrid), dataset 120 arsip pilot + 2000 arsip stress-test (deep pagination), 30 kueri, skrip `eval_ndcg.py` — serta bukti **technical validation** bahwa ranking global konsisten meningkatkan P/NDCG sintetis.
+
+**Batasan eksplisit Tahap 1:** evaluasi bersifat **teknis sintetis** (gain diturunkan dari skor yang sama, lihat §5.1). Klaim bukan *“pengguna merasa lebih puas”* melainkan *“sistem mampu mengurutkan ulang secara konsisten dan terukur”*. Validasi dengan penilai manusia berada di luar Tahap 1 dan direncanakan sebagai Tahap 2 (Future Work §7).
 
 ## 2. Tinjauan Pustaka
 
-### 2.1 Relevansi bertingkat Saracevic
-Saracevic (1975) memperkenalkan 5 level relevansi: *system, topical, cognitive, situational, motivational*, diperbarui pada 2007 (Part II & III, *JASIST*). Relevansi bukan biner, melainkan berlapis sesuai konteks pengguna.
+### 2.1 Relevansi bertingkat Saracevic — level 0–3 untuk arsip
+Saracevic (1975) memperkenalkan 5 level relevansi: *system, topical, cognitive, situational, motivational*, diperbarui 2007 (Part II & III, *JASIST*). Pada paper ini level tersebut dioperasionalkan sebagai **skala gain 0–3** untuk evaluasi teknis sintetis (§5.1): 0=tidak relevan (tidak mengandung kata), 1=sedikit (satu kata kebetulan), 2=cukup (topik cocok), 3=sangat (topik + urgensi waktu cocok). Skala ini dipakai untuk P@10/NDCG Tahap 1.
 
-### 2.2 Stratified Model of IR Interaction (1996–1997)
-Model berstrata: *surface ↔ cognitive ↔ affective ↔ situational*. Tiap strata dapat diukur terpisah; relevan untuk merancang komponen ranking yang dapat diuji secara independen.
+### 2.2 Stratified Model of IR Interaction (1996–1997) — pemisahan strata
+Model berstrata: *surface ↔ cognitive ↔ affective ↔ situational*. Tiap strata dapat diukur terpisah. Di Arteri-2 strata dipetakan 1:1 ke komponen skor (§4.1): surface→*kecocokan* (field), cognitive→*kedekatan entitas* (kode:pencipta), situational→*urgensi* (b=tanggal+retensi). Pemisahan ini memungkinkan evaluasi per komponen di §5.
 
-### 2.3 Evaluasi digital library (Saracevic 2000) & Fafalios et al. (2017)
-Saracevic mengusulkan evaluasi 5 dimensi (construct, system-centered, human-centered, use-centered, social). Fafalios dkk. mengusulkan ranking 3 komponen untuk *semantic layers* di atas arsip digital; evaluasi dengan NDCG menunjukkan peningkatan. Penelitian ini mengadaptasi Fafalios ke basis MySQL/SQLite Arteri dan mengikatnya ke strata Saracevic.
+### 2.3 Evaluasi digital library (Saracevic 2000) & Fafalios et al. (2017) — sumber rumus
+Saracevic (2000) mengusulkan evaluasi 5 dimensi (construct, system-centered, human-centered, use-centered, social). Tahap 1 paper ini berada pada **system-centered** — mengukur apakah sistem mengurutkan dengan benar, belum human-centered. Fafalios dkk. (JCDL 2017, arXiv:1810.11049) mengusulkan ranking 3 komponen (relativeness–timeliness–relations) untuk *semantic layers* arsip koran dan mengevaluasi dengan NDCG. Penelitian ini mengadaptasi Fafalios ke basis MySQL/SQLite Arteri dan mengikat tiap komponen ke strata Saracevic (Tabel 1, DESIGN.md). **Fakta:** Fafalios dievaluasi pada newspaper archive via SPARQL; Arteri-2 tanpa RDF, sehingga adaptasi dilakukan sebagai **weighted SQL** bukan SPARQL.
 
 ### 2.4 Posisi penelitian
-Belum ada studi yang mengintegrasikan ketiganya untuk arsip pemerintah Indonesia dengan retensi sebagai sinyal *timeliness*.
+Belum ada studi yang mengintegrasikan ketiganya untuk arsip pemerintah Indonesia dengan retensi sebagai sinyal *timeliness* dan pagination global sebagai syarat replikasi. Kebutuhan *technical validation* sebelum human judgment menjadi justifikasi Tahap 1.
 
-## 3. Metode (Design Science Research)
+## 3. Metode (Design Science Research — 3 siklus, evolutif PHP→SQL)
 
-**Siklus 1 — Problem & desain:** analisis `ArsipModel::buildSearchQuery` (tanpa ranking, `ORDER BY a.id`). Pemetaan Fafalios→Saracevic→field Arteri (Tabel 1).
+**Siklus 1 — Problem & desain:** analisis `ArsipModel::buildSearchQuery` (tanpa ranking, `ORDER BY a.id`). Pemetaan Fafalios→Saracevic→field Arteri (Tabel 1, DESIGN.md §3). Ditemukan masalah pagination: baseline tidak punya konsep relevansi.
 
-**Siklus 2 — Build:** `RelevanceRankingService` (logika 3 skor, dipakai untuk unit test & `eval_ndcg.py`) + `ArsipModel::searchRanked` **SQL hybrid** (`ORDER BY score` di DB → pagination konsisten global, driver-aware MySQL/SQLite untuk `b=tanggal+retensi`) + `stat_kode_pencipta` (162 pairs @2000) + toggle `?rank=1` di `Home::search` (pagination preserve `?katakunci&rank=1`).
+**Siklus 2 — Build (iteratif, fakta evolusi):**
+- *Iterasi 2a (PHP ranking, kini sebagai spesifikasi):* `RelevanceRankingService::rank()` — ambil N baris BY id → hitung `0.5*rel+0.3*time+0.2*relasi` → `array_slice(offset,limit)`. **Fakta:** untuk 120 arsip iterasi ini benar, tetapi pada uji 2000 arsip ditemukan bug deep pagination — arsip relevan di `id=900` tidak pernah terambil karena `LIMIT 160` pertama hanya BY id. Bug dibuktikan via `sql_hybrid_smoke.php` (order OK sampai offset 80 pada versi SQL, miss pada versi PHP). Iterasi 2a dipertahankan sebagai **spesifikasi & test harness** (10 unit tests, Python port `eval_ndcg.py`), bukan dihapus — untuk reproduksibilitas.
+- *Iterasi 2b (SQL hybrid — dipakai Tahap 1):* pindah rumus ke query SQL sebagai `SELECT ... score ... ORDER BY score DESC LIMIT/OFFSET` + tabel `stat_kode_pencipta` (162 pairs @2000, driver-aware MySQL `DATE_ADD/DATEDIFF/GREATEST` vs SQLite `date/julianday/max`). Pagination preserve `?katakunci&rank=1` via `setPath`. Dengan ini page 2 = peringkat 21–40 global, konsisten — diverifikasi `no dup, order OK` pada 5 keyword.
 
-**Siklus 3 — Evaluasi:** 120 arsip sintetis (tahun 2018–2026, retensi 1/3/5/10) dan 30 kueri (Tabel query-set-30.csv). Tahap awal evaluasi sintetis (gain = round(score×3)); tahap lanjutan human judgment 5 level dengan `eval_ndcg.py` (P@10, NDCG@10, gain linear/exp2).
+**Siklus 3 — Evaluasi Tahap 1 (tanpa human):** 120 arsip pilot + 2000 arsip stress-test (deep pagination), 30 kueri, metrik §5.1 (P@10/NDCG awam, gain sintetis). Skrip `eval_ndcg.py --synthetic` + `sql_hybrid_smoke.php` sebagai bukti fakta. Human judgment dipisah ke Tahap 2 (§1.4 & §7).
 
 ## 4. Implementasi pada Arteri-2
 
@@ -98,30 +102,54 @@ Versi lama: ambil 160 arsip pertama BY id → hitung skor di PHP → potong. Kal
 
 **A/B untuk evaluasi:** `/search?katakunci=anggaran` (baseline `ORDER BY id`) vs `/search?katakunci=anggaran&rank=1` (SQL hybrid `ORDER BY score`); badge *Ranked (Saracevic)* di view. Link pagination sekarang `?katakunci=...&rank=1` terbawa ke halaman 2/3.
 
-## 5. Hasil Awal (Sintetis)
+## 5. Evaluasi Tahap 1 — tanpa human, metrik awam & bukti
 
-**Skala 120 arsip (baseline jurnal — 30 kueri × 10 teratas, 309 pasangan, gain sintetis dari skor):** P@10 **0,321 → 0,507 (Δ+0,186)**; NDCG@10 **0,828 → 1,000 (Δ+0,172)**. Skala kecil untuk mengisolasi efek ranking tanpa noise.
+### 5.1 Apa itu P@10 dan NDCG@10 — versi awam
 
-**Skala 2000 arsip (uji performa & generalisasi — 30 kueri × 10 teratas, 416 pasangan):** P@10 **0,332 → 0,632 (Δ+0,300)**; NDCG@10 **0,777 → 1,000 (Δ+0,223)** — gain membesar karena ranking global SQL mengangkat arsip relevan yang di versi lama tersembunyi di luar 160 pertama (terutama kueri umum seperti `arsip` 560 hit). Detail per-kueri ada di `relevance-judgment-synthetic.csv`; `eval_ndcg.py` mereplikasi.
+*Analogi: kamu minta 10 rekomendasi arsip. Dua pertanyaan: (1) berapa yang benar-benar berguna? (2) apakah yang paling berguna ditaruh paling atas?*
+
+- **P@10 (Precision at 10) — “berapa dari 10 teratas yang berguna?”**
+  Hitung berapa arsip di 10 teratas yang gain ≥2 (cukup/sangat relevan), bagi 10. Contoh: 5 dari 10 berguna → **P@10 = 0.5**. Tidak peduli urutan — peringkat 1 dan peringkat 10 sama nilainya. Klaim ΔP@10 = selisih presisi sebelum vs sesudah ranking.
+
+- **NDCG@10 — “apakah yang paling berguna ditaruh paling atas?”**
+  NDCG = *Normalized Discounted Cumulative Gain*. Tiap arsip punya gain 0–3 (§2.1). *Cumulative Gain* = jumlah gain. *Discounted* = gain di peringkat bawah dibagi `log2(peringkat+1)` — jadi arsip bagus di bawah kurang berharga dibanding di atas. *Normalized* = dibagi skor ideal (urutan sempurna). Hasil **0–1**, 1 = urutan sempurna.
+  Contoh: peringkat 1 gain 3 → 3/log2(2)=3.0; peringkat 10 gain 3 → 3/log2(11)=0.87. Jadi sistem yang menaruh arsip 3-poin di atas akan NDCG tinggi. NDCG sintetis 1.000 artinya ranking kami sudah menghasilkan urutan ideal **menurut gain sintetis** — bukan menurut manusia (lihat batasan §5.3).
+
+- **Gain sintetis Tahap 1:** `gain = round(skor×3)` — skor 0.87→3, 0.56→2, dst. Ini **bukan opini**, melainkan turunan deterministik dari rumus §4.1, dipakai hanya untuk *technical validation* sebelum human. NDCG sintetis dengan demikian adalah **upper bound** — manusia bisa memberi gain berbeda.
+
+### 5.2 Hasil sintetis (fakta, 30 kueri × 10 teratas)
+
+**Skala 120 arsip (pilot — isolasi efek ranking, tanpa pagination bug):** P@10 **0,321 → 0,507 (Δ+0,186)**; NDCG@10 **0,828 → 1,000 (Δ+0,172)**. 309 pasangan query–arsip.
+
+**Skala 2000 arsip (stress-test — deep pagination global):** P@10 **0,332 → 0,632 (Δ+0,300)**; NDCG@10 **0,777 → 1,000 (Δ+0,223)** — 416 pasangan. Gain membesar karena SQL hybrid `ORDER BY score` mengangkat arsip relevan yang di iterasi PHP tersembunyi di luar 160 pertama (terutama kueri umum `arsip` 560 hit, `anggaran` 160 hit). Per-kueri ada di `relevance-judgment-synthetic.csv`; `eval_ndcg.py --synthetic` mereplikasi angka yang sama (bukti, bukan klaim).
 
 | Skala | ΔP@10 | ΔNDCG@10 | Makna |
 |-------|-------|----------|-------|
 | 120 | +0,186 | +0,172 | Efek ranking murni (tanpa-pagination bug) |
 | 2000 | +0,300 | +0,223 | **Efek ranking + perbaikan pagination global** — relevan untuk klaim “skalabel” |
 
-> **Catatan untuk jurnal:** hasil sintetis bersifat demonstrasi (gain = round(score×3)); klaim final menunggu *human judgment* 5 level (JUDGMENT-GUIDE.md, 2 asesor, κ Cohen). NDCG=1,000 pada sintetis merefleksikan ideal yang dibangun dari gain yang sama — bedakan dari NDCG human. Laporkan keduanya (120 & 2000) di paper: 120 sebagai *pilot*, 2000 sebagai *stress-test*.
+### 5.3 Batasan & cara baca angka Tahap 1
+
+1. **Gain sintetis = turunan skor** — NDCG 1.000 bukan klaim “sempurna menurut manusia”, melainkan fakta bahwa urutan SQL sudah ideal menurut gain yang ia hasilkan sendiri. Klaim paper dibatasi pada *“sistem mampu mengurutkan ulang secara konsisten dan terukur”* (§1.4).
+2. **Tanpa uji signifikansi** — Tahap 1 belum melaporkan *p-value*; itu direncanakan untuk Tahap 2 dengan gain human. Alur berpikir Tahap 1: *“apakah ada perbaikan terukur yang konsisten di 30 kueri?”* — ya (Δ positif di kedua skala). Bukan *“apakah signifikan secara statistik bagi pengguna?”* — belum dijawab.
+3. **Performa:** `1–3 ms` per halaman @2000 (bench `sql_hybrid_smoke.php`); deep pagination offset 80 tetap `no dup, order OK` — fakta, bukan asumsi.
 
 ## 6. Pembahasan
 
-**Implikasi teori:** retensi sebagai *timeliness* adalah wujud *situational relevance* yang khas arsip; batas akses klasifikasi adalah *cognitive relevance* yang perlu dipisah sebagai filter, bukan bobot.
+**Implikasi teori:** retensi (`b=tanggal+retensi`) sebagai *urgensi* adalah wujud *situational relevance* yang khas arsip — fakta dari struktur JRA, bukan asumsi. Batas akses klasifikasi sebagai filter `WHERE k.kode LIKE prefix%` adalah *cognitive relevance* yang **dipisah dari skor** — fakta dari `buildSearchQuery` + session `akses_klas`, bukan bobot. Pemisahan ini mencegah bias.
 
-**Implikasi praktis:** mode A/B memungkinkan instansi membandingkan tanpa mengubah perilaku default (rank opsional).
+**Implikasi praktis:** mode A/B `?rank=0/1` memungkinkan instansi membandingkan tanpa mengubah default — fakta dari `Home::search` (pagination preserve `?katakunci&rank=1`). Opsional, bukan paksaan.
 
-**Keterbatasan:** gain sintetis bias oleh model; belum ada personalisasi; ko-okurensi masih dari himpunan hasil, belum dari KG eksternal.
+**Keterbatasan Tahap 1 (fakta, bukan opini):**
+1. **Gain sintetis bias model** — gain diturunkan dari skor yang sama; NDCG sintetis adalah upper bound.
+2. **Tanpa stemming / personalisasi** — `LIKE '% %'` aproksimasi word-boundary, belum stemming Indonesia (Sastrawi); ko-okurensi hanya `kode:pencipta` (162 pairs @2000), belum knowledge graph.
+3. **Belum human-centered** — Saracevic 2000 level *system-centered* tercapai, *human-centered* menunggu Tahap 2.
 
 ## 7. Simpulan & Penelitian Lanjutan
 
-Relevansi bertingkat Saracevic dapat dioperasionalkan sebagai ranking 3 komponen yang bermakna untuk arsip. Evaluasi human judgment dan tuning bobot (mis. pembelajaran bobot dari log) menjadi langkah berikutnya.
+**Simpulan Tahap 1 (berdasar fakta, bukan opini):** relevansi bertingkat Saracevic **dapat** dioperasionalkan sebagai ranking 3 komponen (kecocokan/urgensi/kedekatan) yang dihitung di SQL sebagai `ORDER BY score` sehingga pagination konsisten global. Bukti: 30 kueri × 10 teratas, ΔP@10 +0,186 (120) → +0,300 (2000), NDCG sintetis 1.000 = upper bound, deep pagination `no dup, order OK` sampai offset 80, performa 1–3 ms/halaman.
+
+**Tahap 2 (Future Work) — opsional, tidak menghalangi Tahap 1:** validasi human (gain 0–3 oleh penilai domain, κ Cohen), tuning bobot via evaluasi NDCG human, serta peningkatan teknis (Sastrawi stemming, FTS5, KG). Tahap 1 sudah menyiapkan artefak untuk Tahap 2 (`JUDGMENT-GUIDE.md`, `eval_ndcg.py`, mode A/B) — tetapi **tidak mengklaim** hasil human pada paper ini.
 
 ---
 
@@ -132,7 +160,7 @@ Relevansi bertingkat Saracevic dapat dioperasionalkan sebagai ranking 3 komponen
 - Saracevic, T. (2007). Relevance: A review of the literature and a framework for thinking on the notion in information science. Part II: Nature and manifestations of relevance. *JASIST*, 58(13), 1915–1933. https://doi.org/10.1002/asi.20682
 - Saracevic, T. (2007). Relevance ... Part III: Behavior and effects of relevance. *JASIST*, 58(14), 2126–2144. https://doi.org/10.1002/asi.20681
 - Fafalios, P., Kasturia, V., & Nejdl, W. (2017). Towards a Ranking Model for Semantic Layers over Digital Archives. *Proc. JCDL 2017*. https://doi.org/10.1109/JCDL.2017.7991617 — arXiv:1810.11049 [cs.IR, cs.DL].
-- Faggioli, G., Dietz, L., & Clarke, C. L. A. (2023). Perspectives on Large Language Models for Relevance Judgment. arXiv:2304.09161. https://doi.org/10.1145/3578337.3605136 — untuk diskusi keterbatasan LLM-as-judge.
+- Faggioli, G., Dietz, L., & Clarke, C. L. A. (2023). Perspectives on Large Language Models for Relevance Judgment. arXiv:2304.09161. https://doi.org/10.1145/3578337.3605136 — Tahap 2 (human) dapat merujuk opsi ini; Tahap 1 tidak memakai LLM.
 
 ## Lampiran Artefak
 
@@ -149,17 +177,14 @@ Relevansi bertingkat Saracevic dapat dioperasionalkan sebagai ranking 3 komponen
 # 1. Seed (sekali)
 php spark migrate
 php spark db:seed ArteriSeeder
-php spark db:seed SaracevicRankingSeeder   # 120 arsip
+php spark db:seed SaracevicRankingSeeder   # 120 pilot  — atau LargeScaleSeeder untuk 2000 stress-test
 
-# 2. Smoke ranking
-php tests/rank_smoke_pdo.php               # cek reorder & b/f
+# 2. Smoke — pagination konsisten global (2000: deep offset 80 verified)
+php tests/sql_hybrid_smoke.php             # SQL hybrid no-dup order-OK
 
-# 3. Evaluasi sintetis
+# 3. Evaluasi sintetis Tahap 1 (tanpa human)
 python3 docs/saracevic-ranking/eval_ndcg.py --synthetic
 python3 docs/saracevic-ranking/eval_ndcg.py --synthetic --gain exp2
-
-# 4. Evaluasi human judgment (setelah isi CSV)
-python3 docs/saracevic-ranking/eval_ndcg.py docs/saracevic-ranking/relevance-judgment.csv
 ```
 
 ## Catatan provenance
