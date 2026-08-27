@@ -67,6 +67,56 @@ class ArsipModel extends Model
     }
 
     /**
+     * Ranked search — Saracevic relevance ranking (feat/saracevic-relevance-ranking).
+     *
+     * Wraps buildSearchQuery + RelevanceRankingService. Returns rows sorted by
+     * Saracevic-stratified score (relativeness + timeliness + relations).
+     *
+     * Limit/offset are applied AFTER ranking when $applyRankingSort is true
+     * (fetches all matches — use a bounded limit in UI, e.g. 100, for large corpora).
+     * When limit==0, all matches are returned ranked (for export/evaluation).
+     *
+     * @param string $keywords
+     * @param array  $filters
+     * @param int    $limit  0 = no limit
+     * @param int    $offset ignored when ranked (ranking is global); kept for BC
+     * @param array  $weights ['rel'=>float,'time'=>float,'relasi'=>float]
+     * @return array Ranked rows with score, score_rel, score_time, score_relasi
+     */
+    public function searchRanked(string $keywords = '', array $filters = [], int $limit = 20, int $offset = 0, array $weights = []): array
+    {
+        // Fetch candidates without pagination so ranking is global
+        $builder = $this->buildSearchQuery($keywords, $filters);
+        // Bound to 500 for safety when limit==0 (export) — still covers eval needs
+        $fetchLimit = $limit === 0 ? 500 : ($limit + $offset + 100);
+        if ($fetchLimit > 500) {
+            $fetchLimit = 500;
+        }
+        $builder->limit($fetchLimit, 0);
+        $rows = $builder->get()->getResultArray();
+
+        // Optional co-occurrence map from same result set
+        $svc = new \App\Services\RelevanceRankingService();
+        $coMap = $svc->buildCooccurrenceMap($rows);
+
+        $ranked = $svc->rank($rows, $keywords, $weights, $coMap);
+
+        if ($limit === 0) {
+            return $ranked;
+        }
+
+        return array_slice($ranked, $offset, $limit);
+    }
+
+    /**
+     * Count for ranked search — same as searchCount (ranking doesn't change count).
+     */
+    public function searchRankedCount(string $keywords = '', array $filters = []): int
+    {
+        return $this->searchCount($keywords, $filters);
+    }
+
+    /**
      * Cursor-based pagination for search results.
      * Returns records after the given cursor (id) with optional limit.
      *

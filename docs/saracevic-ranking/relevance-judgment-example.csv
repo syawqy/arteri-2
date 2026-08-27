@@ -1,0 +1,4 @@
+query_id,arsip_id,rank_baseline,rank_saracevic,relevance_system,relevance_topical,relevance_cognitive,relevance_situational,relevance_motivational,overall_relevance_0_3,catatan_penilai
+Q01,42,3,1,3,3,2,2,1,3,Contoh: relevan kuat — keyword di uraian + retensi situasional pas
+Q01,15,1,4,2,2,1,0,0,1,Contoh: baseline top-1 tapi situasional lemah (sudah lewat retensi)
+Q12,99,-,2,1,1,2,3,1,2,Contoh: situasional tinggi karena sudah jatuh tempo (timeliness boost)

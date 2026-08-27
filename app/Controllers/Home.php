@@ -55,8 +55,15 @@ class Home extends BaseController
             'nobox'   => $this->request->getGet('nobox') ?? '',
         ];
 
-        $results = $arsipModel->search($keywords, $filters, $this->perPage, $offset);
-        $total   = $arsipModel->searchCount($keywords, $filters);
+        // Saracevic ranking toggle: ?rank=1 enables relevance-ranked search
+        $ranked = $this->request->getGet('rank') === '1';
+        if ($ranked) {
+            $results = $arsipModel->searchRanked($keywords, $filters, $this->perPage, $offset);
+            $total   = $arsipModel->searchRankedCount($keywords, $filters);
+        } else {
+            $results = $arsipModel->search($keywords, $filters, $this->perPage, $offset);
+            $total   = $arsipModel->searchCount($keywords, $filters);
+        }
 
         // Source data for view (matches CI3 shape)
         if ($keywords !== '') {
@@ -83,6 +90,7 @@ class Home extends BaseController
 
         $data['data']     = $results;
         $data['jml']      = $total;
+        $data['ranked']   = $ranked;
         $data['src']      = $src;
 
         $page = (int) floor($offset / $this->perPage) + 1;

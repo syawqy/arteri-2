@@ -1,0 +1,31 @@
+query_id,keywords,nama_query,level_saracevic,tujuan_situasional,catatan
+Q01,rekrutmen pegawau,Rekrutmen SDM,Cognitive,Situasional: cari berkas rekrutmen untuk verifikasi formasi,"uji typo tolerance (pegawau vs pegawai) — relativeness"
+Q02,anggaran KEU,Anggaran Keuangan,Topical,Situasional: rekap realisasi anggaran triwulan,"uji kode KEU + uraian"
+Q03,cuti pegawai,Cuti Pegawai,Topical,Situasional: rekap cuti untuk laporan,uji uraian + ket asli/copy
+Q04,pengawasan internal,Audit Pengawasan,Topical,Belum jatuh tempo vs sudah jatuh tempo (situational),""
+Q05,mutasi pegawai,Mutasi Kepegawaian,Topical,Situasional: daftar mutasi jabatan,""
+Q06,beasiswa pelatihan,Beasiswa & Pelatihan,Cognitive,Situasional: cari berkas beasiswa untuk seleksi,""
+Q07,peraturan direksi,Peraturan Direksi,Motivational,Situasional: cari regulasi untuk penyusunan SOP,""
+Q08,inventaris barang,Inventaris Aset,Topical,Situasional: cek inventaris untuk penghapusan aset,""
+Q09,penelitian pengembangan RND,Riset RND,Topical,Situasional: laporan akhir penelitian,""
+Q10,SDM.03.01 pelatihan,Pelatihan Kode Spesifik,System + Cognitive,Situasional: arsip pelatihan kode spesifik,"uji kode filter + uraian"
+Q11,lokasi Gedung A,Lokasi Arsip,Situational,Situasional: cari arsip di gedung tertentu,"uji timeliness vs lokasi"
+Q12,arsip retensi sudah jatuh tempo,Retensi Expired,Situational,Situasional: daftar arsip yang sudah lewat retensi (pemusnahan),timeliness boost
+Q13,arsip retensi belum jatuh tempo,Retensi Aktif,Situational,Situasional: arsip masih aktif untuk layanan,""
+Q14,nobox BOX-01,No Box,System,Situasional: temu kembali fisik di box,"uji noarsip/nobox field"
+Q15,kontrak pengadaan,Kontrak Pengadaan,Topical,Situasional: cari kontrak untuk audit,""
+Q16,SDM rekrutmen seleksi,Rekrutmen Seleksi,System + Topical,Situasional: seleksi administrasi,"uji multi-token relativeness"
+Q17,keputusan direksi keputusan,Keputusan Direksi duplikat,Cognitive,Situasional: cari keputusan duplikat keyword density test,""
+Q18,arsip digital teknologi informasi,Arsip Digital,Topical + Situational,Situasional: arsip digital untuk migrasi,"uji co-occurrence kode↔pencipta"
+Q19,BBM OR anggaran OR keuangan,Boolean multi-topic,Topical,Situasional: cari semua terkait keuangan (boolean),"uji query panjang"
+Q20,pengangkatan CPNS,Pengangkatan CPNS,Topical,Situasional: berkas pengangkatan CPNS,""
+Q21,pemberhentian pensiun,Pemberhentian Pensiun,Topical,Situational: arsip pensiun menjelang retensi 5 tahun,timeliness decay test
+Q22,audit keuangan KEU.02,Anggaran Audit,Topical + Cognitive,Situasional: audit anggaran pegawai,""
+Q23,arsip hukum tata laksana,Hukum Tata Laksana,Topical,Situasional: regulasi hukum,""
+Q24,rekrutmen mutasi SDM,Multi-kode SDM,System,Situasional: semua SDM untuk laporan tahunan,""
+Q25,kinerja evaluasi pegawai,Evaluasi Kinerja,Topical,Situasional: evaluasi untuk promosi,""
+Q26,perjalanan dinas surat tugas,Perjalanan Dinas,Topical,Situasional: rekap surat tugas,""
+Q27,pengadaan logistik kontrak,Logistik Kontrak,Topical,Situasional: kontrak logistik,""
+Q28,SDM.01 SDM.02 SDM.03,Multi-kode filter,System,Situasional: filter multi klasifikasi,""
+Q29,rekrutment (typo Inggris),Typo Handling,Cognitive,Situasional: uji ketahanan typo rekrutment/rekrutmen,""
+Q30,arsip kosong tanpa keyword,Baseline tanpa keyword,Situational,Situasional: lihat ranking default saat tanpa keyword (timeliness-only),baseline
