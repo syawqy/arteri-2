@@ -80,9 +80,7 @@ class AuditLog extends BaseController
             'tabelList'  => $tabelList,
         ];
 
-        return view('layout/header', $data)
-            . view('audit/index', $data)
-            . view('layout/footer');
+        return view('audit/index', $data);
     }
 
     public function detail($id)

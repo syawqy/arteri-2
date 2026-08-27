@@ -65,6 +65,22 @@ $(document).ready(function() {
 		catch(e) { return { status: 'error', message: 'Respons server tidak valid.' }; }
 	};
 
+	// FIX: backdrop stuck — Bootstrap shade tidak hilang setelah modal hide
+	$(document).on('hidden.bs.modal', '.modal', function () {
+		if ($('.modal:visible').length === 0) {
+			$('.modal-backdrop').remove();
+			$('body').removeClass('modal-open').css('padding-right', '');
+		}
+	});
+	window.cleanupModalBackdrop = function() {
+		setTimeout(function() {
+			if ($('.modal:visible').length === 0) {
+				$('.modal-backdrop').remove();
+				$('body').removeClass('modal-open').css('padding-right', '');
+			}
+		}, 350);
+	};
+
 	$.each($('form[data-ajax="true"]'), function() {
 		/** handled inline */;
 	});
