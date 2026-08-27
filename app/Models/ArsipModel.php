@@ -166,8 +166,18 @@ class ArsipModel extends Model
      */
     public function getDetail(int|string $id): ?array
     {
+        // Driver-aware expiry expression (MySQL DATE_ADD vs SQLite date)
+        $driver = $this->db->getPlatform(); // e.g. SQLite3, MySQLi
+        if (stripos($driver, 'sqlite') !== false) {
+            $bExpr = "date(a.tanggal, '+' || k.retensi || ' years') as b";
+            $fExpr = "(CASE WHEN date(a.tanggal, '+' || k.retensi || ' years') < date('now') THEN 'sudah' ELSE 'belum' END) as f";
+        } else {
+            $bExpr = "DATE_ADD(a.tanggal, INTERVAL k.retensi YEAR) as b";
+            $fExpr = "(IF(DATE_ADD(a.tanggal, INTERVAL k.retensi YEAR) < CURDATE(), 'sudah', 'belum')) as f";
+        }
+
         return $this->db->table('data_arsip a')
-            ->select('a.*, p.nama_pencipta, p2.nama_pengolah, k.nama, k.kode as nama_kode, l.nama_lokasi, m.nama_media, DATE_ADD(a.tanggal, INTERVAL k.retensi YEAR) as b, (IF(DATE_ADD(a.tanggal, INTERVAL k.retensi YEAR) < CURDATE(), \'sudah\', \'belum\')) as f')
+            ->select("a.*, p.nama_pencipta, p2.nama_pengolah, k.nama, k.kode as nama_kode, l.nama_lokasi, m.nama_media, {$bExpr}, {$fExpr}")
             ->join('master_pencipta p', 'p.id = a.pencipta', 'left')
             ->join('master_pengolah p2', 'p2.id = a.unit_pengolah', 'left')
             ->join('master_kode k', 'k.id = a.kode', 'left')
@@ -189,8 +199,17 @@ class ArsipModel extends Model
      */
     protected function buildSearchQuery(string $keywords = '', array $filters = []): \CodeIgniter\Database\BaseBuilder
     {
+        $driver = $this->db->getPlatform();
+        $isSqlite = stripos($driver, 'sqlite') !== false;
+        $bExpr = $isSqlite
+            ? "date(a.tanggal, '+' || k.retensi || ' years') as b"
+            : "DATE_ADD(a.tanggal, INTERVAL k.retensi YEAR) as b";
+        $fExpr = $isSqlite
+            ? "(CASE WHEN date(a.tanggal, '+' || k.retensi || ' years') < date('now') THEN 'sudah' ELSE 'belum' END) as f"
+            : "(IF(DATE_ADD(a.tanggal, INTERVAL k.retensi YEAR) < CURDATE(), 'sudah', 'belum')) as f";
+
         $builder = $this->db->table('data_arsip a');
-        $builder->select('a.*, k.retensi, DATE_ADD(a.tanggal, INTERVAL k.retensi YEAR) as b, k.kode as nama_kode, (IF(DATE_ADD(a.tanggal, INTERVAL k.retensi YEAR) < CURDATE(), \'sudah\', \'belum\')) as f, nama_lokasi, nama_media, nama_pencipta, nama_pengolah');
+        $builder->select("a.*, k.retensi, {$bExpr}, k.kode as nama_kode, {$fExpr}, nama_lokasi, nama_media, nama_pencipta, nama_pengolah");
         $builder->join('master_kode k', 'k.id = a.kode');
         $builder->join('master_lokasi l', 'l.id = a.lokasi');
         $builder->join('master_media m', 'm.id = a.media');
@@ -229,9 +248,15 @@ class ArsipModel extends Model
             }
             if (!empty($filters['retensi']) && $filters['retensi'] !== 'all') {
                 if ($filters['retensi'] === 'sudah') {
-                    $builder->where('DATE_ADD(a.tanggal, INTERVAL k.retensi YEAR) < CURDATE()', null, false);
+                    $cond = $isSqlite
+                        ? "date(a.tanggal, '+' || k.retensi || ' years') < date('now')"
+                        : "DATE_ADD(a.tanggal, INTERVAL k.retensi YEAR) < CURDATE()";
+                    $builder->where($cond, null, false);
                 } else {
-                    $builder->where('DATE_ADD(a.tanggal, INTERVAL k.retensi YEAR) > CURDATE()', null, false);
+                    $cond = $isSqlite
+                        ? "date(a.tanggal, '+' || k.retensi || ' years') >= date('now')"
+                        : "DATE_ADD(a.tanggal, INTERVAL k.retensi YEAR) >= CURDATE()";
+                    $builder->where($cond, null, false);
                 }
             }
             if (!empty($filters['penc']) && $filters['penc'] !== 'all') {
