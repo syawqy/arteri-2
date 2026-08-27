@@ -45,7 +45,7 @@ Belum ada studi yang mengintegrasikan ketiganya untuk arsip pemerintah Indonesia
 
 **Siklus 1 — Problem & desain:** analisis `ArsipModel::buildSearchQuery` (tanpa ranking, `ORDER BY a.id`). Pemetaan Fafalios→Saracevic→field Arteri (Tabel 1).
 
-**Siklus 2 — Build:** implementasi `RelevanceRankingService` (tokenize, skor relativeness/timeliness/relations) dan `searchRanked` (fetch 500 max → rank global → slice). Dukungan MySQL & SQLite untuk `b = tanggal + retensi` dan `f = sudah/belum`. Toggle `?rank=1` di `Home::search`.
+**Siklus 2 — Build:** `RelevanceRankingService` (logika 3 skor, dipakai untuk unit test & `eval_ndcg.py`) + `ArsipModel::searchRanked` **SQL hybrid** (`ORDER BY score` di DB → pagination konsisten global, driver-aware MySQL/SQLite untuk `b=tanggal+retensi`) + `stat_kode_pencipta` (162 pairs @2000) + toggle `?rank=1` di `Home::search` (pagination preserve `?katakunci&rank=1`).
 
 **Siklus 3 — Evaluasi:** 120 arsip sintetis (tahun 2018–2026, retensi 1/3/5/10) dan 30 kueri (Tabel query-set-30.csv). Tahap awal evaluasi sintetis (gain = round(score×3)); tahap lanjutan human judgment 5 level dengan `eval_ndcg.py` (P@10, NDCG@10, gain linear/exp2).
 
@@ -136,9 +136,10 @@ Relevansi bertingkat Saracevic dapat dioperasionalkan sebagai ranking 3 komponen
 
 ## Lampiran Artefak
 
-- `app/Services/RelevanceRankingService.php`, `app/Models/ArsipModel.php` (driver-aware), `app/Controllers/Home.php` (`?rank=1`), `app/Views/home/search.php`
-- `app/Database/Seeds/SaracevicRankingSeeder.php` (120 arsip), `docs/saracevic-ranking/query-set-30.csv`, `JUDGMENT-GUIDE.md`, `eval_ndcg.py`, `relevance-judgment-synthetic.csv` (309 baris, ΔP+0,186/ΔNDCG+0,172)
-- `DESIGN.md` (pemetaan teori), `tests/unit/RelevanceRankingServiceTest.php` (10/10)
+- `app/Services/RelevanceRankingService.php` (logika 3 skor — dipakai unit test & `eval_ndcg.py`, SQL hybrid di Model yang jalan di produksi), `app/Models/ArsipModel.php` (SQL hybrid `ORDER BY score`, stat join, fallback PHP), `app/Controllers/Home.php` (`?rank=1` + pagination preserve), `app/Views/home/search.php` (badge)
+- `app/Database/Migrations/2026-08-27-000001_CreateStatKodePencipta.php` + `LargeScaleSeeder.php` (2000 arsip) / `SaracevicRankingSeeder.php` (120 arsip pilot), `stat_kode_pencipta` 162 pairs @2000
+- `docs/saracevic-ranking/query-set-30.csv` (30 kueri), `JUDGMENT-GUIDE.md`, `eval_ndcg.py` (Python port ranking, 2000: 416 baris, ΔP+0.300/ΔNDCG+0.223), `relevance-judgment-synthetic.csv` (pilot 120: 309 baris ΔP+0.186)
+- `DESIGN.md` (pemetaan teori), `tests/unit/RelevanceRankingServiceTest.php` (10/10) + `tests/sql_hybrid_smoke.php` (deep pagination no-dup, order OK)
 
 ---
 
