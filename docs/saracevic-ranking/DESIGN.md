@@ -43,21 +43,22 @@
 | **Relations among entities** | Ko-okurensi `kode ↔ pencipta ↔ pengolah`. Misal query `SDM.01 + pencipta X` → arsip yang sering muncul bersama di histori diberi boost (stat `COUNT GROUP BY kode,pencipta`). Bisa precompute tabel `stat_kode_pencipta`. | Cognitive + Situational | `relation = cooccurrence(kode, pencipta) / max_cooccurrence` — lookup tabel statistik (tanpa KG eksternal). Fallback 0 jika tidak ada. |
 | **+ Hak akses (baru, khas Saracevic Stratified)** | `akses_klas` user — bukan ranking, tapi *filter kognitif*: hanya klas yang boleh dilihat. Dipisah dari skor. | Cognitive | Tetap filter `WHERE k.kode LIKE prefix%` sebelum ranking (seperti sekarang). |
 
-**Skor akhir (terinspirasi Fafalios §3, weighted sum):**
+**Skor akhir (Fafalios §3, weighted sum — sekarang di SQL sebagai ORDER BY score, bukan PHP):**
 ```
-score = w1 * relativeness + w2 * timeliness + w3 * relations
-# default w1=0.5, w2=0.3, w3=0.2 — bisa tuning via evaluasi NDCG
-# Sort DESC score, tie-breaker tanggal DESC
+skor = 0.5 × kecocokan + 0.3 × urgensi + 0.2 × kedekatan   ∈ [0,1] — pagination konsisten global
 ```
+Penjelasan awam ada di DRAFT-JURNAL.md §4.1; SQL di ArsipModel::searchRanked (driver-aware MySQL/SQLite). Versi PHP (RelevanceRankingService) tetap dipertahankan untuk unit test & eval_ndcg.py.
+
+**Update 2026-08-27 (SQL hybrid):** `searchRanked` sekarang `SELECT ... (score) as score ORDER BY score DESC LIMIT/OFFSET` + `stat_kode_pencipta` (162 pairs @2000). Pagination `?rank=1` preserve via `setPath('search?...&rank=1')`.
 
 ## 4. Rencana implementasi di branch ini
 
 ### Fase 1 — Service & Model (MVP, tanpa ubah UI)
-- [ ] `app/Services/RelevanceRankingService.php` — hitung 3 komponen, `rank(array $rows, string $keywords): array`
-- [ ] `app/Models/ArsipModel.php` — tambah `searchRanked(string $keywords, array $filters, int $limit, int $offset, array $weights): array` dan `searchRankedCount` — panggil service setelah `buildSearchQuery`.
-- [ ] `app/Database/Migrations/*_CreateStatKodePencipta.php` (opsional Fase 1: hardcode 0, migrasi Fase 2).
-- [ ] `app/Controllers/Home.php::search()` — tambah toggle `?rank=1` untuk bandingkan ranking lama vs baru (A/B untuk jurnal).
-- [ ] Unit test `tests/RankingServiceTest.php` — 3 komponen + skor gabungan.
+- [x] `app/Services/RelevanceRankingService.php` — hitung 3 komponen (tetap untuk test), `rank(array $rows, string $keywords): array`
+- [x] `app/Models/ArsipModel.php` — SQL hybrid `searchRanked` (ORDER BY score, stat_kode_pencipta)(string $keywords, array $filters, int $limit, int $offset, array $weights): array` dan `searchRankedCount` — panggil service setelah `buildSearchQuery`.
+- [x] `app/Database/Migrations/2026-08-27-000001_CreateStatKodePencipta.php` + `LargeScaleSeeder` (2000)
+- [x] `app/Controllers/Home.php::search()` — `?rank=1` + pagination preserve untuk bandingkan ranking lama vs baru (A/B untuk jurnal).
+- [x] Unit test `tests/unit/RelevanceRankingServiceTest.php` 10/10 + `tests/sql_hybrid_smoke.php` — 3 komponen + skor gabungan.
 
 ### Fase 2 — Evaluasi untuk jurnal (butuh data)
 - Seed 100-200 arsip dummy variasi retensi & entitas.

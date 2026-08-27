@@ -7,7 +7,7 @@
 
 ## Abstrak (250 kata)
 
-Temu kembali arsip digital di lingkungan pemerintah masih didominasi pencocokan kata kunci (keyword matching) tanpa pemeringkatan relevansi. Akibatnya, setiap arsip yang mengandung kata kunci dianggap sama relevan, padahal kebutuhan pengguna bersifat situasional—terkait jatuh tempo retensi, hak akses klasifikasi, dan tugas yang sedang dikerjakan. Penelitian ini mengembangkan sistem temu kembali arsip berbasis **model relevansi bertingkat Saracevic (1975; 2007)** dan **Stratified Model of IR Interaction (1997)** yang diadaptasi dari model ranking **Fafalios et al. (2017, arXiv:1810.11049, JCDL)** untuk arsip digital. Implementasi dilakukan pada **Arteri-2**, sistem kearsipan berbasis CodeIgniter 4 yang mengelola kode klasifikasi, retensi, pencipta, pengolah, lokasi, dan media. Dari model Fafalios (relativeness–timeliness–relations) diturunkan tiga komponen yang dipetakan ke strata Saracevic: (i) *relativeness* → relevansi sistem & topikal, (ii) *timeliness* → relevansi situasional berbasis `tanggal + retensi`, dan (iii) *relations* → relevansi kognitif melalui ko-okurensi `kode↔pencipta`. Skor akhir `w1·rel + w2·time + w3·relasi` diuji pada 120 arsip sintetis dan 30 kueri berlabel level Saracevic. Evaluasi sintetis (skor→gain 0–3) menunjukkan **ΔP@10 +0,186 dan ΔNDCG@10 +0,172** dibanding baseline `ORDER BY id`. Prototipe menyediakan mode A/B `?rank=0/1` untuk studi human judgment lanjutan dengan rubrik 5 level Saracevic. Kontribusi: operasionalisasi pertama relevansi bertingkat Saracevic untuk kearsipan pemerintah Indonesia dengan artefak yang dapat direplikasi.
+Temu kembali arsip digital di lingkungan pemerintah masih didominasi pencocokan kata kunci tanpa pemeringkatan. Setiap arsip yang mengandung kata kunci dianggap sama relevan, padahal kebutuhan pengguna bersifat situasional—jatuh tempo retensi, hak akses klasifikasi, dan tugas yang sedang dikerjakan. Penelitian Design Science Research ini mengembangkan **sistem temu kembali arsip berbasis model relevansi bertingkat Saracevic (1975; 2007) dan Stratified Model (1997)**, diadaptasi dari **Fafalios et al. (2017, arXiv:1810.11049)**. Implementasi pada **Arteri-2** (CodeIgniter 4, MySQL/SQLite, mengelola kode/retensi/pencipta/pengolah/lokasi/media) memetakan tiga komponen Fafalios ke strata Saracevic: (i) *kecocokan kata* → relevansi sistem & topikal, (ii) *urgensi waktu* (`b=tanggal+retensi`) → situasional, (iii) *kedekatan entitas* (`kode:pencipta`) → kognitif, dengan **skor = 0,5×kecocokan + 0,3×urgensi + 0,2×kedekatan**. Rumus dievaluasi langsung di query SQL sebagai `ORDER BY score` sehingga pagination konsisten global (page 2 = peringkat 21–40, bukan 160 pertama BY id). Evaluasi sintetis 120 arsip / 30 kueri: **ΔP@10 +0,186, ΔNDCG@10 +0,172**; pada 2000 arsip **ΔP@10 +0,300, ΔNDCG@10 +0,223**. Prototipe menyediakan mode A/B `?rank=0/1` untuk studi human judgment 5 level Saracevic. Kontribusi: operasionalisasi pertama relevansi bertingkat untuk kearsipan pemerintah Indonesia dengan artefak terbuka yang dapat direplikasi.
 
 ---
 
@@ -51,23 +51,65 @@ Belum ada studi yang mengintegrasikan ketiganya untuk arsip pemerintah Indonesia
 
 ## 4. Implementasi pada Arteri-2
 
-**Arsitektur:** CodeIgniter 4, MySQL/SQLite, `data_arsip` + 5 master. Perubahan: `app/Services/RelevanceRankingService.php`, `app/Models/ArsipModel.php`, `app/Controllers/Home.php`, `app/Views/home/search.php`.
+**Arsitektur:** CodeIgniter 4, MySQL/SQLite, `data_arsip` + 5 master. Perubahan: `app/Services/RelevanceRankingService.php` (pakai untuk test), `app/Models/ArsipModel.php` **SQL hybrid** (`ORDER BY score` di DB → pagination konsisten global), `app/Controllers/Home.php` (`?rank=1` + pagination preserve), `app/Views/home/search.php` (badge).
 
-**Rumus:**
-```
-relativeness = max-field-match(tokens) / (3·|tokens|)   ∈ [0,1]
-timeliness   = 1/(1+|b−today|/365) (+0.08 jika sudah)    ∈ [0,1]
-relations    = count(kode:pencipta)/maxCount             ∈ [0,1]
-score        = 0.5·rel + 0.3·time + 0.2·relasi             ∈ [0,1]
-```
+### 4.1 Rumus — versi bahasa awam
 
-**A/B:** `/search?katakunci=…` vs `/search?katakunci=…&rank=1`; badge *Ranked (Saracevic)* di view.
+Bayangkan kamu minta tolong petugas arsip: *“carikan arsip rekrutmen pegawai 2022”*. Petugas yang baik tidak asal kasih semua berkas yang ada kata “rekrutmen”, tapi menimbang 3 pertanyaan — inilah 3 komponen skor kami (semua 0–1, seperti nilai rapor 0–100%):
+
+**1. Nilai Kecocokan Kata — *relativeness* (bobot 50% — paling penting)**
+> *Apakah kata yang kamu cari benar-benar ada di berkas? Di bagian penting atau cuma kebetulan?*
+
+- Kata persis di **uraian** dan di batas kata utuh (`… rekrutmen …`) → **3 poin** (paling tinggi, karena uraian adalah isi arsip).
+- Kata di **noarsip/box** atau nama pencipta/pengolah → **1–2 poin**.
+- Tiap kata dalam query dinilai terpisah, lalu dirata-rata: `jumlah poin / (3 × jumlah kata)`.
+- Contoh: query *“rekrutmen pegawai”* (2 kata, maksimal 6 poin). Arsip dengan `uraian = "Laporan rekrutmen pegawai 2023"` dapat 6/6 = **1.00**. Arsip dengan `uraian = "Laporan keuangan"` dapat 0/6 = **0.00**.
+
+*Padanan Saracevic:* Relevansi Sistem + Topikal — apakah sistem menemukan topik yang tepat?
+
+**2. Nilai Urgensi Waktu — *timeliness* (bobot 30%)**
+> *Apakah arsip ini sedang “mendesak” untuk tugasmu hari ini?*
+
+Arsip punya tanggal + retensi (mis. “5 tahun”). Jatuh tempo `b = tanggal + retensi`. Rumus: `1 / (1 + |b − hari ini|/365)`. Artinya:
+- `b = hari ini` → **1.00** (paling urgent — hari ini jatuh tempo).
+- `b = 1 tahun lagi` → **0.50**, `b = 3 tahun lagi` → **0.25** (makin jauh, makin tidak urgent).
+- Kalau sudah lewat (`f='sudah'`) → **+0.08 boost**, karena untuk tugas pemusnahan/penyerahan, arsip lewat tempo justru paling relevan.
+
+Contoh: arsip `tanggal 2021 + retensi 5 th = b 2026-07-25` dan hari ini 2026-08-27 selisih 33 hari → `1/(1+33/365)=0.92` → boost 0.08 = **1.00** → naik ke atas.
+
+*Padanan Saracevic:* Relevansi Situasional — apakah arsip ini berguna untuk situasi tugasmu sekarang?
+
+**3. Nilai Kedekatan Entitas — *relations* (bobot 20%)**
+> *Apakah kombinasi “kode + pencipta” di arsip ini memang sering bekerja bersama?*
+
+Kami hitung statistik: pasangan `kode:pencipta` mana yang paling sering muncul di 2000 arsip (tabel `stat_kode_pencipta`). Mis. `SDM.01 : Bidang Kepegawaian` muncul 28× (maksimum), maka pasangan itu skor **1.00**. Pasangan yang muncul 14× skor **0.50**. Tidak pernah → **0.00**. Ini menangkap “kebiasaan” organisasi tanpa perlu AI mahal.
+
+*Padanan Saracevic:* Relevansi Kognitif — apakah arsip ini nyambung dengan pengetahuan/struktur organisasi yang dikenal pengguna?
+
+**Skor akhir — seperti rapor gabungan:**
+```
+skor = 0.5 × kecocokan + 0.3 × urgensi + 0.2 × kedekatan      ∈ [0, 1]
+# 0.5+0.3+0.2 = 1, jadi skor tetap 0–1 (0.87 = 87%). Diurutkan besar→kecil.
+```
+Contoh nyata @2000 arsip (`anggaran`): `SDM.01:Kepegawaian` dengan `rel=1.00, time=0.98, relasi=0.72` → `0.5*1 +0.3*0.98+0.2*0.72 = 0.938` → peringkat 1. Arsip lain `rel=1, time=0.20, relasi=0` → 0.56 → peringkat bawah, walau kata cocok tapi tidak urgent dan tidak nyambung.
+
+**Kenapa rumus sekarang di query SQL (hybrid)?**
+Versi lama: ambil 160 arsip pertama BY id → hitung skor di PHP → potong. Kalau arsip paling relevan ada di id 900, ia **tidak pernah terambil** → page 2 jadi salah. Versi sekarang: **hitung skor di dalam SQL sebagai `ORDER BY score`** — database mengurutkan *semua* arsip dulu baru memotong `LIMIT 20 OFFSET 40` → **page 2 = peringkat 21–40 global, konsisten**. Ini penting untuk klaim ilmiah di paper.
+
+**A/B untuk evaluasi:** `/search?katakunci=anggaran` (baseline `ORDER BY id`) vs `/search?katakunci=anggaran&rank=1` (SQL hybrid `ORDER BY score`); badge *Ranked (Saracevic)* di view. Link pagination sekarang `?katakunci=...&rank=1` terbawa ke halaman 2/3.
 
 ## 5. Hasil Awal (Sintetis)
 
-30 kueri × 10 teratas, 309 pasangan query–arsip, gain sintetis dari skor. **Rata-rata sintetis: P@10 baseline 0,321 → ranked 0,507 (Δ+0,186); NDCG@10 0,828 → 1,000 (Δ+0,172).** Peningkatan terbesar pada kueri situasional (retensi, multi-kode) dan multi-token (Q16, Q24, Q25). Detail per-kueri ada di `relevance-judgment-synthetic.csv`; skrip `eval_ndcg.py` mereplikasi perhitungan.
+**Skala 120 arsip (baseline jurnal — 30 kueri × 10 teratas, 309 pasangan, gain sintetis dari skor):** P@10 **0,321 → 0,507 (Δ+0,186)**; NDCG@10 **0,828 → 1,000 (Δ+0,172)**. Skala kecil untuk mengisolasi efek ranking tanpa noise.
 
-> **Catatan untuk jurnal:** hasil sintetis bersifat demonstrasi; klaim final menunggu *human judgment* dengan rubrik JUDGMENT-GUIDE.md (2 asesor, κ Cohen). Nilai NDCG=1,000 pada sintetis merefleksikan ideal yang dibangun dari gain yang sama dengan ranking—pembaca jurnal perlu membedakan dari NDCG human.
+**Skala 2000 arsip (uji performa & generalisasi — 30 kueri × 10 teratas, 416 pasangan):** P@10 **0,332 → 0,632 (Δ+0,300)**; NDCG@10 **0,777 → 1,000 (Δ+0,223)** — gain membesar karena ranking global SQL mengangkat arsip relevan yang di versi lama tersembunyi di luar 160 pertama (terutama kueri umum seperti `arsip` 560 hit). Detail per-kueri ada di `relevance-judgment-synthetic.csv`; `eval_ndcg.py` mereplikasi.
+
+| Skala | ΔP@10 | ΔNDCG@10 | Makna |
+|-------|-------|----------|-------|
+| 120 | +0,186 | +0,172 | Efek ranking murni (tanpa-pagination bug) |
+| 2000 | +0,300 | +0,223 | **Efek ranking + perbaikan pagination global** — relevan untuk klaim “skalabel” |
+
+> **Catatan untuk jurnal:** hasil sintetis bersifat demonstrasi (gain = round(score×3)); klaim final menunggu *human judgment* 5 level (JUDGMENT-GUIDE.md, 2 asesor, κ Cohen). NDCG=1,000 pada sintetis merefleksikan ideal yang dibangun dari gain yang sama — bedakan dari NDCG human. Laporkan keduanya (120 & 2000) di paper: 120 sebagai *pilot*, 2000 sebagai *stress-test*.
 
 ## 6. Pembahasan
 
