@@ -130,10 +130,10 @@ di mana bobot kecocokan per field ($ScoreField$) didefinisikan sebagai:
 - Kecocokan pada nomor arsip (`noarsip`): **2,0 poin**
 - Kecocokan pada nomor boks (`nobox`), pencipta, pengolah, atau kode klasifikasi: **1,0 – 1,5 poin**
 
-#### 2. Skor Urgensi Waktu ($S_{time}$)
+#### 2. Skor Urgensi Waktu ($S_{\text{time}}$)
 Mengukur relevansi situasional arsip berdasarkan kedekatan terhadap tanggal jatuh tempo retensi ($b$), yang dihitung dari tanggal arsip ditambah masa retensi aktif/inaktif sesuai jadwal retensi arsip (UU No. 43/2009; PP No. 28/2012; Peraturan ANRI No. 9/2018):
 
-$$b = \text{tanggal\_arsip} + \text{retensi\_tahun}$$
+$$b = \text{tanggal} + \text{retensi}$$
 
 $$S_{\text{time}}(d) = \min\left(1{,}0, \; \frac{1}{1 + \frac{|b - t_{\text{sekarang}}|}{365}} + \text{Boost}_{\text{kadaluarsa}}\right)$$
 
@@ -223,7 +223,7 @@ Penelitian ini berhasil membuktikan bahwa model relevansi bertingkat Saracevic d
 Penelitian lanjutan (Tahap 2) akan difokuskan pada:
 1. Pelaksanaan evaluasi empiris melibatkan pengguna kearsipan untuk menguji validitas kognitif dan situasional secara langsung.
 2. Integrasi algoritma *stemming* bahasa Indonesia dan pembobotan berbasis frekuensi term (TF-IDF / BM25).
-3. Pengoptimalan bobot komponen ($w_{rel}, w_{time}, w_{relasi}$) melalui pendekatan optimasi berbasis umpan balik pengguna.
+3. Pengoptimalan bobot komponen ($w_{\text{rel}}, w_{\text{time}}, w_{\text{relasi}}$) melalui pendekatan optimasi berbasis umpan balik pengguna.
 
 ---
 
