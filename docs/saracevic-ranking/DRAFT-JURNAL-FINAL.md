@@ -112,17 +112,17 @@ Alur penelitian dilaksanakan melalui empat tahapan terstruktur:
 
 Model pemeringkatan menghitung skor total $Score(d, q)$ untuk dokumen arsip $d$ terhadap kueri $q$ melalui kombinasi linear terbobot dari tiga sub-skor terstandarisasi pada interval $[0, 1]$:
 
-$$Score(d, q) = w_{rel} \cdot S_{rel}(d, q) + w_{time} \cdot S_{time}(d) + w_{relasi} \cdot S_{relasi}(d)$$
+$$Score(d, q) = w_{\text{rel}} \cdot S_{\text{rel}}(d, q) + w_{\text{time}} \cdot S_{\text{time}}(d) + w_{\text{relasi}} \cdot S_{\text{relasi}}(d)$$
 
 dengan batasan $\sum w = 1{,}0$. Berdasarkan kerangka kerja Fafalios et al. (2017, Bagian 3.3) dan prioritas strata Saracevic (2007, Part II), bobot awal ditetapkan secara teoritis (*theory-driven prior*) sebesar:
-- $w_{rel} = 0{,}50$ (Relevansi Topikal & Sistem)
-- $w_{time} = 0{,}30$ (Relevansi Situasional)
-- $w_{relasi} = 0{,}20$ (Relevansi Kognitif/Struktural)
+- $w_{\text{rel}} = 0{,}50$ (Relevansi Topikal & Sistem)
+- $w_{\text{time}} = 0{,}30$ (Relevansi Situasional)
+- $w_{\text{relasi}} = 0{,}20$ (Relevansi Kognitif/Struktural)
 
-#### 1. Skor Kecocokan Leksikal ($S_{rel}$)
+#### 1. Skor Kecocokan Leksikal ($S_{\text{rel}}$)
 Mengukur keberadaan dan distribusi token kueri $q = \{t_1, t_2, \dots, t_n\}$ pada atribut arsip:
 
-$$S_{rel}(d, q) = \min\left(1{,}0, \; \frac{\sum_{i=1}^{n} \max_{f \in F} ScoreField(t_i, d_f)}{3 \cdot n}\right)$$
+$$S_{\text{rel}}(d, q) = \min\left(1{,}0, \; \frac{\sum_{i=1}^{n} \max_{f \in F} ScoreField(t_i, d_f)}{3 \cdot n}\right)$$
 
 di mana bobot kecocokan per field ($ScoreField$) didefinisikan sebagai:
 - Kecocokan batas kata utuh (*exact word boundary*) pada kolom `uraian`: **3,0 poin**
@@ -135,14 +135,14 @@ Mengukur relevansi situasional arsip berdasarkan kedekatan terhadap tanggal jatu
 
 $$b = \text{tanggal\_arsip} + \text{retensi\_tahun}$$
 
-$$S_{time}(d) = \min\left(1{,}0, \; \frac{1}{1 + \frac{|b - t_{sekarang}|}{365}} + Boost_{kadaluarsa}\right)$$
+$$S_{\text{time}}(d) = \min\left(1{,}0, \; \frac{1}{1 + \frac{|b - t_{\text{sekarang}}|}{365}} + \text{Boost}_{\text{kadaluarsa}}\right)$$
 
-Arsip yang tepat jatuh tempo pada hari penelusuran memperoleh skor dasar 1,00. Nilai skor meluruh (*decay*) secara bertahap seiring bertambahnya selisih tahun ($|b - t_{sekarang}|$). Untuk arsip yang telah melampaui masa retensi, diberikan $Boost_{kadaluarsa} = 0{,}08$ guna memfasilitasi kebutuhan seleksi penyusutan atau pemusnahan arsip.
+Arsip yang tepat jatuh tempo pada hari penelusuran memperoleh skor dasar 1,00. Nilai skor meluruh (*decay*) secara bertahap seiring bertambahnya selisih tahun ($|b - t_{\text{sekarang}}|$). Untuk arsip yang telah melampaui masa retensi, diberikan $\text{Boost}_{\text{kadaluarsa}} = 0{,}08$ guna memfasilitasi kebutuhan seleksi penyusutan atau pemusnahan arsip.
 
-#### 3. Skor Kedekatan Relasi Organisasi ($S_{relasi}$)
+#### 3. Skor Kedekatan Relasi Organisasi ($S_{\text{relasi}}$)
 Mengukur relevansi kognitif melalui frekuensi ko-okurensi historis antara kode klasifikasi ($k$) dan unit pencipta arsip ($p$):
 
-$$S_{relasi}(d) = \frac{Count(k, p)}{\max_{(k', p')} Count(k', p')}$$
+$$S_{\text{relasi}}(d) = \frac{Count(k, p)}{\max_{(k', p')} Count(k', p')}$$
 
 Frekuensi kemunculan pasangan dihitung melalui tabel agregat `stat_kode_pencipta`. Pasangan klasifikasi-pencipta yang paling dominan dalam organisasi memperoleh skor 1,00, merefleksikan pola kerja keorganisasian yang mapan.
 
