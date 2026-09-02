@@ -296,9 +296,11 @@ public function context(int $id): ResponseInterface
 
 ## Lampiran B. Contoh Tampilan Implementasi pada Antarmuka Aplikasi Arteri-2
 
-### B.1 Panel Jejaring Berkas Terkait RiC pada Halaman Detail Arsip (`home/detail.php`)
+### B.1 Tangkapan Layar Panel Jejaring Berkas Terkait RiC pada Halaman Detail Arsip
 
-Ketika pengguna memeriksa detail arsip jangkar (*Seed Record*), misalnya arsip bernomor `TI/2025/001` (*Surat Keputusan Penetapan PPK Pengadaan Server TI 2025*), sistem merender panel interaktif di bagian bawah detail rekaman:
+Berikut adalah representasi visual antarmuka sistem Arteri-2 saat pengguna membuka berkas jangkar (*Seed Record*) `TI/2025/001` (*Surat Keputusan Penetapan PPK Pengadaan Server TI 2025*). Di bawah metadata rincian arsip, sistem menyajikan panel **"Jejaring Berkas Terkait (ICA Records in Contexts / RiC-CM)"** yang menampilkan rekaman berkas terhubung beserta visualisasi persentase skor afinitas ($CAS$) dan rincian sub-dimensi Agen, Aktivitas, dan Temporal:
+
+![Tangkapan Layar Panel RiC Discovery pada Arteri-2](screenshot_ric_detail_panel.png)
 
 ```
 +----------------------------------------------------------------------------------------------------+
@@ -308,7 +310,7 @@ Ketika pengguna memeriksa detail arsip jangkar (*Seed Record*), misalnya arsip b
 +----------------------------------------------------------------------------------------------------+
 | No. Arsip   | Uraian Informasi                     | Klasifikasi & Unit   | Tanggal     | CAS (%)   |
 |-------------|--------------------------------------|----------------------|-------------|-----------|
-| TI/2025/002 | Kerangka Acuan Kerja (KAK) Pengadaan | [TI.01.01]           | 15-Jan-2025 | [===] 99% |
+| TI/2025/002 | Kerangka Acuan Kerja (KAK) Pengadaan | [TI.01.01]           | 15-Jan-2025 | [===] 100%|
 |             | Server Komputasi                     | Pusdatin             |             |           |
 | TI/2025/003 | Harga Perkiraan Sendiri (HPS)        | [TI.01.01]           | 20-Jan-2025 | [===] 99% |
 |             | Perangkat Jaringan                   | Pusdatin             |             |           |
@@ -316,10 +318,8 @@ Ketika pengguna memeriksa detail arsip jangkar (*Seed Record*), misalnya arsip b
 |             | Lelang Server                        | Pusdatin             |             |           |
 | TI/2025/005 | Surat Perjanjian Kontrak Pengadaan   | [TI.01.01]           | 20-Feb-2025 | [===] 97% |
 |             | Server Data Center                   | Pusdatin             |             |           |
-| TI/2025/006 | Berita Acara Serah Terima (BAST)     | [TI.01.01]           | 10-Apr-2025 | [===] 93% |
+| TI/2025/006 | Berita Acara Serah Terima (BAST)     | [TI.01.01]           | 10-Apr-2025 | [===] 95% |
 |             | Hasil Pekerjaan Server TI            | Pusdatin             |             |           |
-| TI/2025/007 | Kuitansi Pembayaran Termin 100%      | [TI.01.01]           | 25-Apr-2025 | [===] 91% |
-|             | Pengadaan Server                     | Pusdatin             |             |           |
 +----------------------------------------------------------------------------------------------------+
 ```
 
