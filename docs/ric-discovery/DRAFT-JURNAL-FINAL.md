@@ -110,15 +110,22 @@ $$CAS(R_{\text{seed}}, R_{\text{cand}}) = w_{\text{agent}} \cdot \text{Aff}_{\te
 Dengan batasan bobot $\sum w = 1{,}0$ di mana ditetapkan $w_{\text{agent}} = 0{,}35$, $w_{\text{act}} = 0{,}45$, dan $w_{\text{temp}} = 0{,}20$.
 
 1. **Afinitas Keagenan ($\text{Aff}_{\text{agent}}$):**
-   $$\text{Aff}_{\text{agent}} = 0{,}6 \cdot \mathbb{I}(\text{pencipta}_{\text{seed}} = \text{pencipta}_{\text{cand}}) + 0{,}4 \cdot \mathbb{I}(\text{pengolah}_{\text{seed}} = \text{pengolah}_{\text{cand}})$$
-   di mana $\mathbb{I}(\cdot)$ adalah fungsi indikator biner.
+
+$$\text{Aff}_{\text{agent}} = 0{,}6 \cdot \mathbb{I}(\text{pencipta}_{\text{seed}} = \text{pencipta}_{\text{cand}}) + 0{,}4 \cdot \mathbb{I}(\text{pengolah}_{\text{seed}} = \text{pengolah}_{\text{cand}})$$
+
+di mana $\mathbb{I}(\cdot)$ adalah fungsi indikator biner bernilai $1$ jika entitas cocok dan $0$ jika tidak cocok.
 
 2. **Afinitas Fungsional ($\text{Aff}_{\text{act}}$):**
-   $$\text{Aff}_{\text{act}} = \begin{cases} 1{,}0, & \text{jika } \text{kode}_{\text{seed}} = \text{kode}_{\text{cand}} \\ 0{,}5, & \text{jika } \text{rumpun}(\text{kode}_{\text{seed}}) = \text{rumpun}(\text{kode}_{\text{cand}}) \\ 0{,}0, & \text{lainnya} \end{cases}$$
+
+$$\text{Aff}_{\text{act}} = \begin{cases} 1{,}0, & \text{jika } \text{kode}_{\text{seed}} = \text{kode}_{\text{cand}} \\ 0{,}5, & \text{jika } \text{rumpun}(\text{kode}_{\text{seed}}) = \text{rumpun}(\text{kode}_{\text{cand}}) \\ 0{,}0, & \text{lainnya} \end{cases}$$
+
+di mana $\text{rumpun}(\cdot)$ mengambil segmen utama kode klasifikasi sebelum tanda titik pertama.
 
 3. **Afinitas Temporal ($\text{Aff}_{\text{temp}}$):**
-   $$\text{Aff}_{\text{temp}} = \exp\left(-\frac{|\Delta \text{tanggal}|}{\tau}\right)$$
-   di mana $\Delta \text{tanggal}$ adalah selisih hari penciptaan dan $\tau = 365\text{ hari}$ adalah konstanta peluruhan temporal.
+
+$$\text{Aff}_{\text{temp}} = \exp\left(-\frac{|\Delta \text{tanggal}|}{\tau}\right)$$
+
+di mana $\Delta \text{tanggal}$ adalah selisih hari penciptaan dan $\tau = 365\text{ hari}$ adalah konstanta peluruhan temporal.
 
 ### Bagian 4.3 Serialisasi Semantik JSON-LD RiC-O
 Sistem menghasilkan representasi graf terstandar menggunakan format JSON-LD:
