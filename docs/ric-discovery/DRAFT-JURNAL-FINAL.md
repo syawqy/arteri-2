@@ -204,3 +204,146 @@ Saran untuk penelitian lanjutan mencakup: (i) penerapan evaluasi kualitatif berb
 * MacNeil, H. (2000). *Trusting records: Legal, historical and diplomatic perspectives*. Springer Dordrecht. https://doi.org/10.1007/978-94-015-9375-5
 * Peffers, K., Tuunanen, T., Rothenberger, M. A., & Chatterjee, S. (2007). A design science research methodology for information systems research. *Journal of Management Information Systems*, 24(3), 45–77. https://doi.org/10.2753/mis0742-1222240302
 * Pitti, D., Stockting, B., & Clavaud, F. (2018). An introduction to “Records in Contexts”: an archival description draft standard. *Comma*, 2016(1-2), 173–188. https://doi.org/10.3828/comma.2016.18
+
+---
+
+## Lampiran A. Artefak Kode Implementasi Utama (Reproduksibilitas)
+
+### A.1 Layanan Komputasi Afinitas Kontekstual — `RicContextualDiscoveryService.php`
+
+```php
+// app/Services/RicContextualDiscoveryService.php
+namespace App\Services;
+
+class RicContextualDiscoveryService
+{
+    protected float $weightAgent = 0.35;
+    protected float $weightActivity = 0.45;
+    protected float $weightTemporal = 0.20;
+    protected float $temporalDecayDays = 365.0;
+
+    public function computeAffinity(array $seed, array $candidate): array
+    {
+        $seedDate = !empty($seed['tanggal']) ? strtotime((string)$seed['tanggal']) : 0;
+        $candDate = !empty($candidate['tanggal']) ? strtotime((string)$candidate['tanggal']) : 0;
+        $diffDays = ($seedDate > 0 && $candDate > 0) ? abs($seedDate - $candDate) / 86400 : 0;
+
+        // 1. Agent Affinity (Pencipta: 0.6, Pengolah: 0.4)
+        $agentScore = 0.0;
+        if (!empty($seed['pencipta']) && $candidate['pencipta'] === $seed['pencipta']) $agentScore += 0.6;
+        if (!empty($seed['unit_pengolah']) && $candidate['unit_pengolah'] === $seed['unit_pengolah']) $agentScore += 0.4;
+
+        // 2. Activity Affinity (Kode Eksak: 1.0, Satu Rumpun: 0.5)
+        $activityScore = 0.0;
+        $seedKode = (string)($seed['kode'] ?? '');
+        $candKode = (string)($candidate['kode'] ?? '');
+        if ($seedKode !== '' && $candKode !== '') {
+            if ($seedKode === $candKode) {
+                $activityScore = 1.0;
+            } else {
+                $sPref = explode('.', $seedKode)[0];
+                $cPref = explode('.', $candKode)[0];
+                if ($sPref !== '' && $sPref === $cPref) $activityScore = 0.5;
+            }
+        }
+
+        // 3. Temporal Affinity (Exponential Decay)
+        $temporalScore = ($seedDate > 0 && $candDate > 0) ? exp(-1.0 * ($diffDays / $this->temporalDecayDays)) : 0.5;
+
+        // Contextual Affinity Score (CAS)
+        $totalCas = ($this->weightAgent * $agentScore) + ($this->weightActivity * $activityScore) + ($this->weightTemporal * $temporalScore);
+
+        return [
+            'cas_score' => round($totalCas, 4),
+            'agent_affinity' => round($agentScore, 4),
+            'activity_affinity' => round($activityScore, 4),
+            'temporal_affinity' => round($temporalScore, 4),
+        ];
+    }
+}
+```
+
+### A.2 Pengendali Endpoint REST API JSON-LD — `ArsipController.php`
+
+```php
+// app/Controllers/Api/ArsipController.php
+public function context(int $id): ResponseInterface
+{
+    if ($error = $this->validateApiKey()) {
+        return $error;
+    }
+
+    $limit = min((int) ($this->request->getGet('limit') ?? 10), 50);
+    $ricService = new \App\Services\RicContextualDiscoveryService();
+    $result = $ricService->findRelatedRecords($id, $limit);
+
+    if (empty($result['seed'])) {
+        return $this->errorResponse('Archive not found', self::HTTP_NOT_FOUND);
+    }
+
+    $jsonLd = $ricService->generateJsonLdGraph($result['seed'], $result['related'], base_url());
+
+    return $this->successResponse([
+        'seed' => $result['seed'],
+        'related' => $result['related'],
+        'ric_jsonld' => $jsonLd,
+        'stats' => $result['stats'],
+    ], 'Contextual records retrieved successfully');
+}
+```
+
+---
+
+## Lampiran B. Contoh Tampilan Implementasi pada Antarmuka Aplikasi Arteri-2
+
+### B.1 Panel Jejaring Berkas Terkait RiC pada Halaman Detail Arsip (`home/detail.php`)
+
+Ketika pengguna memeriksa detail arsip jangkar (*Seed Record*), misalnya arsip bernomor `TI/2025/001` (*Surat Keputusan Penetapan PPK Pengadaan Server TI 2025*), sistem merender panel interaktif di bagian bawah detail rekaman:
+
+```
++----------------------------------------------------------------------------------------------------+
+| [i] Jejaring Berkas Terkait (ICA Records in Contexts / RiC-CM)                                     |
+|     Ditemukan secara kontekstual berdasarkan afinitas Unit Pencipta/Pengolah (Agent),              |
+|     Urusan/Klasifikasi (Activity), dan Kedekatan Kurun Waktu (Temporal Proximity).                 |
++----------------------------------------------------------------------------------------------------+
+| No. Arsip   | Uraian Informasi                     | Klasifikasi & Unit   | Tanggal     | CAS (%)   |
+|-------------|--------------------------------------|----------------------|-------------|-----------|
+| TI/2025/002 | Kerangka Acuan Kerja (KAK) Pengadaan | [TI.01.01]           | 15-Jan-2025 | [===] 99% |
+|             | Server Komputasi                     | Pusdatin             |             |           |
+| TI/2025/003 | Harga Perkiraan Sendiri (HPS)        | [TI.01.01]           | 20-Jan-2025 | [===] 99% |
+|             | Perangkat Jaringan                   | Pusdatin             |             |           |
+| TI/2025/004 | Berita Acara Evaluasi Penawaran      | [TI.01.01]           | 05-Feb-2025 | [===] 98% |
+|             | Lelang Server                        | Pusdatin             |             |           |
+| TI/2025/005 | Surat Perjanjian Kontrak Pengadaan   | [TI.01.01]           | 20-Feb-2025 | [===] 97% |
+|             | Server Data Center                   | Pusdatin             |             |           |
+| TI/2025/006 | Berita Acara Serah Terima (BAST)     | [TI.01.01]           | 10-Apr-2025 | [===] 93% |
+|             | Hasil Pekerjaan Server TI            | Pusdatin             |             |           |
+| TI/2025/007 | Kuitansi Pembayaran Termin 100%      | [TI.01.01]           | 25-Apr-2025 | [===] 91% |
+|             | Pengadaan Server                     | Pusdatin             |             |           |
++----------------------------------------------------------------------------------------------------+
+```
+
+### B.2 Ilustrasi Rekonstruksi Jejaring Kontekstual Multi-Entitas (*Graph Traversal*)
+
+```
+                         +-----------------------------------+
+                         |       [Activity: TI.01.01]        |
+                         |   Pengadaan Infrastruktur TI      |
+                         +-----------------+-----------------+
+                                           ^
+                     ric:hasActivity       |       ric:hasActivity
+               +---------------------------+---------------------------+
+               |                                                       |
+               v                                                       v
++-----------------------------+     ric:isContextuallyRelatedTo     +-----------------------------+
+|    [Record: TI/2025/001]    |<===================================>|    [Record: TI/2025/002]    |
+|   SK Penetapan Tim PPK      |             (CAS: 0.9984)           |  Kerangka Acuan Kerja (KAK) |
++--------------+--------------+                                     +--------------+--------------+
+               |                                                                   |
+               | ric:hasCreator                                     ric:hasCreator |
+               v                                                                   v
++-------------------------------------------------------------------------------------------------+
+|                                    [Agent: CorporateBody]                                       |
+|                                  Pusat Data dan Informasi                                       |
++-------------------------------------------------------------------------------------------------+
+```
