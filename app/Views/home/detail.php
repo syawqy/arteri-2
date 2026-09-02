@@ -99,5 +99,78 @@
 </div>
 
 </div><!-- /2nd column -->
-</div><!-- /.row -->
+</div><!-- /row -->
+
+<!-- Contextual Discovery / RiC Network Panel -->
+<div class="row" style="margin-top: 30px;">
+  <div class="col-md-12">
+    <div class="panel panel-info">
+      <div class="panel-heading">
+        <h3 class="panel-title">
+          <i class="glyphicon glyphicon-link"></i> <strong>Jejaring Berkas Terkait (ICA Records in Contexts / RiC-CM)</strong>
+        </h3>
+      </div>
+      <div class="panel-body">
+        <p class="text-muted" style="margin-bottom: 15px;">
+          <small>Ditemukan secara kontekstual berdasarkan afinitas Unit Pencipta/Pengolah (<em>Agent</em>), Urusan/Klasifikasi (<em>Activity</em>), dan Kedekatan Kurun Waktu (<em>Temporal Proximity</em>).</small>
+        </p>
+
+        <?php if (!empty($related_ric)): ?>
+          <div class="table-responsive">
+            <table class="table table-hover table-bordered table-striped">
+              <thead>
+                <tr class="active">
+                  <th style="width: 15%;">No. Arsip</th>
+                  <th>Uraian Informasi</th>
+                  <th style="width: 15%;">Klasifikasi & Pencipta</th>
+                  <th style="width: 12%;">Tanggal</th>
+                  <th style="width: 18%;">Skor Afinitas (CAS)</th>
+                  <th style="width: 10%;">Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                <?php foreach ($related_ric as $rel): ?>
+                  <tr>
+                    <td><strong><?= esc($rel['noarsip']) ?></strong></td>
+                    <td><?= esc($rel['uraian']) ?></td>
+                    <td>
+                      <span class="label label-primary"><?= esc($rel['kode']) ?></span><br/>
+                      <small><?= esc($rel['pencipta']) ?></small>
+                    </td>
+                    <td><?= !empty($rel['tanggal']) ? date_format(date_create($rel['tanggal']), 'd-M-Y') : '-' ?></td>
+                    <td>
+                      <div class="progress" style="margin-bottom: 4px; height: 16px;">
+                        <div class="progress-bar progress-bar-success progress-bar-striped" role="progressbar" style="width: <?= round($rel['cas_score'] * 100) ?>%;">
+                          <?= round($rel['cas_score'] * 100) ?>%
+                        </div>
+                      </div>
+                      <small class="text-muted">
+                        Agent: <?= $rel['agent_affinity'] * 100 ?>% | Act: <?= $rel['activity_affinity'] * 100 ?>%
+                      </small>
+                    </td>
+                    <td>
+                      <a href="<?= site_url('/arsip/detail/' . $rel['id']) ?>" class="btn btn-xs btn-info">
+                        <i class="glyphicon glyphicon-eye-open"></i> Buka Berkas
+                      </a>
+                    </td>
+                  </tr>
+                <?php endforeach; ?>
+              </tbody>
+            </table>
+          </div>
+        <?php else: ?>
+          <div class="alert alert-warning" style="margin-bottom: 0;">
+            <i class="glyphicon glyphicon-info-sign"></i> Belum ditemukan jejaring berkas terkait untuk arsip ini.
+          </div>
+        <?php endif; ?>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+<div class="col-md-12">
+<a href="<?= site_url('/home') ?>" class="btn btn-default"><i class="glyphicon glyphicon-arrow-left"></i> Kembali ke Pencarian</a>
+</div>
+</div>
 <?= $this->endSection() ?>
