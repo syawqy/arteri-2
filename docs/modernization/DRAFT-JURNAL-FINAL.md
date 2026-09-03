@@ -8,16 +8,16 @@
 
 ## Abstrak
 
-Sistem informasi kearsipan instansi pemerintah yang dikembangkan pada era awal web umumnya bertumpu pada arsitektur monolitik PHP *legacy* (seperti CodeIgniter 3 atau PHP prosedural). Seiring berjalannya waktu, sistem warisan (*legacy systems*) tersebut mengalami degradasi kualitas perangkat lunak (*software aging*), tingginya akumulasi *technical debt*, kerentanan keamanan (seperti injeksi SQL, ketiadaan perlindungan CSRF, dan penyimpanan kata sandi tidak aman), serta inkompatibilitas terhadap runtime modern PHP 8.x. Artikel ini menyajikan studi kasus rekayasa ulang perangkat lunak (*software re-engineering*) dan modernisasi sistem manajemen arsip digital open-source dari Arteri-1 (CodeIgniter 3) menuju Arteri-2 (CodeIgniter 4) menggunakan metodologi *Design Science Research* (DSR) yang diintegrasikan dengan taksonomi re-engineering Chikofsky dan Cross (1990).
+Sistem informasi kearsipan yang dikembangkan pada era awal web umumnya bertumpu pada arsitektur monolitik PHP *legacy* (seperti CodeIgniter 3 atau PHP prosedural). Seiring berjalannya waktu, sistem warisan (*legacy systems*) tersebut mengalami degradasi kualitas perangkat lunak (*software aging*), tingginya akumulasi *technical debt*, kerentanan keamanan (seperti injeksi SQL, ketiadaan perlindungan CSRF, dan penyimpanan kata sandi tidak aman), serta inkompatibilitas terhadap runtime modern PHP 8.x. Artikel ini menyajikan studi kasus rekayasa ulang perangkat lunak (*software re-engineering*) dan modernisasi sistem manajemen arsip digital open-source dari Arteri-1 (CodeIgniter 3) menuju Arteri-2 (CodeIgniter 4) menggunakan metodologi *Design Science Research* (DSR) yang diintegrasikan dengan taksonomi re-engineering Chikofsky dan Cross (1990).
 
-Proses rekayasa ulang mencakup tiga tahapan inti: (i) *reverse engineering* dan audit kerentanan sistem warisan, (ii) *restructuring* arsitektur menuju model MVC terstruktur dengan autoloading PSR-4 dan *strict-typing* PHP 8.4, serta (iii) *forward engineering* melalui penambahan lapisan keamanan modern (mitigasi OWASP Top 10, autentikasi berbasis Bcrypt, *role-based access control*, dan pencatatan jejak audit komprehensif) serta penyediaan RESTful API v1 terstandar OpenAPI 3.0. Evaluasi kualitas perangkat lunak mengacu pada standar ISO/IEC 25010 menunjukkan peningkatan signifikan pada karakteristik *Maintainability*, *Security*, dan *Compatibility*. Pengujian regresi otomatis (36 berkas uji PHPUnit dengan status 100% *passing*) dan audit keamanan membuktikan bahwa Arteri-2 berhasil mentransformasikan aplikasi kearsipan warisan menjadi platform modern yang tangguh, aman, dan siap terinteroperabilitas dengan ekosistem Sistem Pemerintahan Berbasis Elektronik (SPBE).
+Proses rekayasa ulang mencakup tiga tahapan inti: (i) *reverse engineering* dan audit kerentanan sistem warisan, (ii) *restructuring* arsitektur menuju model MVC terstruktur dengan autoloading PSR-4 dan *strict-typing* PHP 8.4, serta (iii) *forward engineering* melalui penambahan lapisan keamanan modern (mitigasi OWASP Top 10, autentikasi berbasis Bcrypt, *role-based access control*, dan pencatatan jejak audit komprehensif) serta penyediaan RESTful API v1 terstandar OpenAPI 3.0. Evaluasi kualitas perangkat lunak mengacu pada standar ISO/IEC 25010 menunjukkan peningkatan signifikan pada karakteristik *Maintainability*, *Security*, dan *Compatibility*. Pengujian regresi otomatis (36 berkas uji PHPUnit dengan status 100% *passing*) dan audit keamanan membuktikan bahwa Arteri-2 berhasil mentransformasikan aplikasi kearsipan warisan menjadi platform modern yang tangguh, aman, dan siap berinteroperabilitas dengan ekosistem digital modern.
 
 ---
 
 ## Bagian 1. Pendahuluan
 
 ### Bagian 1.1 Latar Belakang
-Pengelolaan arsip dinamis dan inaktif di lingkungan sektor publik menuntut keandalan sistem informasi kearsipan yang mampu menjamin integritas, keotentikan, kerahasiaan, dan keteraksesan data dalam jangka panjang. Pada tahun 2017, aplikasi sistem informasi kearsipan berbasis web sumber terbuka **Arteri** generasi pertama (Arteri-1) dirilis (`https://github.com/dicarve/arteri`). Arteri-1 dirancang sebagai perangkat lunak pencatatan, penataan, dan temu kembali berkas arsip yang dibangun menggunakan kerangka kerja CodeIgniter 3 dengan lingkungan runtime PHP 5.6 hingga PHP 7.x.
+Pengelolaan arsip dinamis dan inaktif menuntut keandalan sistem informasi kearsipan yang mampu menjamin integritas, keotentikan, kerahasiaan, dan keteraksesan data dalam jangka panjang. Pada tahun 2017, aplikasi sistem informasi kearsipan berbasis web sumber terbuka **Arteri** generasi pertama (Arteri-1) dirilis (`https://github.com/dicarve/arteri`). Arteri-1 dirancang sebagai perangkat lunak pencatatan, penataan, dan temu kembali berkas arsip yang dibangun menggunakan kerangka kerja CodeIgniter 3 dengan lingkungan runtime PHP 5.6 hingga PHP 7.x.
 
 Kendati Arteri-1 berhasil memfasilitasi kebutuhan operasional dasar kearsipan dan sirkulasi peminjaman pada masa awal perilisannya, sistem tersebut memiliki berbagai kekurangan mendasar yang menjadikannya tidak lagi memadai untuk lanskap operasional dan keamanan saat ini. Seiring berjalannya waktu, akumulasi kekurangan teknis (*technical debt*) dan kerentanan keamanan (*security vulnerabilities*) pada Arteri-1 menjadi faktor pendorong utama dilakukannya rekayasa ulang menuju **Arteri-2**:
 1. **Kerentanan Keamanan Kritis:** Implementasi pengamanan pada Arteri-1 belum memenuhi standar keamanan web modern. Hal ini mencakup penggunaan algoritma *hashing* kata sandi usang (`md5`/`sha1` tanpa mekanisme *salt* yang kuat), proteksi *Cross-Site Request Forgery* (CSRF) yang tidak aktif secara *default*, penanganan kueri basis data parsial yang belum sepenuhnya menerapkan *parameterized prepared statements* (meningkatkan risiko *SQL Injection*), serta keterbatasan kontrol akses langsung terhadap berkas arsip digital.
@@ -59,36 +59,17 @@ Standar ISO/IEC 25010 (SQuaRE) menyediakan model evaluasi kualitas produk perang
 
 ## Bagian 3. Metodologi Penelitian
 
-Penelitian ini mengadopsi metode **Design Science Research (DSR)** (Peffers et al., 2007) yang dipadukan dengan siklus *Re-engineering* Chikofsky dan Cross (1990) dalam empat tahapan:
+Penelitian ini mengadopsi metode **Design Science Research (DSR)** (Peffers et al., 2007) yang dipadukan dengan siklus *Re-engineering* Chikofsky dan Cross (1990) dalam empat tahapan operasional:
 
-```
-+---------------------------------------------------------------------------------+
-| 1. Identifikasi Masalah & Audit Sistem Warisan (Reverse Engineering)           |
-|    - Audit kode Arteri-1 (CI3): analisis dependensi EOL & celah keamanan        |
-|    - Pemetaan model data relasional (data_arsip, master data, sirkulasi)       |
-+----------------------------------------+----------------------------------------+
-                                         |
-                                         v
-+---------------------------------------------------------------------------------+
-| 2. Perancangan Arsitektur Target & Spesifikasi Solusi (Restructuring)          |
-|    - Migrasi ke CodeIgniter 4, PSR-4 namespaces, strict typing PHP 8.4          |
-|    - Perancangan lapisan keamanan (Auth Filter, CSRF, Parameterized PDO)       |
-+----------------------------------------+----------------------------------------+
-                                         |
-                                         v
-+---------------------------------------------------------------------------------+
-| 3. Rekayasa Maju & Implementasi Fitur Baru (Forward Engineering)               |
-|    - Penambahan modul Audit Trail (SystemLog), Soft-Deletes, dan Trash Recovery |
-|    - Pembangunan RESTful API v1 dengan OpenAPI 3.0 & API Key SHA-256           |
-+----------------------------------------+----------------------------------------+
-                                         |
-                                         v
-+---------------------------------------------------------------------------------+
-| 4. Demonstrasi & Evaluasi Kualitas (ISO/IEC 25010 & OWASP Top 10)              |
-|    - Pengujian unit & integrasi otomatis (PHPUnit Test Suite)                   |
-|    - Verifikasi kepatuhan OWASP Top 10 dan uji kompatibilitas basis data        |
-+---------------------------------------------------------------------------------+
-```
+![Gambar 1. Kerangka Metodologi Rekayasa Ulang Arteri (DSR + Re-engineering Lifecycle)](images/dsr_methodology_flow.png)
+
+*Gambar 1. Kerangka Metodologi Rekayasa Ulang Arteri (DSR + Re-engineering Lifecycle)*
+
+Empat tahapan terstruktur tersebut mencakup:
+1. **Identifikasi Masalah & Audit Sistem Warisan (*Reverse Engineering*):** Melakukan audit menyeluruh terhadap kode sumber repositori Arteri-1 (CodeIgniter 3.1.x), mengidentifikasi kerentanan keamanan warisan (injeksi SQL, hashing kata sandi MD5/SHA1, ketiadaan proteksi CSRF), merekonstruksi model relasional basis data (`data_arsip`, `master_kode`, `sirkulasi`), serta memetakan *technical debt* dan dependensi PHP EOL.
+2. **Perancangan Arsitektur Target & Spesifikasi Solusi (*Restructuring*):** Merancang ulang struktur direktori aplikasi dengan memisahkan *document root* publik (`public/index.php`) dari logika inti aplikasi (`app/`), memigrasikan arsitektur ke CodeIgniter 4 berbasis autoloading PSR-4, menegakkan deklarasi tipe data ketat (*strict typing*) pada PHP 8.4, dan menyusun skrip migrasi basis data deklaratif yang kompatibel secara agnostik dengan MySQL maupun SQLite.
+3. **Rekayasa Maju & Implementasi Fitur Baru (*Forward Engineering*):** Membangun mekanisme mitigasi OWASP Top 10 (enkripsi Bcrypt, *Auth Filter*, *Secure File Serving*), modul pencatatan jejak audit (*SystemLog*), modul pemulihan data terhapus (*Soft Deletes / Trash*), serta merancang dan mengimplementasikan antarmuka RESTful API v1 terstandar OpenAPI 3.0 dengan pengamanan *API Key* berbasis SHA-256 dan pembatasan laju kueri (*rate limiting*).
+4. **Demonstrasi & Evaluasi Kualitas (*Evaluation*):** Mengeksekusi rangkaian pengujian regresi otomatis (*test suite*) berbasis PHPUnit 11, mengevaluasi karakteristik kualitas sistem mengacu pada standar ISO/IEC 25010 (*Maintainability*, *Security*, *Compatibility*, *Functional Suitability*, dan *Interoperability*), serta memverifikasi kepatuhan pengerasan keamanan terhadap matriks risiko OWASP Top 10.
 
 ---
 

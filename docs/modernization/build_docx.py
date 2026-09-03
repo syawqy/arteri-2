@@ -1,3 +1,4 @@
+import os
 import docx
 from docx.shared import Inches, Pt, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH
@@ -210,11 +211,30 @@ def create_modernization_journal_docx(output_path):
 
     # Bagian 3
     add_h1("Bagian 3. Metodologi Penelitian")
-    add_p("Penelitian ini mengadopsi metode Design Science Research (DSR) (Peffers et al., 2007) yang dipadukan dengan siklus Re-engineering Chikofsky dan Cross (1990) dalam empat tahapan:\n"
-          "1. Identifikasi Masalah & Audit Sistem Warisan (Reverse Engineering)\n"
-          "2. Perancangan Arsitektur Target & Spesifikasi Solusi (Restructuring)\n"
-          "3. Rekayasa Maju & Implementasi Fitur Baru (Forward Engineering)\n"
-          "4. Demonstrasi & Evaluasi Kualitas (ISO/IEC 25010 & OWASP Top 10)")
+    add_p("Penelitian ini mengadopsi metode Design Science Research (DSR) (Peffers et al., 2007) yang dipadukan dengan siklus Re-engineering Chikofsky dan Cross (1990) dalam empat tahapan operasional:")
+    
+    img_path = "/home/ubuntu/arteri-2/docs/modernization/images/dsr_methodology_flow.png"
+    if os.path.exists(img_path):
+        p_img = doc.add_paragraph()
+        p_img.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p_img.paragraph_format.space_before = Pt(8)
+        p_img.paragraph_format.space_after = Pt(4)
+        run_img = p_img.add_run()
+        run_img.add_picture(img_path, width=Inches(6.2))
+        
+        p_cap = doc.add_paragraph()
+        p_cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p_cap.paragraph_format.space_after = Pt(10)
+        run_cap = p_cap.add_run("Gambar 1. Kerangka Metodologi Rekayasa Ulang Arteri (DSR + Re-engineering Lifecycle)")
+        run_cap.font.italic = True
+        run_cap.font.size = Pt(9.5)
+        run_cap.font.name = 'Times New Roman'
+        
+    add_p("Empat tahapan terstruktur tersebut mencakup:\\n"
+          "1. Identifikasi Masalah & Audit Sistem Warisan (Reverse Engineering): Melakukan audit menyeluruh terhadap kode sumber repositori Arteri-1 (CodeIgniter 3.1.x), mengidentifikasi kerentanan keamanan warisan (injeksi SQL, hashing kata sandi MD5/SHA1, ketiadaan proteksi CSRF), merekonstruksi model relasional basis data (data_arsip, master_kode, sirkulasi), serta memetakan technical debt dan dependensi PHP EOL.\\n"
+          "2. Perancangan Arsitektur Target & Spesifikasi Solusi (Restructuring): Merancang ulang struktur direktori aplikasi dengan memisahkan document root publik (public/index.php) dari logika inti aplikasi (app/), memigrasikan arsitektur ke CodeIgniter 4 berbasis autoloading PSR-4, menegakkan deklarasi tipe data ketat (strict typing) pada PHP 8.4, dan menyusun skrip migrasi basis data deklaratif yang kompatibel secara agnostik dengan MySQL maupun SQLite.\\n"
+          "3. Rekayasa Maju & Implementasi Fitur Baru (Forward Engineering): Membangun mekanisme mitigasi OWASP Top 10 (enkripsi Bcrypt, Auth Filter, Secure File Serving), modul pencatatan jejak audit (SystemLog), modul pemulihan data terhapus (Soft Deletes / Trash), serta merancang dan mengimplementasikan antarmuka RESTful API v1 terstandar OpenAPI 3.0 dengan pengamanan API Key berbasis SHA-256 dan pembatasan laju kueri (rate limiting).\\n"
+          "4. Demonstrasi & Evaluasi Kualitas (Evaluation): Mengeksekusi rangkaian pengujian regresi otomatis (test suite) berbasis PHPUnit 11, mengevaluasi karakteristik kualitas sistem mengacu pada standar ISO/IEC 25010 (Maintainability, Security, Compatibility, Functional Suitability, dan Interoperability), serta memverifikasi kepatuhan pengerasan keamanan terhadap matriks risiko OWASP Top 10.")
 
     # Bagian 4
     add_h1("Bagian 4. Proses Rekayasa Ulang dan Arsitektur Arteri-2")
