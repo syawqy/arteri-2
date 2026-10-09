@@ -133,6 +133,11 @@ class Home extends BaseController
 
         $this->logAction('VIEW_DETAIL', 'data_arsip', (int) $id);
 
+        // Rekonstruksi RiC Contextual Network
+        $ricService = new \App\Services\RicContextualDiscoveryService();
+        $ricResult = $ricService->findRelatedRecords((int)$id, 6);
+        $data['related_ric'] = $ricResult['related'] ?? [];
+
         return view('home/detail', $data);
     }
 

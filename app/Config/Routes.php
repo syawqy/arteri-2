@@ -145,6 +145,7 @@ $routes->group('api/v1', function ($routes) {
     // Arsip
     $routes->get('arsip', 'Api\ArsipController::index');
     $routes->get('arsip/(:num)', 'Api\ArsipController::show/$1');
+    $routes->get('arsip/(:num)/context', 'Api\ArsipController::context/$1');
     $routes->post('arsip', 'Api\ArsipController::create');
     $routes->put('arsip/(:num)', 'Api\ArsipController::update/$1');
     $routes->delete('arsip/(:num)', 'Api\ArsipController::delete/$1');

@@ -211,6 +211,45 @@ class ArsipController extends BaseApiController
     }
 
     /**
+     * GET /api/arsip/{id}/context
+     * Retrieve contextually related records and RiC-O graph based on ICA Records in Contexts.
+     *
+     * Query params:
+     *   - limit: int (optional, default 10)
+     */
+    public function context(int $id): ResponseInterface
+    {
+        if ($error = $this->validateApiKey()) {
+            return $error;
+        }
+
+        $limit = min((int) ($this->request->getGet('limit') ?? 10), 50);
+        $ricService = new \App\Services\RicContextualDiscoveryService();
+
+        $result = $ricService->findRelatedRecords($id, $limit);
+
+        if (empty($result['seed'])) {
+            return $this->errorResponse(
+                'Archive not found',
+                self::HTTP_NOT_FOUND
+            );
+        }
+
+        $jsonLd = $ricService->generateJsonLdGraph(
+            $result['seed'],
+            $result['related'],
+            base_url()
+        );
+
+        return $this->successResponse([
+            'seed' => $result['seed'],
+            'related' => $result['related'],
+            'ric_jsonld' => $jsonLd,
+            'stats' => $result['stats'],
+        ], 'Contextual records retrieved successfully');
+    }
+
+    /**
      * DELETE /api/arsip/{id}
      * Delete an archive record.
      */
