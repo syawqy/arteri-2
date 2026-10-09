@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <parameter name="description" value="Arteri MCP Chatbot with LLM integration"/>
+    <title>Arteri MCP Chatbot</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #0f1117;
+            --bg2: #161822;
+            --bg3: #1c1f2e;
+            --border: #2a2d3e;
+            --text: #e1e4ed;
+            --text2: #8b8fa3;
+            --accent: #6c63ff;
+            --accent2: #4ecdc4;
+            --success: #2ecc71;
+            --error: #e74c3c;
+            --warn: #f39c12;
+            --code-bg: #1a1d2b;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── Header ─────────────────────────────── */
+        .header {
+            background: var(--bg2);
+            border-bottom: 1px solid var(--border);
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+
+        .header h1 { font-size: 15px; font-weight: 600; color: var(--accent); }
+        .header h1 span { color: var(--text2); font-weight: 400; }
+
+        .config-toggle {
+            margin-left: auto;
+            padding: 5px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--bg3);
+            color: var(--text2);
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .config-toggle:hover { color: var(--text); border-color: var(--accent); }
+
+        .header-status {
+            display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text2);
+        }
+
+        .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--error); }
+        .dot.green { background: var(--success); }
+        .dot.yellow { background: var(--warn); animation: pulse 1s infinite; }
+
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+        /* ── Config Panel ───────────────────────── */
+        .config-panel {
+            background: var(--bg2);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 24px;
+            display: none;
+            flex-shrink: 0;
+        }
+
+        .config-panel.open { display: block; }
+
+        .config-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+        }
+
+        .config-field label {
+            display: block;
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text2);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .config-field input, .config-field select {
+            width: 100%;
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 7px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+        }
+
+        .config-field input:focus, .config-field select:focus {
+            outline: none; border-color: var(--accent);
+        }
+
+        .config-actions {
+            display: flex; gap: 8px; margin-top: 12px; justify-content: flex-end;
+        }
+
+        .btn {
+            padding: 6px 16px;
+            border-radius: 6px;
+            border: none;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .btn-primary { background: var(--accent); color: #fff; }
+        .btn-primary:hover { background: #5a52e0; }
+        .btn-success { background: var(--success); color: #fff; }
+        .btn-success:hover { background: #27ae60; }
+        .btn-secondary { background: var(--bg3); color: var(--text); border: 1px solid var(--border); }
+        .btn-secondary:hover { background: var(--border); }
+        .btn-danger { background: var(--error); color: #fff; }
+
+        /* ── Chat Area ──────────────────────────── */
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 24px;
+            scroll-behavior: smooth;
+        }
+
+        .message {
+            max-width: 820px;
+            margin: 0 auto 16px;
+            animation: fadeIn 0.2s ease;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+        .msg-role {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .msg-role.user { color: var(--accent); }
+        .msg-role.assistant { color: var(--accent2); }
+        .msg-role.system { color: var(--warn); }
+
+        .msg-content {
+            font-size: 14px;
+            line-height: 1.7;
+            color: var(--text);
+        }
+
+        .msg-content p { margin-bottom: 8px; }
+        .msg-content p:last-child { margin-bottom: 0; }
+        .msg-content strong { color: #fff; }
+        .msg-content em { color: var(--text2); }
+        .msg-content ul, .msg-content ol { margin: 8px 0; padding-left: 20px; }
+        .msg-content li { margin-bottom: 4px; }
+        .msg-content code {
+            background: var(--code-bg);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Cascadia Code', 'Fira Code', monospace;
+            font-size: 12px;
+            color: var(--accent2);
+        }
+        .msg-content pre {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 12px;
+            margin: 8px 0;
+            overflow-x: auto;
+            font-family: 'Cascadia Code', 'Fira Code', monospace;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        /* ── Tool Call Display ──────────────────── */
+        .tool-call {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin: 8px 0;
+            overflow: hidden;
+        }
+
+        .tool-call-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: var(--bg3);
+            border-bottom: 1px solid var(--border);
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .tool-call-header:hover { background: var(--border); }
+
+        .tool-badge {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        .badge-call { background: rgba(108,99,255,0.2); color: var(--accent); }
+        .badge-result { background: rgba(46,204,113,0.2); color: var(--success); }
+        .badge-error { background: rgba(231,76,60,0.2); color: var(--error); }
+        .badge-thinking { background: rgba(243,156,18,0.2); color: var(--warn); }
+
+        .tool-call-body {
+            padding: 10px 12px;
+            font-family: 'Cascadia Code', 'Fira Code', monospace;
+            font-size: 11px;
+            line-height: 1.5;
+            color: var(--text2);
+            max-height: 250px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+            display: none;
+        }
+
+        .tool-call-body.open { display: block; }
+
+        .tool-call-toggle {
+            margin-left: auto;
+            font-size: 10px;
+            color: var(--text2);
+        }
+
+        /* ── Input Area ─────────────────────────── */
+        .input-area {
+            background: var(--bg2);
+            border-top: 1px solid var(--border);
+            padding: 12px 24px;
+            flex-shrink: 0;
+        }
+
+        .input-wrapper {
+            max-width: 820px;
+            margin: 0 auto;
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+        }
+
+        .input-wrapper textarea {
+            flex: 1;
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            line-height: 1.5;
+            resize: none;
+            max-height: 150px;
+            min-height: 42px;
+        }
+
+        .input-wrapper textarea:focus { outline: none; border-color: var(--accent); }
+
+        .send-btn {
+            width: 42px;
+            height: 42px;
+            border-radius: 8px;
+            border: none;
+            background: var(--accent);
+            color: #fff;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: background 0.15s;
+        }
+
+        .send-btn:hover { background: #5a52e0; }
+        .send-btn:disabled { opacity: 0.4; cursor: default; }
+
+        .input-hint {
+            max-width: 820px;
+            margin: 4px auto 0;
+            font-size: 11px;
+            color: var(--text2);
+        }
+
+        /* ── Welcome ────────────────────────────── */
+        .welcome {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            text-align: center;
+            color: var(--text2);
+            padding: 40px;
+        }
+
+        .welcome-icon { font-size: 48px; margin-bottom: 16px; }
+        .welcome h2 { font-size: 20px; color: var(--text); margin-bottom: 8px; }
+        .welcome p { font-size: 13px; max-width: 500px; line-height: 1.6; margin-bottom: 4px; }
+
+        .welcome-examples {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            max-width: 600px;
+        }
+
+        .example-btn {
+            padding: 8px 14px;
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .example-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+        /* ── Scrollbar ──────────────────────────── */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>Arteri <span>MCP Chatbot</span></h1>
+    <div class="header-status">
+        <div class="dot" id="mcpDot"></div>
+        <span id="mcpStatus">MCP: not connected</span>
+    </div>
+    <div class="header-status" style="margin-left: 8px;">
+        <div class="dot" id="llmDot"></div>
+        <span id="llmStatus">LLM: not configured</span>
+    </div>
+    <button class="config-toggle" onclick="toggleConfig()">Settings</button>
+</div>
+
+<div class="config-panel" id="configPanel">
+    <div class="config-grid">
+        <div class="config-field">
+            <label>MCP Server URL</label>
+            <input type="text" id="cfgMcpUrl" value="http://127.0.0.1:8090/mcp">
+        </div>
+        <div class="config-field">
+            <label>LLM API Endpoint (OpenAI-compatible)</label>
+            <input type="text" id="cfgLlmUrl" value="https://api.openai.com/v1/chat/completions" placeholder="https://api.openai.com/v1/chat/completions">
+        </div>
+        <div class="config-field">
+            <label>API Key</label>
+            <input type="password" id="cfgApiKey" placeholder="sk-...">
+        </div>
+        <div class="config-field">
+            <label>Model</label>
+            <input type="text" id="cfgModel" value="gpt-4o" placeholder="gpt-4o, claude-3.5-sonnet, etc">
+        </div>
+        <div class="config-field">
+            <label>Max Tokens</label>
+            <input type="number" id="cfgMaxTokens" value="4096" min="256" max="32768">
+        </div>
+        <div class="config-field">
+            <label>Temperature</label>
+            <input type="number" id="cfgTemp" value="0.3" min="0" max="2" step="0.1">
+        </div>
+    </div>
+    <div class="config-actions">
+        <button class="btn btn-primary" onclick="connectMcp()">Connect MCP</button>
+        <button class="btn btn-secondary" onclick="testLlm()">Test LLM</button>
+        <button class="btn btn-secondary" onclick="saveConfig()">Save Config</button>
+    </div>
+</div>
+
+<div class="chat-container" id="chatContainer">
+    <div class="welcome">
+        <div class="welcome-icon">🏛️</div>
+        <h2>Arteri MCP Chatbot</h2>
+        <p>Chat dengan AI yang terhubung ke sistem pengelola arsip digital Arteri. AI dapat menggunakan 30 tools MCP untuk mengelola arsip, klasifikasi, pencarian, retensi, compliance, dan migrasi.</p>
+        <p style="font-size: 12px; color: var(--text2);">Configure Settings → Connect MCP → Start chatting</p>
+        <div class="welcome-examples">
+            <button class="example-btn" onclick="sendExample(this)">Cari arsip surat masuk tahun 2026</button>
+            <button class="example-btn" onclick="sendExample(this)">Tunjukkan arsip yang perlu diverifikasi</button>
+            <button class="example-btn" onclick="sendExample(this)">Buat laporan compliance bulan ini</button>
+            <button class="example-btn" onclick="sendExample(this)">Cek jadwal retensi untuk klasifikasi SM</button>
+            <button class="example-btn" onclick="sendExample(this)">Analisis folder C:\Documents\Arsip untuk migrasi</button>
+        </div>
+    </div>
+</div>
+
+<div class="input-area">
+    <div class="input-wrapper">
+        <textarea id="userInput" rows="1" placeholder="Ketik pesan..."
+                  onkeydown="handleKeydown(event)"
+                  oninput="autoResize(this)"></textarea>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()">▲</button>
+    </div>
+    <div class="input-hint">
+        Enter = kirim &middot; Shift+Enter = baris baru &middot; LLM akan otomatis gunakan MCP tools yang relevan
+    </div>
+</div>
+
+<script>
+// ── State ──────────────────────────────────────
+let mcpConnected = false;
+let mcpSessionId = null;
+let mcpTools = [];
+let mcpRpcId = 0;
+let chatHistory = [];     // [{role, content, toolCalls?, toolResults?}]
+let isGenerating = false;
+let abortController = null;
+
+// ── Config ─────────────────────────────────────
+function loadConfig() {
+    const saved = localStorage.getItem('arteri-mcp-chat-config');
+    if (saved) {
+        const c = JSON.parse(saved);
+        if (c.mcpUrl) document.getElementById('cfgMcpUrl').value = c.mcpUrl;
+        if (c.llmUrl) document.getElementById('cfgLlmUrl').value = c.llmUrl;
+        if (c.apiKey) document.getElementById('cfgApiKey').value = c.apiKey;
+        if (c.model) document.getElementById('cfgModel').value = c.model;
+        if (c.maxTokens) document.getElementById('cfgMaxTokens').value = c.maxTokens;
+        if (c.temp) document.getElementById('cfgTemp').value = c.temp;
+    }
+}
+
+function saveConfig() {
+    localStorage.setItem('arteri-mcp-chat-config', JSON.stringify({
+        mcpUrl: document.getElementById('cfgMcpUrl').value,
+        llmUrl: document.getElementById('cfgLlmUrl').value,
+        apiKey: document.getElementById('cfgApiKey').value,
+        model: document.getElementById('cfgModel').value,
+        maxTokens: document.getElementById('cfgMaxTokens').value,
+        temp: document.getElementById('cfgTemp').value,
+    }));
+    setLlmStatus('configured', `LLM: ${document.getElementById('cfgModel').value}`);
+}
+
+function toggleConfig() {
+    document.getElementById('configPanel').classList.toggle('open');
+}
+
+function getConfig() {
+    return {
+        mcpUrl: document.getElementById('cfgMcpUrl').value,
+        llmUrl: document.getElementById('cfgLlmUrl').value,
+        apiKey: document.getElementById('cfgApiKey').value,
+        model: document.getElementById('cfgModel').value,
+        maxTokens: parseInt(document.getElementById('cfgMaxTokens').value),
+        temp: parseFloat(document.getElementById('cfgTemp').value),
+    };
+}
+
+// ── MCP Connection ─────────────────────────────
+async function connectMcp() {
+    const url = getConfig().mcpUrl;
+    setMcpStatus('connecting', 'MCP: connecting...');
+
+    try {
+        // Initialize
+        const initResp = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json, text/event-stream' },
+            body: JSON.stringify({
+                jsonrpc: '2.0', id: ++mcpRpcId, method: 'initialize',
+                params: { protocolVersion: '2025-03-26', capabilities: {}, clientInfo: { name: 'Arteri Chatbot', version: '1.0.0' } }
+            })
+        });
+        mcpSessionId = initResp.headers.get('mcp-session-id');
+        const initData = await initResp.json();
+        if (!initData.result) throw new Error('Initialize failed');
+
+        // Initialized notification
+        await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json, text/event-stream', 'Mcp-Session-Id': mcpSessionId },
+            body: JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized', params: {} })
+        });
+
+        // Fetch tools
+        const toolsResp = await mcpRequest('tools/list', {});
+        mcpTools = toolsResp.result?.tools || [];
+
+        mcpConnected = true;
+        setMcpStatus('connected', `MCP: ${mcpTools.length} tools`);
+
+        // Check if LLM is configured
+        if (getConfig().apiKey) {
+            setLlmStatus('configured', `LLM: ${getConfig().model}`);
+        }
+
+    } catch (err) {
+        mcpConnected = false;
+        setMcpStatus('error', `MCP: ${err.message}`);
+    }
+}
+
+async function mcpRequest(method, params) {
+    const resp = await fetch(getConfig().mcpUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json, text/event-stream',
+            'Mcp-Session-Id': mcpSessionId
+        },
+        body: JSON.stringify({ jsonrpc: '2.0', id: ++mcpRpcId, method, params })
+    });
+    return await resp.json();
+}
+
+async function mcpToolCall(name, args) {
+    const startTime = performance.now();
+    try {
+        const result = await mcpRequest('tools/call', { name, arguments: args });
+        const elapsed = Math.round(performance.now() - startTime);
+
+        if (result.error) {
+            return { isError: true, content: [{ type: 'text', text: `Error: ${result.error.message}` }], elapsed };
+        }
+
+        const toolResult = result.result || {};
+        return {
+            isError: toolResult.isError || false,
+            content: toolResult.content || [],
+            elapsed
+        };
+    } catch (err) {
+        return { isError: true, content: [{ type: 'text', text: `MCP Error: ${err.message}` }], elapsed: Math.round(performance.now() - startTime) };
+    }
+}
+
+// ── LLM Test ───────────────────────────────────
+async function testLlm() {
+    saveConfig();
+    const cfg = getConfig();
+    try {
+        const resp = await fetch(cfg.llmUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${cfg.apiKey}`
+            },
+            body: JSON.stringify({
+                model: cfg.model,
+                messages: [{ role: 'user', content: 'Hello, respond with one word.' }],
+                max_tokens: 10
+            })
+        });
+        const data = await resp.json();
+        if (data.choices) {
+            setLlmStatus('connected', `LLM: ${cfg.model} ✓`);
+        } else {
+            setLlmStatus('error', `LLM: ${data.error?.message || 'Unknown error'}`);
+        }
+    } catch (err) {
+        setLlmStatus('error', `LLM: ${err.message}`);
+    }
+}
+
+// ── System Prompt ───────────────────────────────
+function getSystemPrompt() {
+    const now = new Date().toISOString().split('T')[0];
+    let toolsList = '';
+    for (const [group, toolNames] of Object.entries(AGENT_GROUPS)) {
+        const groupTools = mcpTools.filter(t => toolNames.includes(t.name));
+        if (groupTools.length === 0) continue;
+        toolsList += `\n### ${group}\n`;
+        for (const t of groupTools) {
+            toolsList += `- \`${t.name}\`: ${t.description || ''}\n`;
+        }
+    }
+    // Uncategorized
+    const allGrouped = Object.values(AGENT_GROUPS).flat();
+    const extra = mcpTools.filter(t => !allGrouped.includes(t.name));
+    if (extra.length > 0) {
+        toolsList += `\n### Lainnya\n`;
+        for (const t of extra) toolsList += `- \`${t.name}\`: ${t.description || ''}\n`;
+    }
+
+    return `You are Arteri AI Assistant — a helpful archive management AI for Arteri 2, an Indonesian digital archive management system.
+
+You have access to ${mcpTools.length} MCP tools for archive management. Use them proactively to help the user.
+
+## Available Tools (grouped by agent)
+
+${toolsList}
+
+## Guidelines
+
+- Always respond in the same language the user uses (Bahasa Indonesia or English).
+- Use MCP tools whenever relevant — don't just describe what tools exist, actually CALL them.
+- For search queries: use \`natural_language_search\` or \`list_accessible_archives\`.
+- For classification suggestions: use \`suggest_classification\`.
+- For compliance checks: use \`check_metadata_completeness\`, \`generate_compliance_report\`.
+- For retention: use \`get_retention_candidates\`, \`check_legal_hold\`.
+- For ingestion: use \`ingest_document\`, \`detect_duplicates\`, \`detect_scan_quality\`.
+- For migration: use \`analyze_source\`, \`preview_migration\`.
+- When calling tools, explain what you're doing and present results clearly.
+- If a tool returns an error (e.g., auth required, data not found), explain the issue to the user.
+- Be concise but thorough. Use tables for structured data.
+- Today's date: ${now}
+
+## Safety Rules
+
+- You CANNOT delete archives or destroy documents — only humans can approve disposition.
+- You CANNOT change retention schedules — only suggest them.
+- Always warn users about destructive actions before suggesting them.`;
+}
+
+// ── LLM API Call ───────────────────────────────
+async function callLlm(messages) {
+    const cfg = getConfig();
+
+    // Convert MCP tools to OpenAI function calling format
+    const tools = mcpTools.map(t => ({
+        type: 'function',
+        function: {
+            name: t.name,
+            description: t.description || '',
+            parameters: t.inputSchema || { type: 'object', properties: {} }
+        }
+    }));
+
+    abortController = new AbortController();
+
+    const resp = await fetch(cfg.llmUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${cfg.apiKey}`
+        },
+        body: JSON.stringify({
+            model: cfg.model,
+            messages: [
+                { role: 'system', content: getSystemPrompt() },
+                ...messages
+            ],
+            tools: tools.length > 0 ? tools : undefined,
+            max_tokens: cfg.maxTokens,
+            temperature: cfg.temp,
+        }),
+        signal: abortController.signal
+    });
+
+    if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err.error?.message || `HTTP ${resp.status}`);
+    }
+
+    return await resp.json();
+}
+
+// ── Main Chat Flow ─────────────────────────────
+async function sendMessage(text) {
+    text = text || document.getElementById('userInput').value.trim();
+    if (!text || isGenerating) return;
+    if (!mcpConnected) { addMessage('system', 'Please connect to MCP server first (Settings).'); return; }
+    if (!getConfig().apiKey) { addMessage('system', 'Please configure LLM settings first (Settings).'); return; }
+
+    document.getElementById('userInput').value = '';
+    autoResize(document.getElementById('userInput'));
+
+    addMessage('user', text);
+    chatHistory.push({ role: 'user', content: text });
+
+    setGenerating(true);
+    setLlmStatus('generating', 'LLM: generating...');
+
+    try {
+        let continueLoop = true;
+        let rounds = 0;
+
+        while (continueLoop && rounds < 10) {
+            rounds++;
+            const response = await callLlm(chatHistory);
+            const choice = response.choices?.[0];
+            if (!choice) throw new Error('No response from LLM');
+
+            const msg = choice.message;
+
+            // Handle tool calls
+            if (msg.tool_calls && msg.tool_calls.length > 0) {
+                // Add assistant message with tool_calls to history
+                chatHistory.push({
+                    role: 'assistant',
+                    content: msg.content || null,
+                    tool_calls: msg.tool_calls
+                });
+
+                // Show thinking indicator
+                const thinkEl = addToolCall(msg.tool_calls.map(tc => tc.function.name).join(', '), 'thinking', 'Thinking...');
+
+                // Execute each tool call
+                const toolResults = [];
+                for (const tc of msg.tool_calls) {
+                    let args;
+                    try { args = JSON.parse(tc.function.arguments); }
+                    catch { args = {}; }
+
+                    // Show tool call
+                    updateToolCall(thinkEl, tc.function.name, 'call', args);
+
+                    // Call MCP
+                    const result = await mcpToolCall(tc.function.name, args);
+                    const resultText = result.content.map(c => c.text || JSON.stringify(c)).join('\n');
+
+                    // Show result
+                    addToolCall(tc.function.name, result.isError ? 'error' : 'result', resultText);
+
+                    toolResults.push({
+                        tool_call_id: tc.id,
+                        role: 'tool',
+                        content: resultText
+                    });
+                }
+
+                // Add tool results to history
+                chatHistory.push(...toolResults);
+
+            } else {
+                // Final text response
+                if (msg.content) {
+                    addMessage('assistant', msg.content);
+                    chatHistory.push({ role: 'assistant', content: msg.content });
+                }
+                continueLoop = false;
+            }
+        }
+
+    } catch (err) {
+        if (err.name === 'AbortError') {
+            addMessage('system', 'Generation stopped.');
+        } else {
+            addMessage('system', `Error: ${err.message}`);
+        }
+    } finally {
+        setGenerating(false);
+        setLlmStatus('connected', `LLM: ${getConfig().model} ✓`);
+        abortController = null;
+    }
+}
+
+function setGenerating(state) {
+    isGenerating = state;
+    document.getElementById('sendBtn').disabled = state;
+    document.getElementById('sendBtn').innerHTML = state ? '⬛' : '▲';
+    document.getElementById('userInput').disabled = state;
+}
+
+// ── Agent Groups ───────────────────────────────
+const AGENT_GROUPS = {
+    'Agent 1 — Ingestion': ['ingest_document','extract_metadata','detect_duplicates','detect_scan_quality','suggest_metadata','group_related_documents','get_verification_queue'],
+    'Agent 2 — Classification': ['suggest_classification','match_classification_scheme','suggest_series','get_retention_schedule','explain_recommendation'],
+    'Agent 3 — Search': ['natural_language_search','get_search_results_with_sources','list_accessible_archives'],
+    'Agent 4 — Retention': ['get_retention_candidates','get_disposition_proposals','prepare_disposition_docs','check_legal_hold'],
+    'Agent 5 — Compliance': ['check_metadata_completeness','detect_unauthorized_changes','find_unclassified_archives','monitor_access_overreach','trace_access_history','generate_compliance_report'],
+    'Agent 6 — Migration': ['analyze_source','preview_migration','start_migration','get_migration_status','map_source_fields']
+};
+
+// ── UI Helpers ─────────────────────────────────
+function addMessage(role, text) {
+    const container = document.getElementById('chatContainer');
+    // Remove welcome if present
+    const welcome = container.querySelector('.welcome');
+    if (welcome) welcome.remove();
+
+    const div = document.createElement('div');
+    div.className = 'message';
+    div.innerHTML = `
+        <div class="msg-role ${role}">${role === 'user' ? 'You' : role === 'assistant' ? 'Arteri AI' : 'System'}</div>
+        <div class="msg-content">${renderMarkdown(text)}</div>
+    `;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+    return div;
+}
+
+function addToolCall(name, type, data) {
+    const container = document.getElementById('chatContainer');
+    const div = document.createElement('div');
+    div.className = 'message';
+
+    const badgeClass = type === 'call' ? 'badge-call' : type === 'error' ? 'badge-error' : type === 'thinking' ? 'badge-thinking' : 'badge-result';
+    const label = type === 'call' ? 'TOOL CALL' : type === 'error' ? 'ERROR' : type === 'thinking' ? 'THINKING' : 'RESULT';
+
+    div.innerHTML = `
+        <div class="tool-call">
+            <div class="tool-call-header" onclick="this.nextElementSibling.classList.toggle('open')">
+                <span class="tool-badge ${badgeClass}">${label}</span>
+                <strong>${name}</strong>
+                <span class="tool-call-toggle">▼</span>
+            </div>
+            <div class="tool-call-body ${type !== 'thinking' ? '' : 'open'}">${escapeHtml(typeof data === 'string' ? data : JSON.stringify(data, null, 2))}</div>
+        </div>
+    `;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+    return div;
+}
+
+function updateToolCall(el, name, type, data) {
+    if (!el) return;
+    const header = el.querySelector('.tool-call-header strong');
+    const badge = el.querySelector('.tool-badge');
+    const body = el.querySelector('.tool-call-body');
+    if (header) header.textContent = name;
+    if (badge) {
+        badge.className = `tool-badge ${type === 'call' ? 'badge-call' : 'badge-result'}`;
+        badge.textContent = type === 'call' ? 'CALLING' : 'RESULT';
+    }
+    if (body) {
+        body.className = 'tool-call-body open';
+        body.textContent = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+    }
+}
+
+function renderMarkdown(text) {
+    if (!text) return '';
+    return text
+        .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>')
+        .replace(/`([^`]+)`/g, '<code>$1</code>')
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.+?)\*/g, '<em>$1</em>')
+        .replace(/\n/g, '<br>');
+}
+
+function escapeHtml(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function setMcpStatus(state, text) {
+    const dot = document.getElementById('mcpDot');
+    const label = document.getElementById('mcpStatus');
+    dot.className = 'dot' + (state === 'connected' ? ' green' : state === 'connecting' ? ' yellow' : '');
+    label.textContent = text;
+}
+
+function setLlmStatus(state, text) {
+    const dot = document.getElementById('llmDot');
+    const label = document.getElementById('llmStatus');
+    dot.className = 'dot' + (state === 'connected' || state === 'configured' ? ' green' : state === 'generating' ? ' yellow' : '');
+    label.textContent = text;
+}
+
+function handleKeydown(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+    }
+}
+
+function autoResize(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 150) + 'px';
+}
+
+function sendExample(btn) {
+    document.getElementById('userInput').value = btn.textContent;
+    sendMessage(btn.textContent);
+}
+
+// ── Init ───────────────────────────────────────
+loadConfig();
+if (getConfig().apiKey) setLlmStatus('configured', `LLM: ${getConfig().model}`);
+
+// Auto-connect MCP on load
+connectMcp();
+</script>
+
+</body>
+</html>
