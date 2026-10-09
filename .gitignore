@@ -17,3 +17,6 @@ public/uploads/*.pdf
 public/uploads/*.docx
 public/uploads/*.doc
 tests/_support/_generated/
+.claude
+.commandcode
+.github

@@ -55,8 +55,15 @@ class Home extends BaseController
             'nobox'   => $this->request->getGet('nobox') ?? '',
         ];
 
-        $results = $arsipModel->search($keywords, $filters, $this->perPage, $offset);
-        $total   = $arsipModel->searchCount($keywords, $filters);
+        // Saracevic ranking toggle: ?rank=1 enables relevance-ranked search
+        $ranked = $this->request->getGet('rank') === '1';
+        if ($ranked) {
+            $results = $arsipModel->searchRanked($keywords, $filters, $this->perPage, $offset);
+            $total   = $arsipModel->searchRankedCount($keywords, $filters);
+        } else {
+            $results = $arsipModel->search($keywords, $filters, $this->perPage, $offset);
+            $total   = $arsipModel->searchCount($keywords, $filters);
+        }
 
         // Source data for view (matches CI3 shape)
         if ($keywords !== '') {
@@ -83,11 +90,27 @@ class Home extends BaseController
 
         $data['data']     = $results;
         $data['jml']      = $total;
+        $data['ranked']   = $ranked;
         $data['src']      = $src;
 
         $page = (int) floor($offset / $this->perPage) + 1;
+        // Preserve query string in pagination so ?rank=1 stays across pages
+        $query = [];
+        if ($keywords !== '') {
+            $query['katakunci'] = $keywords;
+        } else {
+            foreach ($filters as $k => $v) {
+                if ($v !== '' && $v !== 'all') {
+                    $query[$k] = $v;
+                }
+            }
+        }
+        if ($ranked) {
+            $query['rank'] = '1';
+        }
+        $qs = $query !== [] ? '?' . http_build_query($query) : '';
         $pager = service('pager');
-        $pager->setPath('search');
+        $pager->setPath('search' . $qs);
         $pager->makeLinks($page, $this->perPage, $total, 'bootstrap3');
         $data['pager'] = $pager;
         $data['pages'] = $pager->links('default', 'bootstrap3');

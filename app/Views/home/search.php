@@ -127,8 +127,19 @@
 <!-- Title -->
 <div class="well well-sm">
   <div class="row">
-    <div class="col-xs-9">Ditemukan data sebanyak : <em class='small'>(<?= number_format($jml) ?>)</em> arsip</div>
-    <div class="col-xs-3 text-right"></div>
+    <div class="col-xs-7">Ditemukan data sebanyak : <em class='small'>(<?= number_format($jml) ?>)</em> arsip<?php if (!empty($ranked)): ?> <span class="label label-success" title="Saracevic relevance ranking aktif (relativeness+timeliness+relations, Fafalios 1810.11049)"><span class="glyphicon glyphicon-sort-by-attributes-alt"></span> Ranked</span><?php endif; ?></div>
+    <div class="col-xs-5 text-right">
+      <?php
+        $qs = $_GET;
+        if (!empty($ranked)) {
+            $qs['rank'] = 0; $label = 'Non-ranked'; $rankVal = '0'; $btnClass = 'btn-default';
+        } else {
+            $qs['rank'] = 1; $label = 'Ranked (Saracevic)'; $rankVal = '1'; $btnClass = 'btn-success';
+        }
+        $toggleUrl = site_url('search') . '?' . http_build_query($qs);
+      ?>
+      <a href="<?= esc($toggleUrl) ?>" class="btn btn-xs <?= $btnClass ?>" title="Toggle Saracevic relevance ranking (Fafalios JCDL 2017)"><?php if (!empty($ranked)): ?><span class="glyphicon glyphicon-sort"></span> Non-ranked<?php else: ?><span class="glyphicon glyphicon-sort-by-attributes"></span> Aktifkan Ranking (Saracevic)<?php endif; ?></a>
+    </div>
   </div>
 </div>
 <!-- /.row -->

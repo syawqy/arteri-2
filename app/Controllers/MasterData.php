@@ -206,9 +206,7 @@ class MasterData extends BaseController
             'katakunci' => $katakunci,
             'title'     => $this->entities['kode']['title'],
         ];
-        return view('layout/header', $data)
-            . view('master/klasifikasi', $data)
-            . view('layout/footer');
+        return view('master/klasifikasi', $data);
     }
 
     public function createKode()
@@ -313,9 +311,7 @@ class MasterData extends BaseController
             'katakunci' => $katakunci,
             'title'     => $this->entities['pencipta']['title'],
         ];
-        return view('layout/header', $data)
-            . view('master/pencipta', $data)
-            . view('layout/footer');
+        return view('master/pencipta', $data);
     }
 
     public function createPenc()
@@ -411,9 +407,7 @@ class MasterData extends BaseController
             'katakunci' => $katakunci,
             'title'     => $this->entities['pengolah']['title'],
         ];
-        return view('layout/header', $data)
-            . view('master/pengolah', $data)
-            . view('layout/footer');
+        return view('master/pengolah', $data);
     }
 
     public function createPengolah()
@@ -509,9 +503,7 @@ class MasterData extends BaseController
             'katakunci' => $katakunci,
             'title'     => $this->entities['lokasi']['title'],
         ];
-        return view('layout/header', $data)
-            . view('master/lokasi', $data)
-            . view('layout/footer');
+        return view('master/lokasi', $data);
     }
 
     public function createLokasi()
@@ -607,9 +599,7 @@ class MasterData extends BaseController
             'katakunci' => $katakunci,
             'title'     => $this->entities['media']['title'],
         ];
-        return view('layout/header', $data)
-            . view('master/media', $data)
-            . view('layout/footer');
+        return view('master/media', $data);
     }
 
     public function createMedia()
