@@ -43,7 +43,7 @@ final class IntegrationArsipFlowTest extends CIUnitTestCase
     public function testLoginAndSearchInitialData(): void
     {
         $response = $this->withSession(['username' => 'admin', 'is_admin' => true])
-                          ->get('/arsip');
+                          ->get('/search');
         
         $response->assertStatus(200);
     }
@@ -54,7 +54,7 @@ final class IntegrationArsipFlowTest extends CIUnitTestCase
     public function testInsertNewData(): void
     {
         $response = $this->withSession(['username' => 'admin', 'is_admin' => true])
-                          ->post('/arsip/create', [
+                          ->post('/arsip', [
                               'noarsip'   => 'TEST-001',
                               'tanggal'   => '2025-04-01',
                               'uraian'    => 'Arsip Test Baru',
@@ -162,7 +162,7 @@ final class IntegrationArsipFlowTest extends CIUnitTestCase
                      ->where('deleted_at', null)
                      ->orderBy('tanggal', 'DESC')
                      ->get()
-                     ->getArray();
+                     ->getResultArray();
         
         $this->assertGreaterThanOrEqual(1, count($results), "Should have records");
     }
@@ -207,7 +207,7 @@ final class IntegrationArsipFlowTest extends CIUnitTestCase
                       ->where('deleted_at', null)
                       ->limit(10)
                       ->get()
-                      ->getArray();
+                      ->getResultArray();
         
         foreach ($records as $record) {
             $this->assertArrayHasKey('uraian', $record);
@@ -229,7 +229,7 @@ final class IntegrationArsipFlowTest extends CIUnitTestCase
                       ->where('kode', 1)
                       ->orderBy('tanggal', 'DESC')
                       ->get()
-                      ->getArray();
+                      ->getResultArray();
         
         $this->assertCount(count($results), $results);
     }

@@ -117,7 +117,15 @@ class SirkulasiModel extends Model
     protected function buildSearchQuery(string $keywords = ''): \CodeIgniter\Database\BaseBuilder
     {
         $builder = $this->db->table('sirkulasi s');
-        $builder->select('s.*, u.username, (IF(CURDATE() > s.tgl_haruskembali, \'Terlambat\', \'Dipinjam\')) as status');
+
+        // CASE WHEN dipakai untuk kedua driver: MySQL dan SQLite sama-sama
+        // mendukungnya, sedangkan IF() dan CURDATE() hanya ada di MySQL.
+        $isSqlite    = stripos($this->db->getPlatform(), 'sqlite') !== false;
+        $statusExpr  = $isSqlite
+            ? "CASE WHEN date('now') > s.tgl_haruskembali THEN 'Terlambat' ELSE 'Dipinjam' END"
+            : "CASE WHEN CURDATE() > s.tgl_haruskembali THEN 'Terlambat' ELSE 'Dipinjam' END";
+
+        $builder->select("s.*, u.username, ({$statusExpr}) as status");
         $builder->join('data_arsip a', 'a.noarsip = s.noarsip');
         $builder->join('master_user u', 's.username_peminjam = u.username');
 

@@ -42,14 +42,23 @@ class DatabaseBackup extends BaseCommand
         CLI::write('=== Database Backup ===', 'yellow');
 
         // Get database config
-        $db = Database::connect();
-        $config = $db->getConnectInfo();
+        // getConnectInfo() hanya tersedia pada koneksi MySQLi, jadi konfigurasi
+        // diambil langsung dari Config\Database agar portabel.
+        $db       = Database::connect();
+        $dbConfig = config('Database');
+        $config   = $dbConfig->{$dbConfig->defaultGroup} ?? $dbConfig->default;
 
         $host     = $config['hostname'] ?? 'localhost';
         $username = $config['username'] ?? '';
         $password = $config['password'] ?? '';
         $database = $config['database'] ?? '';
         $port     = $config['port'] ?? 3306;
+
+        // Command ini memakai mysqldump, jadi hanya berlaku untuk MySQL/MariaDB.
+        if (stripos($db->getPlatform(), 'mysql') === false) {
+            CLI::error('Backup database hanya mendukung MySQL/MariaDB. Driver aktif: ' . $db->getPlatform());
+            return 1;
+        }
 
         if (empty($database)) {
             CLI::error('Database name tidak ditemukan di config.');

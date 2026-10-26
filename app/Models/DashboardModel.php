@@ -87,10 +87,18 @@ class DashboardModel extends Model
     {
         $db = \Config\Database::connect();
         $builder = $db->table('sirkulasi s');
-        $builder->select('DATE_FORMAT(s.tgl_pinjam, "%Y-%m") as bulan, COUNT(*) as total');
+
+        // DATE_FORMAT() hanya ada di MySQL; SQLite memakai strftime().
+        // Kolom bertipe DATETIME sehingga format 'YYYY-MM' sama untuk keduanya.
+        $isSqlite  = stripos($db->getPlatform(), 'sqlite') !== false;
+        $bulanExpr = $isSqlite
+            ? "strftime('%Y-%m', s.tgl_pinjam)"
+            : 'DATE_FORMAT(s.tgl_pinjam, "%Y-%m")';
+
+        $builder->select("{$bulanExpr} as bulan, COUNT(*) as total");
         $builder->where('s.tgl_pinjam >=', date('Y-m-d', strtotime("-{$months} months")));
         $builder->where('s.deleted_at', null);
-        $builder->groupBy('DATE_FORMAT(s.tgl_pinjam, "%Y-%m")');
+        $builder->groupBy($bulanExpr);
         $builder->orderBy('bulan', 'ASC');
         
         return $builder->get()->getResultArray();

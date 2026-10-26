@@ -81,10 +81,11 @@ final class HomeControllerTest extends CIUnitTestCase
         return (int) $db->insertID();
     }
 
-    public function testIndexRedirectsToSearch(): void
+    public function testIndexRendersDashboard(): void
     {
+        // Route '/' diarahkan ke Dashboard::index, bukan Home::index.
         $this->withSession($this->getAdminSession());
-        $this->get('/')->assertRedirectTo('search');
+        $this->get('/')->assertStatus(200);
     }
 
     public function testGetSearchReturns200WhenLoggedIn(): void
