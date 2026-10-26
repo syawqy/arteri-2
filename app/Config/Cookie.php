@@ -54,7 +54,15 @@ class Cookie extends BaseConfig
      *
      * Cookie will only be set if a secure HTTPS connection exists.
      */
-    public bool $secure = false;
+    /**
+     * Whether cookie should be sent over HTTPS only.
+     *
+     * Default aman: true. Pada lingkungan development yang dijalankan lewat
+     * HTTP biasa (mis. `php spark serve`), set `cookie.secure = false` di .env
+     * agar sesi tetap bisa dibuat. Nilai ini juga dipakai CodeIgniter\Session
+     * untuk cookie sesi, jadi memperbaikinya di sini mencakup keduanya.
+     */
+    public bool $secure = ENVIRONMENT === 'production';
 
     /**
      * --------------------------------------------------------------------------

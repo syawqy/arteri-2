@@ -83,10 +83,30 @@ class ArteriSeeder extends Seeder
         ]);
 
         // master_user (default admin/user)
+        //
+        // Password tidak lagi ditulis langsung di kode. Seeder yang membuat
+        // akun admin/user dengan kredensial tetap adalah celah serius bila
+        // pernah dijalankan di produksi, jadi di environment production seeder
+        // menolak berjalan sebelum seeder.admin_password dan
+        // seeder.user_password diisi di .env.
+        $adminPassword = (string) env('seeder.admin_password', '');
+        $userPassword   = (string) env('seeder.user_password', '');
+
+        if (ENVIRONMENT === 'production' && ($adminPassword === '' || $userPassword === '')) {
+            throw new \RuntimeException(
+                'ArteriSeeder menolak berjalan di production: set seeder.admin_password '
+                . 'dan seeder.user_password di .env terlebih dahulu.'
+            );
+        }
+
+        // Nilai cadangan hanya untuk development/testing.
+        $adminPassword = $adminPassword !== '' ? $adminPassword : 'dev-only-admin-password';
+        $userPassword   = $userPassword !== '' ? $userPassword : 'dev-only-user-password';
+
         $this->db->table('master_user')->insertBatch([
             [
                 'username'    => 'admin',
-                'password'    => password_hash('admin', PASSWORD_BCRYPT),
+                'password'    => password_hash($adminPassword, PASSWORD_BCRYPT),
                 'tipe'        => 'admin',
                 'akses_klas'  => '',
                 'akses_modul' => json_encode([
@@ -103,7 +123,7 @@ class ArteriSeeder extends Seeder
             ],
             [
                 'username'    => 'user',
-                'password'    => password_hash('user', PASSWORD_BCRYPT),
+                'password'    => password_hash($userPassword, PASSWORD_BCRYPT),
                 'tipe'        => 'user',
                 'akses_klas'  => 'sdm,hkp',
                 'akses_modul' => json_encode([

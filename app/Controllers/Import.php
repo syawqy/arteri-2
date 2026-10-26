@@ -50,6 +50,27 @@ class Import extends BaseController
             return $this->importResult(false, 'Format file tidak didukung. Gunakan .xls atau .xlsx.');
         }
 
+        // Ekstensi yang dikirim klien bisa dipalsukan, jadi isi berkas juga
+        // diperiksa melalui MIME hasil deteksi. .xlsx sebenarnya berupa ZIP
+        // dan .xls bertuliskan OLE2, sehingga keduanya perlu diizinkan agar
+        // berkas yang sah tidak salah ditolak.
+        $mimeTerdeteksi = (string) $file->getMimeType();
+        $mimeDiizinkan  = [
+            'application/vnd.ms-excel',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'application/zip',
+            'application/x-ole-storage',
+        ];
+
+        if (! in_array($mimeTerdeteksi, $mimeDiizinkan, true)) {
+            log_message('warning', 'Import ditolak. Ekstensi: {ekstensi}, MIME: {mime}', [
+                'ekstensi' => $ext,
+                'mime'     => $mimeTerdeteksi,
+            ]);
+
+            return $this->importResult(false, 'Isi berkas tidak sesuai dengan format Excel yang diizinkan.');
+        }
+
         try {
             $readerType = $ext === 'xls' ? 'Xls' : 'Xlsx';
             $reader = IOFactory::createReader($readerType);

@@ -34,9 +34,14 @@ final class OwaspSecurityTest extends CIUnitTestCase
 
         $this->assertNotEmpty($users);
         foreach ($users as $user) {
-            $this->assertNotSame($user['username'], $user['password']);
+            // Password harus berupa hash bcrypt, bukan teks biasa.
             $this->assertTrue(password_get_info($user['password'])['algoName'] === 'bcrypt');
-            $this->assertTrue(password_verify($user['username'], $user['password']));
+
+            // Password tidak boleh sama dengan username — dulu seeder membuat
+            // akun admin/admin dan user/user, dan test ini keliru memvalidasi
+            // perilaku tersebut melalui password_verify($username, ...).
+            $this->assertNotSame($user['username'], $user['password']);
+            $this->assertFalse(password_verify($user['username'], $user['password']));
         }
     }
 
@@ -44,7 +49,7 @@ final class OwaspSecurityTest extends CIUnitTestCase
     {
         $this->csrfPost('login', [
             'username' => 'admin',
-            'password' => 'admin',
+            'password' => env('seeder.admin_password', 'dev-only-admin-password'),
             'previous' => 'https://evil.example/phishing',
         ])->assertRedirectTo('/');
     }

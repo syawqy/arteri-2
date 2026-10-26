@@ -73,7 +73,7 @@ final class AuthControllerTest extends CIUnitTestCase
     {
         $this->csrfPost('login', [
             'username' => 'admin',
-            'password' => 'admin',
+            'password' => env('seeder.admin_password', 'dev-only-admin-password'),
         ])->assertRedirectTo('/');
     }
 
@@ -81,7 +81,7 @@ final class AuthControllerTest extends CIUnitTestCase
     {
         $this->csrfPost('login', [
             'username' => 'admin',
-            'password' => 'admin',
+            'password' => env('seeder.admin_password', 'dev-only-admin-password'),
         ]);
 
         $this->assertSame('admin', session('username'));
@@ -92,7 +92,7 @@ final class AuthControllerTest extends CIUnitTestCase
     {
         $this->csrfPost('login', [
             'username' => 'admin',
-            'password' => 'admin',
+            'password' => env('seeder.admin_password', 'dev-only-admin-password'),
             'previous' => '/search',
         ])->assertRedirectTo('/search');
     }
@@ -154,7 +154,7 @@ final class AuthControllerTest extends CIUnitTestCase
     {
         $this->csrfPost('login', [
             'username' => 'admin',
-            'password' => 'admin',
+            'password' => env('seeder.admin_password', 'dev-only-admin-password'),
         ]);
 
         $db = \Config\Database::connect();

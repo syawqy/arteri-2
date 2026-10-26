@@ -8,10 +8,76 @@ use App\Models\MasterPenciptaModel;
 use App\Models\MasterPengolahModel;
 use App\Models\MasterLokasiModel;
 use App\Models\MasterMediaModel;
+use CodeIgniter\HTTP\Files\UploadedFile;
 
 class Arsip extends BaseController
 {
     private const MODULE = 'entridata';
+
+    /**
+     * Ekstensi lampiran arsip yang diizinkan.
+     */
+    private const EKSTENSI_LAMPIRAN = ['pdf', 'doc', 'docx'];
+
+    /**
+     * MIME type yang diizinkan untuk lampiran arsip.
+     *
+     * Dicocokkan dengan hasil deteksi isi berkas, bukan header dari klien.
+     *
+     * Catatan: .docx dan .xlsx pada dasarnya adalah berkas ZIP, sehingga
+     * finfo melaporkannya sebagai application/zip; .doc dan .xls bertuliskan
+     * OLE2 sehingga dilaporkan application/x-ole-storage. Keduanya perlu
+     * dimasukkan agar berkas yang sah tidak salah ditolak — pemeriksaan
+     * ekstensi tetap menjadi penyaring pertama.
+     */
+    private const MIME_LAMPIRAN = [
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/zip',
+        'application/x-ole-storage',
+    ];
+
+    /**
+     * Simpan lampiran arsip setelah memverifikasi ekstensi dan MIME aslinya.
+     *
+     * Ekstensi yang dikirim klien saja tidak cukup: penyerang dapat mengirim
+     * berkas berbahaya dengan nama berekstensi .pdf. MIME di sini dideteksi
+     * dari isi berkas, sehingga ekstensi palsu tetap tertolak.
+     *
+     * @return string|null Nama berkas tersimpan, atau null bila tidak lolos verifikasi.
+     */
+    private function simpanLampiranArsip(?UploadedFile $file): ?string
+    {
+        if ($file === null || ! $file->isValid() || $file->hasMoved()) {
+            return null;
+        }
+
+        $ekstensi       = strtolower((string) $file->getClientExtension());
+        $mimeTerdeteksi = (string) $file->getMimeType();
+
+        $ekstensiDiizinkan = in_array($ekstensi, self::EKSTENSI_LAMPIRAN, true);
+        $mimeDiizinkan     = in_array($mimeTerdeteksi, self::MIME_LAMPIRAN, true);
+
+        if (! $ekstensiDiizinkan || ! $mimeDiizinkan) {
+            log_message('warning', 'Lampiran arsip ditolak. Ekstensi: {ekstensi}, MIME: {mime}', [
+                'ekstensi' => $ekstensi,
+                'mime'     => $mimeTerdeteksi,
+            ]);
+
+            return null;
+        }
+
+        $uploadPath = WRITEPATH . 'uploads' . DIRECTORY_SEPARATOR . 'arsip' . DIRECTORY_SEPARATOR;
+        if (! is_dir($uploadPath)) {
+            mkdir($uploadPath, 0755, true);
+        }
+
+        $namaBaru = $file->getRandomName();
+        $file->move($uploadPath, $namaBaru);
+
+        return $namaBaru;
+    }
 
     private function requireAccess(): bool
     {
@@ -95,19 +161,17 @@ class Arsip extends BaseController
             'username'      => session('username') ?? '',
         ];
 
-        $file = $this->request->getFile('file');
-        if ($file !== null && $file->isValid() && ! $file->hasMoved()) {
-            $uploadPath = WRITEPATH . 'uploads' . DIRECTORY_SEPARATOR . 'arsip' . DIRECTORY_SEPARATOR;
-            if (! is_dir($uploadPath)) {
-                mkdir($uploadPath, 0755, true);
-            }
+        $berkasLampiran = $this->request->getFile('file');
+        $adaLampiran    = $berkasLampiran !== null && $berkasLampiran->isValid() && ! $berkasLampiran->hasMoved();
+        $namaLampiran   = $this->simpanLampiranArsip($berkasLampiran);
 
-            $ext = strtolower($file->getClientExtension());
-            if (in_array($ext, ['pdf', 'doc', 'docx'], true)) {
-                $newName = $file->getRandomName();
-                $file->move($uploadPath, $newName);
-                $insertData['file'] = $newName;
-            }
+        if ($adaLampiran && $namaLampiran === null) {
+            return redirect()->back()->withInput()
+                ->with('error', 'Lampiran ditolak. Gunakan berkas PDF, DOC, atau DOCX yang valid.');
+        }
+
+        if ($namaLampiran !== null) {
+            $insertData['file'] = $namaLampiran;
         }
 
         $insertId = $arsipModel->insert($insertData, true);
@@ -215,26 +279,28 @@ class Arsip extends BaseController
             'nobox'         => $post['nobox'] ?? '',
         ];
 
-        $file = $this->request->getFile('file');
-        if ($file !== null && $file->isValid() && ! $file->hasMoved()) {
+        // Lampiran baru disimpan lebih dulu, berkas lama baru dihapus setelah
+        // penyimpanan berhasil agar tidak ada berkas hilang bila proses gagal.
+        $berkasLampiran = $this->request->getFile('file');
+        $adaLampiran    = $berkasLampiran !== null && $berkasLampiran->isValid() && ! $berkasLampiran->hasMoved();
+        $namaLampiran   = $this->simpanLampiranArsip($berkasLampiran);
+
+        if ($adaLampiran && $namaLampiran === null) {
+            return redirect()->back()->withInput()
+                ->with('error', 'Lampiran ditolak. Gunakan berkas PDF, DOC, atau DOCX yang valid.');
+        }
+
+        if ($namaLampiran !== null) {
             $uploadPath = WRITEPATH . 'uploads' . DIRECTORY_SEPARATOR . 'arsip' . DIRECTORY_SEPARATOR;
-            if (! is_dir($uploadPath)) {
-                mkdir($uploadPath, 0755, true);
-            }
 
-            $ext = strtolower($file->getClientExtension());
-            if (in_array($ext, ['pdf', 'doc', 'docx'], true)) {
-                if (! empty($existing['file'])) {
-                    $oldPath = $uploadPath . $existing['file'];
-                    if (is_file($oldPath)) {
-                        unlink($oldPath);
-                    }
+            if (! empty($existing['file'])) {
+                $oldPath = $uploadPath . $existing['file'];
+                if (is_file($oldPath)) {
+                    unlink($oldPath);
                 }
-
-                $newName = $file->getRandomName();
-                $file->move($uploadPath, $newName);
-                $updateData['file'] = $newName;
             }
+
+            $updateData['file'] = $namaLampiran;
         }
 
         $arsipModel->update($id, $updateData);

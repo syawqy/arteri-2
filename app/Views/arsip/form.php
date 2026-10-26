@@ -74,6 +74,17 @@ $fileVal     = $isEdit ? ($file ?? '') : '';
   </div>
 </nav>
 
+<?php if ($error = session()->getFlashdata('error')): ?>
+  <div class="container-fluid">
+    <div class="alert alert-danger" role="alert"><?= esc($error) ?></div>
+  </div>
+<?php endif; ?>
+<?php if ($message = session()->getFlashdata('message')): ?>
+  <div class="container-fluid">
+    <div class="alert alert-success" role="alert"><?= esc($message) ?></div>
+  </div>
+<?php endif; ?>
+
 <form class="form-horizontal" data-toggle="validator" action="<?= $actionUrl ?>" method="post" enctype="multipart/form-data">
 <?= csrf_field() ?>
 <?php if ($isEdit): ?>

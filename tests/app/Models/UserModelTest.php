@@ -30,11 +30,21 @@ final class UserModelTest extends CIUnitTestCase
 
     public function testAttemptLoginWithValidCredentials(): void
     {
-        $user = $this->model->attemptLogin('admin', 'admin');
+        // Password seeder tidak lagi 'admin'; nilainya mengikuti env yang sama
+        // dengan yang dipakai ArteriSeeder.
+        $password = env('seeder.admin_password', 'dev-only-admin-password');
+        $user     = $this->model->attemptLogin('admin', $password);
 
         $this->assertIsArray($user);
         $this->assertSame('admin', $user['username']);
         $this->assertSame('admin', $user['tipe']);
+    }
+
+    public function testAttemptLoginRejectsUsernameAsPassword(): void
+    {
+        // Regresi: seeder dulu membuat akun admin/admin. Password tidak boleh
+        // lagi sama dengan username.
+        $this->assertNull($this->model->attemptLogin('admin', 'admin'));
     }
 
     public function testAttemptLoginWithInvalidPassword(): void
