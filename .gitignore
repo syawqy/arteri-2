@@ -13,6 +13,11 @@ writable/logs/
 writable/session/
 writable/uploads/
 writable/test_upload.pdf
+writable/*.db
+writable/tmp_*
+
+# Template contoh environment CI4 (bukan konfigurasi aktif)
+env
 public/uploads/*.pdf
 public/uploads/*.docx
 public/uploads/*.doc
