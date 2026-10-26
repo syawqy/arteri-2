@@ -4,7 +4,7 @@ namespace Tests\App\Models;
 
 use App\Models\SirkulasiModel;
 use CodeIgniter\Test\CIUnitTestCase;
-use Tests\Support\DatabaseTestTrait;
+use CodeIgniter\Test\DatabaseTestTrait;
 
 /**
  * Unit tests for SirkulasiModel
@@ -15,7 +15,8 @@ class SirkulasiModelTest extends CIUnitTestCase
 {
     use DatabaseTestTrait;
 
-    protected $seed = 'Tests\Support\Database\Seeds\ArteriSeeder';
+    protected $namespace = 'App';
+    protected $seed      = 'App\Database\Seeds\ArteriSeeder';
 
     protected function setUp(): void
     {

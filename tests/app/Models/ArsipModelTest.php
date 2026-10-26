@@ -9,7 +9,7 @@ use App\Models\MasterMediaModel;
 use App\Models\MasterPenciptaModel;
 use App\Models\MasterPengolahModel;
 use CodeIgniter\Test\CIUnitTestCase;
-use Tests\Support\DatabaseTestTrait;
+use CodeIgniter\Test\DatabaseTestTrait;
 
 /**
  * Unit tests for ArsipModel
@@ -20,7 +20,8 @@ class ArsipModelTest extends CIUnitTestCase
 {
     use DatabaseTestTrait;
 
-    protected $seed = 'Tests\Support\Database\Seeds\ArteriSeeder';
+    protected $namespace = 'App';
+    protected $seed      = 'App\Database\Seeds\ArteriSeeder';
 
     protected function setUp(): void
     {
@@ -133,6 +134,7 @@ class ArsipModelTest extends CIUnitTestCase
             'media'         => 1,
             'ket'           => 'asli',
             'jumlah'        => 1,
+            'nobox'         => '-',
             'username'      => 'test_user',
         ];
 
@@ -162,6 +164,7 @@ class ArsipModelTest extends CIUnitTestCase
             'media'         => 1,
             'ket'           => 'asli',
             'jumlah'        => 1,
+            'nobox'         => '-',
             'username'      => 'test_user',
         ];
 
@@ -197,6 +200,7 @@ class ArsipModelTest extends CIUnitTestCase
             'media'         => 1,
             'ket'           => 'asli',
             'jumlah'        => 1,
+            'nobox'         => '-',
             'username'      => 'test_user',
         ];
 
