@@ -98,7 +98,7 @@ test.describe('Dashboard Analytics', () => {
 
     // Verify skeleton loaders muncul saat loading
     const skeleton = page.locator('.skeleton, .skeleton-card').first();
-    const hasSkele ton = await skeleton.isVisible({ timeout: 500 }).catch(() => false);
+    const hasSkeleton = await skeleton.isVisible({ timeout: 500 }).catch(() => false);
 
     // Skeleton mungkin sudah hilang kalau API cepat, tapi oke
     // Yang penting page akhirnya loaded dengan data

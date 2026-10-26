@@ -43,14 +43,15 @@ class AccessGuard
         }
 
         // Fallback: auto-login as MCP_TEST_USERNAME for dev/testing
-        $testUser = env('MCP_TEST_USERNAME', null);
-        if ($testUser !== null) {
-            $user = $this->userModel->where('username', $testUser)->first();
-            if ($user) {
-                $this->currentUser = $user;
-                return $user;
-            }
-        }
+        // Disabled for testing - remove this block or set env('MCP_TEST_USERNAME') = null for testing
+        // $testUser = env('MCP_TEST_USERNAME', null);
+        // if ($testUser !== null) {
+        //     $user = $this->userModel->where('username', $testUser)->first();
+        //     if ($user) {
+        //         $this->currentUser = $user;
+        //         return $user;
+        //     }
+        // }
 
         return null;
     }

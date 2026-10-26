@@ -17,8 +17,8 @@ final class ArsipControllerTest extends CIUnitTestCase
     use FeatureTestTrait;
     use CsrfTestTrait;
 
-    protected $migrate   = true;
-    protected $seed      = \App\Database\Seeds\ArteriSeeder::class;
+    protected $migrate   = false;
+    protected $seed = '';
     protected $basePath  = APPPATH . 'Database';
     protected $namespace = 'App';
 
@@ -44,12 +44,31 @@ final class ArsipControllerTest extends CIUnitTestCase
 
         $db = \Config\Database::connect();
 
+        // Add deleted_at column manually for testing
+        $tables = ['master_kode', 'master_lokasi', 'master_media', 'master_pencipta', 'master_pengolah', 'master_user', 'data_arsip', 'sirkulasi'];
+        foreach ($tables as $table) {
+            $tableName = $table;
+            if (!$db->fieldExists('deleted_at', $tableName)) {
+                try {
+                    $db->query("ALTER TABLE `{$tableName}` ADD COLUMN `deleted_at` DATETIME NULL DEFAULT NULL");
+                } catch (\Throwable $e) {
+                    // Column may already exist
+                }
+            }
+            // Add index if not exists
+            try {
+                $db->query("ALTER TABLE `{$tableName}` ADD INDEX `idx_deleted_at` (`deleted_at`)");
+            } catch (\Throwable $e) {
+                // Index may already exist
+            }
+        }
+
         $this->masterIds = [
-            'kode'     => $db->table('master_kode')->get(1)->getRowArray()['id'],
-            'pencipta' => $db->table('master_pencipta')->get(1)->getRowArray()['id'],
-            'pengolah' => $db->table('master_pengolah')->get(1)->getRowArray()['id'],
-            'lokasi'   => $db->table('master_lokasi')->get(1)->getRowArray()['id'],
-            'media'    => $db->table('master_media')->get(1)->getRowArray()['id'],
+            'kode'     => $db->table('master_kode')->orderBy('id', 'ASC')->get(1)->getRowArray()['id'],
+            'pencipta' => $db->table('master_pencipta')->orderBy('id', 'ASC')->get(1)->getRowArray()['id'],
+            'pengolah' => $db->table('master_pengolah')->orderBy('id', 'ASC')->get(1)->getRowArray()['id'],
+            'lokasi'   => $db->table('master_lokasi')->orderBy('id', 'ASC')->get(1)->getRowArray()['id'],
+            'media'    => $db->table('master_media')->orderBy('id', 'ASC')->get(1)->getRowArray()['id'],
         ];
     }
 

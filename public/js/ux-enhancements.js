@@ -322,11 +322,89 @@
             if ($btn.hasClass('btn-loading')) return;
             var original = $btn.html();
             $btn.addClass('btn-loading').css('min-width', $btn.outerWidth() + 'px').html('Menyiapkan file...');
-            showToast('Menyiapkan file untuk diunduh...');
+            showToast('Menyiapkan file untuk diunduh...', 'info');
             // Download tidak memicu event JS; pulihkan setelah jeda.
             setTimeout(function () {
                 $btn.removeClass('btn-loading').html(original);
             }, 3500);
+        });
+    }
+
+    /* ============================================================
+     * 5. Enhanced Pagination
+     * ============================================================
+     * Menambahkan animasi dan visual feedback untuk pagination.
+     */
+    function initEnhancedPagination() {
+        // Highlight current page on focus
+        $('.pagination > li > a').on('focus', function() {
+            $(this).addClass('focused');
+        }).on('blur', function() {
+            $(this).removeClass('focused');
+        });
+    }
+
+    /* ============================================================
+     * 6. Dark Mode Toggle
+     * ============================================================
+     * Toggle dark mode dengan localStorage persistence.
+     * Support prefers-color-scheme untuk user yang tidak ingin toggle.
+     */
+    function initDarkModeToggle() {
+        // Check localStorage first
+        var savedTheme = localStorage.getItem('arteri-theme');
+        
+        // Check prefers-color-scheme
+        var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        // Set default theme
+        var theme = savedTheme || (prefersDark ? 'dark' : 'light');
+        
+        // Apply theme
+        if (theme === 'dark') {
+            $('body').attr('data-theme', 'dark');
+            localStorage.setItem('arteri-theme', 'dark');
+        }
+        
+        // Toggle button (will be created in HTML)
+        if (typeof darkModeToggle !== 'undefined') {
+            darkModeToggle.click(function(e) {
+                e.preventDefault();
+                toggleDarkMode();
+            });
+        }
+    }
+
+    function toggleDarkMode() {
+        var isDark = $('body').attr('data-theme') === 'dark';
+        var newTheme = isDark ? 'light' : 'dark';
+        
+        $('body').attr('data-theme', newTheme);
+        localStorage.setItem('arteri-theme', newTheme);
+        
+        showToast('Mode ' + (newTheme === 'dark' ? 'gelap' : 'terang') + ' aktif.', 'info');
+    }
+
+    /* ============================================================
+     * 7. Enhanced Modal Dialog
+     * ============================================================
+     * Fix backdrop stuck dan improve modal styling.
+     */
+    function initEnhancedModals() {
+        // FIX: backdrop stuck — Bootstrap shade tidak hilang setelah modal hide
+        $(document).on('hidden.bs.modal', '.modal', function () {
+            if ($('.modal:visible').length === 0) {
+                $('.modal-backdrop').remove();
+                $('body').removeClass('modal-open').css('padding-right', '');
+            }
+        });
+        
+        // Auto cleanup on window resize
+        $(window).on('resize', function() {
+            if ($('.modal:visible').length === 0) {
+                $('.modal-backdrop').remove();
+                $('body').removeClass('modal-open').css('padding-right', '');
+            }
         });
     }
 
@@ -344,6 +422,15 @@
 
         // Loading state tombol export.
         initExportFeedback();
+
+        // Enhanced pagination.
+        initEnhancedPagination();
+
+        // Dark mode toggle initialization.
+        initDarkModeToggle();
+
+        // Enhanced modal handling.
+        initEnhancedModals();
     });
 
 })(jQuery);

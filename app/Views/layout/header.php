@@ -39,18 +39,18 @@
 <body>
 
     <!-- Navigation -->
-    <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation" aria-label="Main navigation">
         <div class="container">
 
             <!-- Brand and toggle get grouped for better mobile display -->
             <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#arteri-main-menu">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#arteri-main-menu" aria-controls="arteri-main-menu" aria-expanded="false" aria-label="Toggle navigation menu">
                     <span class="sr-only">Toggle navigation</span>
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a style="padding-top: 13px;" class="navbar-brand" href="<?= site_url('/') ?>"><img src="<?= base_url('/images/logo-horizontal.png') ?>" alt="ARTERI" height="35"></a>
+                <a style="padding-top: 13px;" class="navbar-brand" href="<?= site_url('/') ?>" aria-label="ARTERI Dashboard home"><img src="<?= base_url('/images/logo-horizontal.png') ?>" alt="ARTERI" height="35"></a>
             </div>
             <!-- Collect the nav links, forms, and other content for toggling -->
             <div class="collapse navbar-collapse" id="arteri-main-menu">
